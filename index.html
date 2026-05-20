@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Write Journals</title>
+<style>
+  :root {
+    --bg: #1c1c1e;
+    --panel: #232325;
+    --field: #2d2d30;
+    --field-border: #3a3a3d;
+    --text: #f2f2f4;
+    --muted: #9a9aa0;
+    --accent-start: #34d399;
+    --accent-end: #6ee7b7;
+    --gold: #d9a93e;
+    --gold-hover: #e6b94f;
+    --star: #34d399;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #131314;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    padding: 24px 12px 60px;
+  }
+  .card {
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 26px 18px;
+    border-bottom: 1px solid #2a2a2d;
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+  .close {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .close:hover { background: rgba(217,169,62,0.12); }
+  .body { padding: 22px 26px 30px; }
+  .section-label {
+    font-size: 15px;
+    color: var(--text);
+    margin: 6px 0 14px;
+  }
+  .type-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .type-option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: var(--field);
+    border: 1px solid var(--field-border);
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text);
+    transition: all 0.18s ease;
+    user-select: none;
+  }
+  .type-option .radio {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid #6b6b70;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .type-option .radio::after {
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: transparent;
+  }
+  .type-option.active {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    border-color: transparent;
+    color: #0b3b2c;
+    font-weight: 600;
+  }
+  .type-option.active .radio {
+    border-color: #0b3b2c;
+    background: #0b3b2c;
+  }
+  .type-option.active .radio::after { background: var(--accent-end); }
+  .field-group { margin-bottom: 22px; }
+  .field-group label {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .field-group label .req { color: var(--star); margin-left: 3px; }
+  .field-group textarea {
+    width: 100%;
+    background: var(--field);
+    border: 1px solid var(--field-border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    padding: 14px 16px;
+    resize: vertical;
+    min-height: 54px;
+    transition: border-color 0.15s ease;
+  }
+  .field-group textarea::placeholder { color: var(--muted); }
+  .field-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-start);
+    box-shadow: 0 0 0 2px rgba(52,211,153,0.18);
+  }
+  .meta-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .meta-row .field-group { flex: 1; min-width: 180px; margin-bottom: 0; }
+  .meta-row input {
+    width: 100%;
+    background: var(--field);
+    border: 1px solid var(--field-border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    padding: 13px 16px;
+  }
+  .meta-row input:focus {
+    outline: none;
+    border-color: var(--accent-start);
+  }
+  .submit-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: var(--gold);
+    color: #1c1402;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .submit-btn:hover { background: var(--gold-hover); }
+  .hint {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 14px;
+  }
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    color: #0b3b2c;
+    font-weight: 600;
+    padding: 13px 22px;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Write Journals</h1>
+      <button class="close" title="Close" onclick="if(confirm('Clear this entry?')) location.reload();">&times;</button>
+    </header>
+    <div class="body">
+      <div class="section-label">Select Type</div>
+      <div class="type-selector" id="typeSelector">
+        <div class="type-option" data-type="freeflow"><span class="radio"></span> Free Flow</div>
+        <div class="type-option active" data-type="reframe"><span class="radio"></span> Re-Frame</div>
+        <div class="type-option" data-type="devotional"><span class="radio"></span> Devotional</div>
+      </div>
+
+      <div class="meta-row">
+        <div class="field-group">
+          <label for="entryName">Name <span class="hint" style="display:inline">(optional)</span></label>
+          <input type="text" id="entryName" placeholder="Your name">
+        </div>
+        <div class="field-group">
+          <label for="entryDate">Date</label>
+          <input type="date" id="entryDate">
+        </div>
+      </div>
+
+      <form id="journalForm">
+        <div id="questions"></div>
+        <button type="submit" class="submit-btn">Submit</button>
+        <div class="hint">Your answers download as a text file to keep. Nothing is sent anywhere.</div>
+      </form>
+    </div>
+  </div>
+  <div class="toast" id="toast">Saved — your entry was downloaded</div>
+
+<script>
+  const QUESTIONS = {
+    freeflow: {
+      title: "Free Flow",
+      items: [
+        "How am I feeling right now?",
+        "What is on my mind today?",
+        "What happened today that I want to remember?",
+        "What am I grateful for right now?",
+        "What do I want to let go of?",
+        "What is one thing I'm looking forward to?"
+      ]
+    },
+    reframe: {
+      title: "Re-Frame",
+      items: [
+        "What emotion am I feeling?",
+        "What thought or situation triggered this emotion?",
+        "Why did I get triggered by this specific thought or situation?",
+        "What is the belief I have about myself, that event or another person?",
+        "Is this belief true?",
+        "Can you be certain this is 100% true?",
+        "How does this belief affect me or the people around me? How do I treat others when I believe this?",
+        "How could I see myself, this situation or person differently in a way that serves me and the people around me?",
+        "What evidence is there to support this new belief?"
+      ]
+    },
+    devotional: {
+      title: "Devotional",
+      items: [
+        "What scripture, passage or reading am I reflecting on today?",
+        "What stood out to me, and why?",
+        "What is this teaching me about myself or about life?",
+        "What is being asked of me in response?",
+        "What am I thankful for today?",
+        "What would I like to pray for or set an intention around?"
+      ]
+    }
+  };
+
+  let currentType = "reframe";
+  const questionsEl = document.getElementById("questions");
+  const selector = document.getElementById("typeSelector");
+
+  function renderQuestions(type) {
+    const data = QUESTIONS[type];
+    questionsEl.innerHTML = data.items.map((q, i) => `
+      <div class="field-group">
+        <label for="q${i}">${q} <span class="req">*</span></label>
+        <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here" required></textarea>
+      </div>
+    `).join("");
+  }
+
+  selector.addEventListener("click", (e) => {
+    const opt = e.target.closest(".type-option");
+    if (!opt) return;
+    selector.querySelectorAll(".type-option").forEach(o => o.classList.remove("active"));
+    opt.classList.add("active");
+    currentType = opt.dataset.type;
+    renderQuestions(currentType);
+  });
+
+  // default date = today
+  document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
+
+  renderQuestions(currentType);
+
+  document.getElementById("journalForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("entryName").value.trim();
+    const date = document.getElementById("entryDate").value;
+    const typeTitle = QUESTIONS[currentType].title;
+    const fields = [...questionsEl.querySelectorAll("textarea")];
+
+    let out = "WRITE JOURNALS\n";
+    out += "Type: " + typeTitle + "\n";
+    if (name) out += "Name: " + name + "\n";
+    if (date) out += "Date: " + date + "\n";
+    out += "\n" + "=".repeat(48) + "\n\n";
+
+    fields.forEach(f => {
+      out += f.dataset.question + "\n";
+      out += (f.value.trim() || "(left blank)") + "\n\n";
+    });
+
+    const safeName = (name ? name.replace(/[^a-z0-9]/gi, "-") + "-" : "") + typeTitle.toLowerCase() + "-" + (date || "entry");
+    const blob = new Blob([out], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "journal-" + safeName + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2600);
+  });
+</script>
+</body>
+</html>
