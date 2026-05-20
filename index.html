@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Write Journals</title>
+<title>Rise Up Kings Journal</title>
 <style>
   :root {
-    --bg: #1c1c1e;
-    --panel: #232325;
-    --field: #2d2d30;
-    --field-border: #3a3a3d;
+    --bg: #15161a;
+    --panel: #1d1f24;
+    --field: #25272d;
+    --field-border: #34373f;
     --text: #f2f2f4;
     --muted: #9a9aa0;
     --accent-start: #34d399;
     --accent-end: #6ee7b7;
     --gold: #d9a93e;
+    --gold-light: #f0c674;
     --gold-hover: #e6b94f;
-    --star: #34d399;
+    --star: #d9a93e;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: #131314;
+    background: #0c0d10;
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.5;
@@ -31,53 +32,253 @@
     max-width: 760px;
     margin: 0 auto;
     background: var(--bg);
-    border-radius: 14px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.55);
     overflow: hidden;
   }
+
+  /* ---------- LANDING ---------- */
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 48px 24px 40px;
+    background:
+      radial-gradient(ellipse at 72% 18%, rgba(217,169,62,0.35), transparent 45%),
+      linear-gradient(180deg, #1b2230 0%, #14161c 60%, #15161a 100%);
+    overflow: hidden;
+  }
+  .hero .mountains {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    width: 100%;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  .crown { color: var(--gold); margin-bottom: 6px; }
+  .brand-title {
+    font-weight: 800;
+    letter-spacing: 2px;
+    line-height: 0.95;
+    margin: 4px 0 2px;
+  }
+  .brand-title .rise {
+    display: block;
+    font-size: 52px;
+    color: #f7f7f9;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.5);
+  }
+  .brand-title .kings {
+    display: block;
+    font-size: 60px;
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .brand-sub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #e7e7ea;
+    letter-spacing: 5px;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 6px 0 22px;
+  }
+  .brand-sub::before, .brand-sub::after {
+    content: "";
+    width: 26px; height: 1px;
+    background: var(--gold);
+  }
+  .tagline {
+    color: #fff;
+    letter-spacing: 3px;
+    font-size: 17px;
+    font-weight: 700;
+    margin: 6px 0 14px;
+  }
+  .hero-desc {
+    color: var(--gold-light);
+    font-size: 13.5px;
+    letter-spacing: 1px;
+    max-width: 420px;
+    margin: 0 auto;
+    text-transform: uppercase;
+  }
+
+  .landing-body { padding: 26px 24px 30px; }
+  .pillar-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .pillar-card {
+    text-align: center;
+    padding: 26px 20px;
+    border-radius: 14px;
+    background: var(--panel);
+    border: 1px solid var(--field-border);
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .pillar-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
+  .pc-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 1.5px solid;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pc-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  .pc-desc { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+  .pc-freeflow { border-color: rgba(96,165,250,0.4); }
+  .pc-freeflow:hover { border-color: #60a5fa; }
+  .pc-freeflow .pc-icon { border-color: #60a5fa; color: #60a5fa; }
+  .pc-guided { border-color: rgba(52,211,153,0.4); }
+  .pc-guided:hover { border-color: var(--accent-start); }
+  .pc-guided .pc-icon { border-color: var(--accent-start); color: var(--accent-start); }
+  .pc-reframe { border-color: rgba(217,169,62,0.4); }
+  .pc-reframe:hover { border-color: var(--gold); }
+  .pc-reframe .pc-icon { border-color: var(--gold); color: var(--gold); }
+  .pc-devotional { border-color: rgba(167,139,250,0.4); }
+  .pc-devotional:hover { border-color: #a78bfa; }
+  .pc-devotional .pc-icon { border-color: #a78bfa; color: #a78bfa; }
+
+  .pillars-divider {
+    text-align: center;
+    color: var(--gold);
+    letter-spacing: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 34px 0 18px;
+    position: relative;
+  }
+  .pillars-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pillar {
+    flex: 1;
+    min-width: 110px;
+    text-align: center;
+    padding: 10px;
+    border-left: 1px solid var(--field-border);
+    color: var(--gold);
+  }
+  .pillar:first-child { border-left: none; }
+  .pillar .p-ico { margin-bottom: 8px; }
+  .pillar .p-name { font-size: 12.5px; letter-spacing: 2px; color: #cfcfd4; }
+  .verse {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 28px 0 18px;
+    padding: 16px 20px;
+    border: 1px solid var(--field-border);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .verse .v-crown { color: var(--gold); flex-shrink: 0; }
+  .verse .v-text { font-size: 12.5px; color: #d6d6da; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.6; }
+  .verse .v-ref { color: var(--gold); white-space: nowrap; font-size: 12px; letter-spacing: 1px; }
+  .landing-footer {
+    text-align: center;
+    color: var(--muted);
+    letter-spacing: 3px;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .landing-history {
+    display: block;
+    margin: 22px auto 0;
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* ---------- APP (write + history) ---------- */
+  #appView { display: none; }
   header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 22px 26px 18px;
-    border-bottom: 1px solid #2a2a2d;
+    gap: 12px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #2a2c32;
   }
-  header h1 {
-    font-size: 22px;
-    font-weight: 600;
-    margin: 0;
-    letter-spacing: 0.2px;
-  }
-  .close {
-    width: 34px; height: 34px;
-    border-radius: 8px;
-    border: 1px solid var(--gold);
-    background: transparent;
-    color: var(--gold);
-    font-size: 18px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    line-height: 1;
-  }
-  .close:hover { background: rgba(217,169,62,0.12); }
-  .body { padding: 22px 26px 30px; }
-  .section-label {
-    font-size: 15px;
+  .back-btn {
+    background: none;
+    border: 1px solid var(--field-border);
     color: var(--text);
-    margin: 6px 0 14px;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
   }
+  .back-btn:hover { border-color: var(--gold); }
+  header h1 {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.5px;
+  }
+  header h1 .accent {
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hist-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--field-border);
+    background: var(--field);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .hist-btn:hover { border-color: var(--gold); }
+  .hist-btn .count {
+    background: var(--gold);
+    color: #1c1402;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 1px 7px;
+    min-width: 18px;
+    text-align: center;
+  }
+  .body { padding: 22px 26px 30px; }
   .type-selector {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 14px;
-    margin-bottom: 28px;
+    gap: 12px;
+    margin-bottom: 26px;
   }
   .type-option {
-    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 16px 18px;
+    padding: 14px 16px;
     border-radius: 12px;
     background: var(--field);
     border: 1px solid var(--field-border);
@@ -94,23 +295,14 @@
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
   }
-  .type-option .radio::after {
-    content: "";
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: transparent;
-  }
   .type-option.active {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
     border-color: transparent;
-    color: #0b3b2c;
+    color: #1c1402;
     font-weight: 600;
   }
-  .type-option.active .radio {
-    border-color: #0b3b2c;
-    background: #0b3b2c;
-  }
-  .type-option.active .radio::after { background: var(--accent-end); }
+  .type-option.active .radio { border-color: #1c1402; background: #1c1402; }
+  .type-option.active .radio::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--gold-light); }
   .field-group { margin-bottom: 22px; }
   .field-group label {
     display: block;
@@ -135,15 +327,10 @@
   .field-group textarea::placeholder { color: var(--muted); }
   .field-group textarea:focus {
     outline: none;
-    border-color: var(--accent-start);
-    box-shadow: 0 0 0 2px rgba(52,211,153,0.18);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(217,169,62,0.18);
   }
-  .meta-row {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 22px;
-  }
+  .meta-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
   .meta-row .field-group { flex: 1; min-width: 180px; margin-bottom: 0; }
   .meta-row input {
     width: 100%;
@@ -155,10 +342,7 @@
     font-size: 15px;
     padding: 13px 16px;
   }
-  .meta-row input:focus {
-    outline: none;
-    border-color: var(--accent-start);
-  }
+  .meta-row input:focus { outline: none; border-color: var(--gold); }
   .submit-btn {
     width: 100%;
     margin-top: 10px;
@@ -168,30 +352,56 @@
     background: var(--gold);
     color: #1c1402;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: background 0.15s ease;
   }
   .submit-btn:hover { background: var(--gold-hover); }
-  .hint {
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 14px;
+  .hint { text-align: center; color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+  #historyView { display: none; }
+  .history-empty { text-align: center; color: var(--muted); padding: 50px 20px; font-size: 15px; }
+  .history-controls { margin-bottom: 18px; }
+  .history-controls .count-label { color: var(--muted); font-size: 14px; }
+  .entry-card {
+    background: var(--field);
+    border: 1px solid var(--field-border);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
   }
+  .entry-head { display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer; user-select: none; }
+  .entry-head:hover { background: rgba(255,255,255,0.02); }
+  .entry-badge {
+    font-size: 12px; font-weight: 600; color: #1c1402;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    padding: 3px 10px; border-radius: 999px; flex-shrink: 0;
+  }
+  .entry-meta { flex: 1; min-width: 0; }
+  .entry-title { font-size: 15px; color: var(--text); }
+  .entry-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .entry-chevron { color: var(--muted); transition: transform 0.2s ease; flex-shrink: 0; }
+  .entry-card.open .entry-chevron { transform: rotate(90deg); }
+  .entry-body { display: none; padding: 4px 18px 18px; border-top: 1px solid var(--field-border); }
+  .entry-card.open .entry-body { display: block; }
+  .qa { margin-top: 14px; }
+  .qa .q { font-size: 13.5px; color: var(--gold); margin-bottom: 4px; }
+  .qa .a { font-size: 15px; color: var(--text); white-space: pre-wrap; word-wrap: break-word; }
+  .entry-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .mini-btn {
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--field-border);
+    background: transparent; color: var(--text); font-size: 13px; font-family: inherit;
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .mini-btn:hover { border-color: var(--gold); }
+  .mini-btn.danger { color: #f1948a; }
+  .mini-btn.danger:hover { border-color: #f1948a; background: rgba(241,148,138,0.08); }
   .toast {
-    position: fixed;
-    bottom: 28px;
-    left: 50%;
+    position: fixed; bottom: 28px; left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    color: #0b3b2c;
-    font-weight: 600;
-    padding: 13px 22px;
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    opacity: 0;
-    pointer-events: none;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #1c1402; font-weight: 700; padding: 13px 22px; border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); opacity: 0; pointer-events: none;
     transition: all 0.3s ease;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -199,38 +409,143 @@
 </head>
 <body>
   <div class="card">
-    <header>
-      <h1>Write Journals</h1>
-      <button class="close" title="Close" onclick="if(confirm('Clear this entry?')) location.reload();">&times;</button>
-    </header>
-    <div class="body">
-      <div class="section-label">Select Type</div>
-      <div class="type-selector" id="typeSelector">
-        <div class="type-option" data-type="freeflow"><span class="radio"></span> Free Flow</div>
-        <div class="type-option" data-type="guided"><span class="radio"></span> Guided Journal</div>
-        <div class="type-option active" data-type="reframe"><span class="radio"></span> Re-Frame</div>
-        <div class="type-option" data-type="devotional"><span class="radio"></span> Devotional</div>
+
+    <!-- ===================== LANDING VIEW ===================== -->
+    <div id="landingView">
+      <div class="hero">
+        <svg class="mountains" viewBox="0 0 760 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 120 L120 50 L210 95 L330 30 L430 90 L520 45 L640 100 L760 55 L760 120 Z" fill="#0d0f13"/>
+          <path d="M0 120 L160 75 L300 110 L430 65 L560 105 L700 80 L760 100 L760 120 Z" fill="#070809" opacity="0.85"/>
+        </svg>
+        <div class="hero-inner">
+          <div class="crown">
+            <svg width="42" height="26" viewBox="0 0 42 26" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/>
+              <circle cx="6" cy="6" r="2.4"/><circle cx="21" cy="1.6" r="2.4"/><circle cx="36" cy="6" r="2.4"/>
+            </svg>
+          </div>
+          <div class="brand-title">
+            <span class="rise">RISE UP</span>
+            <span class="kings">KINGS</span>
+          </div>
+          <div class="brand-sub">JOURNAL</div>
+          <div class="tagline">WRITE. REFLECT. GROW. LEAD.</div>
+          <div class="hero-desc">A journal for men who rise on purpose and live as sons of the King.</div>
+        </div>
       </div>
 
-      <div class="meta-row">
-        <div class="field-group">
-          <label for="entryName">Name <span class="hint" style="display:inline">(optional)</span></label>
-          <input type="text" id="entryName" placeholder="Your name">
+      <div class="landing-body">
+        <div class="pillar-cards">
+          <div class="pillar-card pc-freeflow" data-type="freeflow">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </div>
+            <div class="pc-title">FREE FLOW</div>
+            <div class="pc-desc">Just write whatever is on your mind. No structure. No limits. Just you and the page.</div>
+          </div>
+          <div class="pillar-card pc-guided" data-type="guided">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
+            </div>
+            <div class="pc-title">GUIDED JOURNAL</div>
+            <div class="pc-desc">Answer intentional questions to reflect on your day, your choices, and your growth.</div>
+          </div>
+          <div class="pillar-card pc-reframe" data-type="reframe">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 20 6-10 4 6 3-4 5 8Z"/></svg>
+            </div>
+            <div class="pc-title">RE-FRAME</div>
+            <div class="pc-desc">Challenge the view you have toward something and replace it with truth.</div>
+          </div>
+          <div class="pillar-card pc-devotional" data-type="devotional">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18V5a1 1 0 0 1 1-1h6a2 2 0 0 1 2 2 2 2 0 0 1 2-2h6a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-7a1 1 0 0 0-1 1 1 1 0 0 0-1-1H4a1 1 0 0 1-1-1Z"/></svg>
+            </div>
+            <div class="pc-title">DEVOTIONAL</div>
+            <div class="pc-desc">Spend time in God's Word and prayer. Draw closer to the One who leads and strengthens you.</div>
+          </div>
         </div>
-        <div class="field-group">
-          <label for="entryDate">Date</label>
-          <input type="date" id="entryDate">
-        </div>
-      </div>
 
-      <form id="journalForm">
-        <div id="questions"></div>
-        <button type="submit" class="submit-btn">Submit</button>
-        <div class="hint">Your answers download as a text file to keep. Nothing is sent anywhere.</div>
-      </form>
+        <div class="pillars-divider">FOUR PILLARS. ONE PURPOSE.</div>
+        <div class="pillars-row">
+          <div class="pillar">
+            <div class="p-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M7 8h10"/></svg></div>
+            <div class="p-name">FAITH</div>
+          </div>
+          <div class="pillar">
+            <div class="p-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg></div>
+            <div class="p-name">FAMILY</div>
+          </div>
+          <div class="pillar">
+            <div class="p-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5M4 9l2-2M18 20l2-2M3 13l3 3M18 5l3 3M14.5 6.5 17.5 9.5M6.5 14.5 9.5 17.5"/></svg></div>
+            <div class="p-name">FITNESS</div>
+          </div>
+          <div class="pillar">
+            <div class="p-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 6.5c0-2-2.2-3-5-3s-5 1-5 3.2S9 9.5 12 10s5 1.3 5 3.5-2.2 3.2-5 3.2-5-1.2-5-3"/></svg></div>
+            <div class="p-name">FINANCES</div>
+          </div>
+        </div>
+
+        <div class="verse">
+          <div class="v-crown">
+            <svg width="30" height="20" viewBox="0 0 42 26" fill="currentColor"><path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/></svg>
+          </div>
+          <div class="v-text">Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.</div>
+          <div class="v-ref">COLOSSIANS 3:23</div>
+        </div>
+        <div class="landing-footer">RISE UP. WRITE IT DOWN. LIVE IT OUT.</div>
+        <button class="landing-history" id="landingHistory">Review your history</button>
+      </div>
+    </div>
+
+    <!-- ===================== APP VIEW ===================== -->
+    <div id="appView">
+      <header>
+        <button class="back-btn" id="homeBtn">&larr; Home</button>
+        <h1>Rise Up <span class="accent">Kings</span></h1>
+        <button class="hist-btn" id="historyToggle">History <span class="count" id="historyCount">0</span></button>
+      </header>
+      <div class="body">
+
+        <!-- WRITE VIEW -->
+        <div id="writeView">
+          <div class="type-selector" id="typeSelector">
+            <div class="type-option" data-type="freeflow"><span class="radio"></span> Free Flow</div>
+            <div class="type-option" data-type="guided"><span class="radio"></span> Guided Journal</div>
+            <div class="type-option active" data-type="reframe"><span class="radio"></span> Re-Frame</div>
+            <div class="type-option" data-type="devotional"><span class="radio"></span> Devotional</div>
+          </div>
+
+          <div class="meta-row">
+            <div class="field-group">
+              <label for="entryName">Name <span class="hint" style="display:inline">(optional)</span></label>
+              <input type="text" id="entryName" placeholder="Your name">
+            </div>
+            <div class="field-group">
+              <label for="entryDate">Date</label>
+              <input type="date" id="entryDate">
+            </div>
+          </div>
+
+          <form id="journalForm">
+            <div id="questions"></div>
+            <button type="submit" class="submit-btn">Submit</button>
+            <div class="hint">Your entries are saved privately on this device so you can look back on them. Nothing is sent anywhere.</div>
+          </form>
+        </div>
+
+        <!-- HISTORY VIEW -->
+        <div id="historyView">
+          <div class="history-controls">
+            <span class="count-label" id="historyCountLabel">No entries yet</span>
+          </div>
+          <div id="historyList"></div>
+        </div>
+
+      </div>
     </div>
   </div>
-  <div class="toast" id="toast">Saved — your entry was downloaded</div>
+  <div class="toast" id="toast">Saved to your history</div>
 
 <script>
   const QUESTIONS = {
@@ -277,9 +592,37 @@
     }
   };
 
+  const STORAGE_KEY = "riseUpKingsEntries";
+
   let currentType = "reframe";
   const questionsEl = document.getElementById("questions");
   const selector = document.getElementById("typeSelector");
+  const landingView = document.getElementById("landingView");
+  const appView = document.getElementById("appView");
+  const writeView = document.getElementById("writeView");
+  const historyView = document.getElementById("historyView");
+  const historyList = document.getElementById("historyList");
+  const historyToggle = document.getElementById("historyToggle");
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+  function loadEntries() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function saveEntries(list) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+    catch (e) { alert("Couldn't save to history — your browser may be blocking local storage."); }
+  }
+  function updateCount() {
+    const n = loadEntries().length;
+    document.getElementById("historyCount").textContent = n;
+    document.getElementById("historyCountLabel").textContent =
+      n === 0 ? "No entries yet" : (n === 1 ? "1 saved entry" : n + " saved entries");
+  }
 
   function renderQuestions(type) {
     const data = QUESTIONS[type];
@@ -299,20 +642,66 @@
     `).join("");
   }
 
+  function setActiveType(type) {
+    currentType = type;
+    selector.querySelectorAll(".type-option").forEach(o =>
+      o.classList.toggle("active", o.dataset.type === type));
+    renderQuestions(type);
+  }
+
   selector.addEventListener("click", (e) => {
     const opt = e.target.closest(".type-option");
     if (!opt) return;
-    selector.querySelectorAll(".type-option").forEach(o => o.classList.remove("active"));
-    opt.classList.add("active");
-    currentType = opt.dataset.type;
-    renderQuestions(currentType);
+    setActiveType(opt.dataset.type);
+  });
+
+  // ----- View navigation -----
+  function showApp() { landingView.style.display = "none"; appView.style.display = "block"; }
+  function showLanding() { appView.style.display = "none"; landingView.style.display = "block"; }
+  function showWrite() {
+    writeView.style.display = "block";
+    historyView.style.display = "none";
+    historyToggle.firstChild.textContent = "History ";
+    showingHistory = false;
+  }
+  function showHistory() {
+    renderHistory();
+    writeView.style.display = "none";
+    historyView.style.display = "block";
+    historyToggle.firstChild.textContent = "Back to writing ";
+    showingHistory = true;
+  }
+
+  // landing cards open a journal type
+  document.querySelectorAll(".pillar-card").forEach(c => {
+    c.addEventListener("click", () => {
+      setActiveType(c.dataset.type);
+      showApp();
+      showWrite();
+      window.scrollTo(0, 0);
+    });
+  });
+  document.getElementById("landingHistory").addEventListener("click", () => {
+    showApp();
+    showHistory();
+    window.scrollTo(0, 0);
+  });
+  document.getElementById("homeBtn").addEventListener("click", () => {
+    showLanding();
+    window.scrollTo(0, 0);
+  });
+
+  let showingHistory = false;
+  historyToggle.addEventListener("click", () => {
+    if (showingHistory) showWrite(); else showHistory();
   });
 
   // default date = today
   document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
-
   renderQuestions(currentType);
+  updateCount();
 
+  // ----- Save on submit -----
   document.getElementById("journalForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const name = document.getElementById("entryName").value.trim();
@@ -320,32 +709,114 @@
     const typeTitle = QUESTIONS[currentType].title;
     const fields = [...questionsEl.querySelectorAll("textarea")];
 
-    let out = "WRITE JOURNALS\n";
-    out += "Type: " + typeTitle + "\n";
-    if (name) out += "Name: " + name + "\n";
-    if (date) out += "Date: " + date + "\n";
+    const entry = {
+      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      type: currentType,
+      typeTitle: typeTitle,
+      name: name,
+      date: date,
+      savedAt: new Date().toISOString(),
+      answers: fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }))
+    };
+
+    const list = loadEntries();
+    list.push(entry);
+    saveEntries(list);
+    updateCount();
+
+    document.getElementById("journalForm").reset();
+    document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
+    renderQuestions(currentType);
+
+    showToast("Saved to your history");
+  });
+
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2600);
+  }
+
+  // ----- History rendering -----
+  function fmtSaved(iso) {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) +
+        " · " + d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    } catch (e) { return ""; }
+  }
+
+  function renderHistory() {
+    const list = loadEntries().slice().sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
+    if (list.length === 0) {
+      historyList.innerHTML = '<div class="history-empty">Nothing here yet.<br>Entries you save will appear here so you can look back on them.</div>';
+      return;
+    }
+    historyList.innerHTML = list.map(entry => {
+      const preview = (entry.answers.find(x => x.a) || {}).a || "(left blank)";
+      const sub = (entry.name ? escapeHtml(entry.name) + " · " : "") +
+        (entry.date ? escapeHtml(entry.date) + " · " : "") + "saved " + fmtSaved(entry.savedAt);
+      const qa = entry.answers.map(x => `
+        <div class="qa">
+          <div class="q">${escapeHtml(x.q)}</div>
+          <div class="a">${escapeHtml(x.a || "(left blank)")}</div>
+        </div>`).join("");
+      return `
+      <div class="entry-card" data-id="${entry.id}">
+        <div class="entry-head js-toggle">
+          <span class="entry-badge">${escapeHtml(entry.typeTitle)}</span>
+          <div class="entry-meta">
+            <div class="entry-title">${escapeHtml(preview).slice(0, 80)}${preview.length > 80 ? "…" : ""}</div>
+            <div class="entry-sub">${sub}</div>
+          </div>
+          <span class="entry-chevron">&#9656;</span>
+        </div>
+        <div class="entry-body">
+          ${qa}
+          <div class="entry-actions">
+            <button class="mini-btn js-download">Download</button>
+            <button class="mini-btn danger js-delete">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  historyList.addEventListener("click", (e) => {
+    const card = e.target.closest(".entry-card");
+    if (!card) return;
+    const id = card.dataset.id;
+    if (e.target.closest(".js-delete")) {
+      if (confirm("Delete this entry? This can't be undone.")) {
+        saveEntries(loadEntries().filter(x => x.id !== id));
+        updateCount();
+        renderHistory();
+      }
+      return;
+    }
+    if (e.target.closest(".js-download")) { downloadEntry(id); return; }
+    if (e.target.closest(".js-toggle")) { card.classList.toggle("open"); }
+  });
+
+  function downloadEntry(id) {
+    const entry = loadEntries().find(x => x.id === id);
+    if (!entry) return;
+    let out = "RISE UP KINGS JOURNAL\n";
+    out += "Type: " + entry.typeTitle + "\n";
+    if (entry.name) out += "Name: " + entry.name + "\n";
+    if (entry.date) out += "Date: " + entry.date + "\n";
     out += "\n" + "=".repeat(48) + "\n\n";
-
-    fields.forEach(f => {
-      out += f.dataset.question + "\n";
-      out += (f.value.trim() || "(left blank)") + "\n\n";
-    });
-
-    const safeName = (name ? name.replace(/[^a-z0-9]/gi, "-") + "-" : "") + typeTitle.toLowerCase() + "-" + (date || "entry");
+    entry.answers.forEach(x => { out += x.q + "\n" + (x.a || "(left blank)") + "\n\n"; });
+    const safeName = (entry.name ? entry.name.replace(/[^a-z0-9]/gi, "-") + "-" : "") +
+      entry.typeTitle.toLowerCase().replace(/[^a-z0-9]/gi, "-") + "-" + (entry.date || "entry");
     const blob = new Blob([out], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "journal-" + safeName + ".txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = "rise-up-kings-" + safeName + ".txt";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    const toast = document.getElementById("toast");
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2600);
-  });
+  }
 </script>
 </body>
 </html>
