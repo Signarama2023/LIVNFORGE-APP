@@ -68,7 +68,7 @@
   }
   .type-selector {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 14px;
     margin-bottom: 28px;
   }
@@ -207,6 +207,7 @@
       <div class="section-label">Select Type</div>
       <div class="type-selector" id="typeSelector">
         <div class="type-option" data-type="freeflow"><span class="radio"></span> Free Flow</div>
+        <div class="type-option" data-type="guided"><span class="radio"></span> Guided Journal</div>
         <div class="type-option active" data-type="reframe"><span class="radio"></span> Re-Frame</div>
         <div class="type-option" data-type="devotional"><span class="radio"></span> Devotional</div>
       </div>
@@ -235,6 +236,11 @@
   const QUESTIONS = {
     freeflow: {
       title: "Free Flow",
+      freeform: true,
+      placeholder: "Write anything you want…"
+    },
+    guided: {
+      title: "Guided Journal",
       items: [
         "How am I feeling right now?",
         "What is on my mind today?",
@@ -277,6 +283,14 @@
 
   function renderQuestions(type) {
     const data = QUESTIONS[type];
+    if (data.freeform) {
+      questionsEl.innerHTML = `
+      <div class="field-group">
+        <label for="q0">Journal entry <span class="req">*</span></label>
+        <textarea id="q0" data-question="Journal entry" placeholder="${data.placeholder || 'Write anything you want…'}" style="min-height: 260px;" required></textarea>
+      </div>`;
+      return;
+    }
     questionsEl.innerHTML = data.items.map((q, i) => `
       <div class="field-group">
         <label for="q${i}">${q} <span class="req">*</span></label>
