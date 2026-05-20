@@ -150,6 +150,12 @@
   .pc-devotional { border-color: rgba(167,139,250,0.4); }
   .pc-devotional:hover { border-color: #a78bfa; }
   .pc-devotional .pc-icon { border-color: #a78bfa; color: #a78bfa; }
+  .pc-prayer { border-color: rgba(240,138,156,0.4); }
+  .pc-prayer:hover { border-color: #f08a9c; }
+  .pc-prayer .pc-icon { border-color: #f08a9c; color: #f08a9c; }
+  .pc-fitness { border-color: rgba(52,194,194,0.4); }
+  .pc-fitness:hover { border-color: #34c2c2; }
+  .pc-fitness .pc-icon { border-color: #34c2c2; color: #34c2c2; }
 
   .pillars-divider {
     text-align: center;
@@ -464,6 +470,20 @@
             <div class="pc-title">DEVOTIONAL</div>
             <div class="pc-desc">Spend time in God's Word and prayer. Draw closer to the One who leads and strengthens you.</div>
           </div>
+          <div class="pillar-card pc-prayer" data-type="prayer">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.5c-1.2 2.3-3 4.3-3 7.5v5a2.5 2.5 0 0 0 2.5 2.5h1"/><path d="M12.5 3.5c1.2 2.3 3 4.3 3 7.5v5a2.5 2.5 0 0 1-2.5 2.5h-1"/><path d="M8.5 13H6M18 13h-2.5"/></svg>
+            </div>
+            <div class="pc-title">PRAYER REQUESTS</div>
+            <div class="pc-desc">Lift up the people and needs on your heart. Write your prayers and bring them before God.</div>
+          </div>
+          <div class="pillar-card pc-fitness" data-type="fitness">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div class="pc-title">FITNESS ROUTINE</div>
+            <div class="pc-desc">Track your training, energy and goals. Steward your body and stay disciplined.</div>
+          </div>
         </div>
 
         <div class="pillars-divider">FOUR PILLARS. ONE PURPOSE.</div>
@@ -514,6 +534,8 @@
             <div class="type-option" data-type="guided"><span class="radio"></span> Guided Journal</div>
             <div class="type-option active" data-type="reframe"><span class="radio"></span> Re-Frame</div>
             <div class="type-option" data-type="devotional"><span class="radio"></span> Devotional</div>
+            <div class="type-option" data-type="prayer"><span class="radio"></span> Prayer Requests</div>
+            <div class="type-option" data-type="fitness"><span class="radio"></span> Fitness Routine</div>
           </div>
 
           <div class="meta-row">
@@ -588,6 +610,21 @@
         "What is being asked of me in response?",
         "What am I thankful for today?",
         "What would I like to pray for or set an intention around?"
+      ]
+    },
+    prayer: {
+      title: "Prayer Requests",
+      freeform: true,
+      placeholder: "Write your prayer requests here… who and what are you lifting up to God?"
+    },
+    fitness: {
+      title: "Fitness Routine",
+      items: [
+        "What did I do today — workout, movement or sport?",
+        "How long did I train, and how hard (light, moderate, intense)?",
+        "How did my body feel before and after?",
+        "How was my nutrition and hydration today?",
+        "What is my plan or goal for the next session?"
       ]
     }
   };
