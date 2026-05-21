@@ -243,6 +243,25 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ---------- GROUP LEADERBOARD ---------- */
+  .group-panel { background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 18px; margin-bottom: 26px; }
+  .group-panel h3 { margin: 0 0 4px; font-size: 15px; letter-spacing: 0.5px; }
+  .group-panel .gp-sub { color: var(--muted); font-size: 12.5px; margin-bottom: 14px; }
+  .gp-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .gp-row input { flex: 1; min-width: 130px; background: var(--field); border: 1px solid var(--field-border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 15px; padding: 11px 13px; }
+  .gp-row input:focus { outline: none; border-color: var(--gold); }
+  .gp-btn { border: none; border-radius: 10px; background: var(--gold); color: #1c1402; font-weight: 700; font-size: 14px; font-family: inherit; padding: 11px 16px; cursor: pointer; }
+  .gp-btn.ghost { background: none; border: 1px solid var(--field-border); color: var(--gold); font-weight: 600; }
+  .gp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .gp-code { color: var(--gold); font-weight: 700; }
+  .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--field); border: 1px solid var(--field-border); margin-bottom: 8px; }
+  .lb-row.me { border-color: var(--gold); }
+  .lb-rank { width: 26px; text-align: center; font-weight: 800; color: var(--gold); flex-shrink: 0; }
+  .lb-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-pts { font-weight: 700; color: var(--gold-light); white-space: nowrap; }
+  .lb-empty, .lb-loading { color: var(--muted); font-size: 13.5px; padding: 8px 2px; }
+  .gp-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+
   /* ---------- MOBILE ---------- */
   @media (max-width: 600px) {
     body { padding: 0; -webkit-text-size-adjust: 100%; }
@@ -342,6 +361,8 @@
           <div class="score-tile"><div class="num" id="scoreEntries">0</div><div class="lbl">Entries</div></div>
           <div class="score-tile"><div class="num" id="scoreStreak">0</div><div class="lbl">Day Streak</div></div>
         </div>
+
+        <div class="group-panel" id="groupPanel"></div>
 
         <div class="pillar-cards">
           <div class="pillar-card pc-freeflow" data-type="freeflow">
@@ -476,6 +497,7 @@
   </div>
   <div class="toast" id="toast">Saved to your history</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const QUESTIONS = {
     freeflow: { title: "Free Flow", freeform: true, placeholder: "Write anything you want…" },
@@ -624,7 +646,7 @@
 
   // ----- View navigation -----
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; landingView.style.display = "block"; renderScore(); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; landingView.style.display = "block"; renderScore(); renderGroup(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "block"; renderScore(); }
   function showWrite() {
     writeView.style.display = "block"; historyView.style.display = "none";
@@ -690,6 +712,7 @@
     saveEntries(list);
     updateCount();
     renderScore();
+    syncToGroup(true);
 
     document.getElementById("journalForm").reset();
     document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
@@ -783,6 +806,89 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  // ----- Group leaderboard (Supabase) -----
+  const SB_URL = "https://ihhctwmgfleihlnfnfsv.supabase.co";
+  const SB_KEY = "sb_publishable_CRtK7cSwNjDDgu31fulMIQ_rwptULXs";
+  const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+  const groupPanel = document.getElementById("groupPanel");
+
+  function gKey(p) { return APP + ":" + p + ":" + (currentEmail() || ""); }
+  function getGroup() { return localStorage.getItem(gKey("group")); }
+  function setGroup(c) { localStorage.setItem(gKey("group"), c); }
+  function clearGroup() { localStorage.removeItem(gKey("group")); }
+  function getName() { return localStorage.getItem(gKey("name")) || (currentEmail() || "").split("@")[0]; }
+  function setName(n) { localStorage.setItem(gKey("name"), n); }
+
+  function renderGroup() {
+    if (!groupPanel) return;
+    const code = getGroup();
+    if (!code) {
+      groupPanel.innerHTML =
+        '<h3>Group Leaderboard</h3>' +
+        '<div class="gp-sub">Create or join a group with a shared code to compete with friends.</div>' +
+        '<div class="gp-row">' +
+          '<input id="gpName" placeholder="Your display name" value="' + escapeHtml(getName()) + '">' +
+          '<input id="gpCode" placeholder="Group code (e.g. RISEUP)">' +
+          '<button class="gp-btn" id="gpJoin">Join / Create</button>' +
+        '</div>';
+      return;
+    }
+    groupPanel.innerHTML =
+      '<div class="gp-head"><h3>Group <span class="gp-code">' + escapeHtml(code) + '</span></h3>' +
+      '<button class="gp-btn ghost" id="gpLeave">Leave</button></div>' +
+      '<div id="lbList"><div class="lb-loading">Loading leaderboard…</div></div>' +
+      '<div class="gp-actions"><button class="gp-btn" id="gpSync">Sync my stats</button>' +
+      '<button class="gp-btn ghost" id="gpRefresh">Refresh</button></div>';
+    loadLeaderboard();
+  }
+
+  async function syncToGroup(silent) {
+    const code = getGroup();
+    if (!code || !sb) return;
+    const row = { group_code: code, email: currentEmail(), name: getName(), points: totalPoints(), entries: loadEntries().length, streak: currentStreak(), updated_at: new Date().toISOString() };
+    try {
+      const { error } = await sb.from("scores").upsert(row, { onConflict: "group_code,email" });
+      if (error) throw error;
+      if (!silent) loadLeaderboard();
+    } catch (e) { if (!silent) alert("Couldn't sync to the group right now. Check your connection and try again."); }
+  }
+
+  async function loadLeaderboard() {
+    const code = getGroup();
+    const list = document.getElementById("lbList");
+    if (!code || !list) return;
+    if (!sb) { list.innerHTML = '<div class="lb-empty">Leaderboard couldn\'t load (offline).</div>'; return; }
+    try {
+      const { data, error } = await sb.from("scores").select("email,name,points").eq("group_code", code).order("points", { ascending: false });
+      if (error) throw error;
+      if (!data || data.length === 0) { list.innerHTML = '<div class="lb-empty">No one has posted to this group yet. Tap “Sync my stats” to be first!</div>'; return; }
+      const me = currentEmail();
+      list.innerHTML = data.map((r, i) =>
+        '<div class="lb-row ' + (r.email === me ? "me" : "") + '">' +
+        '<div class="lb-rank">' + (i + 1) + '</div>' +
+        '<div class="lb-name">' + escapeHtml(r.name || (r.email || "").split("@")[0]) + (r.email === me ? " (you)" : "") + '</div>' +
+        '<div class="lb-pts">' + r.points + ' pts</div></div>').join("");
+    } catch (e) { list.innerHTML = '<div class="lb-empty">Couldn\'t load the leaderboard right now.</div>'; }
+  }
+
+  if (groupPanel) groupPanel.addEventListener("click", (e) => {
+    if (e.target.id === "gpJoin") {
+      const name = (document.getElementById("gpName").value || "").trim();
+      const code = (document.getElementById("gpCode").value || "").trim().toUpperCase();
+      if (!code) { alert("Enter a group code to create or join."); return; }
+      if (name) setName(name);
+      setGroup(code);
+      renderGroup();
+      syncToGroup(false);
+    } else if (e.target.id === "gpLeave") {
+      if (confirm("Leave this group? You'll stop syncing your stats to it.")) { clearGroup(); renderGroup(); }
+    } else if (e.target.id === "gpSync") {
+      syncToGroup(false);
+    } else if (e.target.id === "gpRefresh") {
+      loadLeaderboard();
+    }
+  });
 
   // ----- Boot -----
   if (currentEmail()) { showLanding(); } else { showSignIn(); }
