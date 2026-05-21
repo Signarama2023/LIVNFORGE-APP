@@ -37,7 +37,7 @@
     overflow: hidden;
   }
 
-  /* ---------- LANDING ---------- */
+  /* ---------- HERO (shared by sign-in + landing) ---------- */
   .hero {
     position: relative;
     text-align: center;
@@ -47,97 +47,73 @@
       linear-gradient(180deg, #1b2230 0%, #14161c 60%, #15161a 100%);
     overflow: hidden;
   }
-  .hero .mountains {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    width: 100%;
-    opacity: 0.5;
-    pointer-events: none;
-  }
+  .hero .mountains { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; opacity: 0.5; pointer-events: none; }
   .hero-inner { position: relative; z-index: 1; }
   .crown { color: var(--gold); margin-bottom: 6px; }
-  .brand-title {
-    font-weight: 800;
-    letter-spacing: 2px;
-    line-height: 0.95;
-    margin: 4px 0 2px;
-  }
-  .brand-title .rise {
-    display: block;
-    font-size: 52px;
-    color: #f7f7f9;
-    text-shadow: 0 2px 14px rgba(0,0,0,0.5);
-  }
+  .brand-title { font-weight: 800; letter-spacing: 2px; line-height: 0.95; margin: 4px 0 2px; }
+  .brand-title .rise { display: block; font-size: 52px; color: #f7f7f9; text-shadow: 0 2px 14px rgba(0,0,0,0.5); }
   .brand-title .kings {
-    display: block;
-    font-size: 60px;
+    display: block; font-size: 60px;
     background: linear-gradient(180deg, var(--gold-light), var(--gold));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .brand-sub {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    color: #e7e7ea;
-    letter-spacing: 5px;
-    font-size: 15px;
-    font-weight: 600;
-    margin: 6px 0 22px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    color: #e7e7ea; letter-spacing: 5px; font-size: 15px; font-weight: 600; margin: 6px 0 22px;
   }
-  .brand-sub::before, .brand-sub::after {
-    content: "";
-    width: 26px; height: 1px;
-    background: var(--gold);
-  }
-  .tagline {
-    color: #fff;
-    letter-spacing: 3px;
-    font-size: 17px;
-    font-weight: 700;
-    margin: 6px 0 14px;
-  }
-  .hero-desc {
-    color: var(--gold-light);
-    font-size: 13.5px;
-    letter-spacing: 1px;
-    max-width: 420px;
-    margin: 0 auto;
-    text-transform: uppercase;
-  }
+  .brand-sub::before, .brand-sub::after { content: ""; width: 26px; height: 1px; background: var(--gold); }
+  .tagline { color: #fff; letter-spacing: 3px; font-size: 17px; font-weight: 700; margin: 6px 0 14px; }
+  .hero-desc { color: var(--gold-light); font-size: 13.5px; letter-spacing: 1px; max-width: 420px; margin: 0 auto; text-transform: uppercase; }
 
-  .landing-body { padding: 26px 24px 30px; }
-  .pillar-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
+  /* ---------- SIGN IN ---------- */
+  .signin-body { padding: 32px 24px 42px; max-width: 420px; margin: 0 auto; text-align: center; }
+  .signin-body h2 { font-size: 20px; margin: 0 0 8px; }
+  .signin-body p { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
+  .signin-body input {
+    width: 100%; background: var(--field); border: 1px solid var(--field-border);
+    border-radius: 12px; color: var(--text); font-family: inherit; font-size: 16px; padding: 14px 16px; text-align: center;
   }
+  .signin-body input:focus { outline: none; border-color: var(--gold); }
+  .signin-btn {
+    width: 100%; margin-top: 14px; padding: 15px; border: none; border-radius: 12px;
+    background: var(--gold); color: #1c1402; font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .signin-btn:hover { background: var(--gold-hover); }
+  .signin-note { color: var(--muted); font-size: 12px; margin-top: 16px; line-height: 1.5; }
+
+  /* ---------- LANDING ---------- */
+  .landing-body { padding: 22px 24px 30px; }
+  .profile-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    font-size: 13px; color: var(--muted); margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .profile-bar b { color: var(--text); }
+  .profile-bar button {
+    background: none; border: 1px solid var(--field-border); color: var(--gold);
+    border-radius: 8px; padding: 6px 12px; font-size: 13px; font-family: inherit; cursor: pointer;
+  }
+  .profile-bar button:hover { border-color: var(--gold); }
+  .scoreboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 26px; }
+  .score-tile { background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 18px 10px; text-align: center; }
+  .score-tile .num { font-size: 30px; font-weight: 800; line-height: 1; }
+  .score-tile.points .num {
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .score-tile .lbl { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
+
+  .pillar-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
   .pillar-card {
-    text-align: center;
-    padding: 26px 20px;
-    border-radius: 14px;
-    background: var(--panel);
-    border: 1px solid var(--field-border);
-    cursor: pointer;
+    text-align: center; padding: 26px 20px; border-radius: 14px; background: var(--panel);
+    border: 1px solid var(--field-border); cursor: pointer;
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .pillar-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
-  .pc-icon {
-    width: 56px; height: 56px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    border: 1.5px solid;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .pc-title {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    margin-bottom: 10px;
-  }
+  .pc-icon { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; border: 1.5px solid; display: flex; align-items: center; justify-content: center; }
+  .pc-title { font-size: 18px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 10px; }
   .pc-desc { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+  .pc-pts { display: inline-block; margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
   .pc-freeflow { border-color: rgba(96,165,250,0.4); }
   .pc-freeflow:hover { border-color: #60a5fa; }
   .pc-freeflow .pc-icon { border-color: #60a5fa; color: #60a5fa; }
@@ -157,210 +133,78 @@
   .pc-fitness:hover { border-color: #34c2c2; }
   .pc-fitness .pc-icon { border-color: #34c2c2; color: #34c2c2; }
 
-  .pillars-divider {
-    text-align: center;
-    color: var(--gold);
-    letter-spacing: 4px;
-    font-size: 13px;
-    font-weight: 600;
-    margin: 34px 0 18px;
-    position: relative;
-  }
-  .pillars-row {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .pillar {
-    flex: 1;
-    min-width: 110px;
-    text-align: center;
-    padding: 10px;
-    border-left: 1px solid var(--field-border);
-    color: var(--gold);
-  }
+  .pillars-divider { text-align: center; color: var(--gold); letter-spacing: 4px; font-size: 13px; font-weight: 600; margin: 34px 0 18px; position: relative; }
+  .pillars-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .pillar { flex: 1; min-width: 110px; text-align: center; padding: 10px; border-left: 1px solid var(--field-border); color: var(--gold); }
   .pillar:first-child { border-left: none; }
   .pillar .p-ico { margin-bottom: 8px; }
   .pillar .p-name { font-size: 12.5px; letter-spacing: 2px; color: #cfcfd4; }
   .verse {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin: 28px 0 18px;
-    padding: 16px 20px;
-    border: 1px solid var(--field-border);
-    border-radius: 12px;
-    background: var(--panel);
+    display: flex; align-items: center; gap: 16px; margin: 28px 0 18px; padding: 16px 20px;
+    border: 1px solid var(--field-border); border-radius: 12px; background: var(--panel);
   }
   .verse .v-crown { color: var(--gold); flex-shrink: 0; }
   .verse .v-text { font-size: 12.5px; color: #d6d6da; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.6; }
   .verse .v-ref { color: var(--gold); white-space: nowrap; font-size: 12px; letter-spacing: 1px; }
-  .landing-footer {
-    text-align: center;
-    color: var(--muted);
-    letter-spacing: 3px;
-    font-size: 13px;
-    margin-top: 10px;
-  }
+  .landing-footer { text-align: center; color: var(--muted); letter-spacing: 3px; font-size: 13px; margin-top: 10px; }
   .landing-history {
-    display: block;
-    margin: 22px auto 0;
-    background: none;
-    border: none;
-    color: var(--gold);
-    font-size: 14px;
-    font-family: inherit;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    display: block; margin: 22px auto 0; background: none; border: none; color: var(--gold);
+    font-size: 14px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
   }
 
   /* ---------- APP (write + history) ---------- */
   #appView { display: none; }
-  header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 18px 22px;
-    border-bottom: 1px solid #2a2c32;
-  }
+  #landingView { display: none; }
+  header { display: flex; align-items: center; gap: 10px; padding: 18px 22px; border-bottom: 1px solid #2a2c32; }
   .back-btn {
-    background: none;
-    border: 1px solid var(--field-border);
-    color: var(--text);
-    border-radius: 8px;
-    padding: 7px 12px;
-    font-size: 14px;
-    font-family: inherit;
-    cursor: pointer;
-    transition: border-color 0.15s ease;
+    background: none; border: 1px solid var(--field-border); color: var(--text); border-radius: 8px;
+    padding: 7px 12px; font-size: 14px; font-family: inherit; cursor: pointer; transition: border-color 0.15s ease;
   }
   .back-btn:hover { border-color: var(--gold); }
-  header h1 {
-    flex: 1;
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: 0.5px;
-  }
+  header h1 { flex: 1; font-size: 18px; font-weight: 700; margin: 0; letter-spacing: 0.5px; }
   header h1 .accent {
     background: linear-gradient(180deg, var(--gold-light), var(--gold));
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
+  .pts-chip { background: var(--gold); color: #1c1402; font-weight: 700; font-size: 12px; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
   .hist-btn {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--field-border);
-    background: var(--field);
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.15s ease;
+    display: flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 8px;
+    border: 1px solid var(--field-border); background: var(--field); color: var(--text);
+    font-size: 14px; font-family: inherit; cursor: pointer; transition: all 0.15s ease;
   }
   .hist-btn:hover { border-color: var(--gold); }
-  .hist-btn .count {
-    background: var(--gold);
-    color: #1c1402;
-    font-size: 12px;
-    font-weight: 700;
-    border-radius: 999px;
-    padding: 1px 7px;
-    min-width: 18px;
-    text-align: center;
-  }
+  .hist-btn .count { background: var(--gold); color: #1c1402; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 7px; min-width: 18px; text-align: center; }
   .body { padding: 22px 26px 30px; }
-  .type-selector {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    margin-bottom: 26px;
-  }
+  .type-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 26px; }
   .type-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    border-radius: 12px;
-    background: var(--field);
-    border: 1px solid var(--field-border);
-    cursor: pointer;
-    font-size: 15px;
-    color: var(--text);
-    transition: all 0.18s ease;
-    user-select: none;
+    display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 12px;
+    background: var(--field); border: 1px solid var(--field-border); cursor: pointer;
+    font-size: 15px; color: var(--text); transition: all 0.18s ease; user-select: none;
   }
-  .type-option .radio {
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    border: 2px solid #6b6b70;
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .type-option.active {
-    background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    border-color: transparent;
-    color: #1c1402;
-    font-weight: 600;
-  }
+  .type-option .radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #6b6b70; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .type-option.active { background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-color: transparent; color: #1c1402; font-weight: 600; }
   .type-option.active .radio { border-color: #1c1402; background: #1c1402; }
   .type-option.active .radio::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--gold-light); }
   .field-group { margin-bottom: 22px; }
-  .field-group label {
-    display: block;
-    font-size: 15px;
-    margin-bottom: 10px;
-    color: var(--text);
-  }
+  .field-group label { display: block; font-size: 15px; margin-bottom: 10px; color: var(--text); }
   .field-group label .req { color: var(--star); margin-left: 3px; }
   .field-group textarea {
-    width: 100%;
-    background: var(--field);
-    border: 1px solid var(--field-border);
-    border-radius: 12px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 15px;
-    padding: 14px 16px;
-    resize: vertical;
-    min-height: 54px;
-    transition: border-color 0.15s ease;
+    width: 100%; background: var(--field); border: 1px solid var(--field-border); border-radius: 12px;
+    color: var(--text); font-family: inherit; font-size: 15px; padding: 14px 16px; resize: vertical;
+    min-height: 54px; transition: border-color 0.15s ease;
   }
   .field-group textarea::placeholder { color: var(--muted); }
-  .field-group textarea:focus {
-    outline: none;
-    border-color: var(--gold);
-    box-shadow: 0 0 0 2px rgba(217,169,62,0.18);
-  }
+  .field-group textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(217,169,62,0.18); }
   .meta-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
   .meta-row .field-group { flex: 1; min-width: 180px; margin-bottom: 0; }
   .meta-row input {
-    width: 100%;
-    background: var(--field);
-    border: 1px solid var(--field-border);
-    border-radius: 12px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 15px;
-    padding: 13px 16px;
+    width: 100%; background: var(--field); border: 1px solid var(--field-border); border-radius: 12px;
+    color: var(--text); font-family: inherit; font-size: 15px; padding: 13px 16px;
   }
   .meta-row input:focus { outline: none; border-color: var(--gold); }
   .submit-btn {
-    width: 100%;
-    margin-top: 10px;
-    padding: 15px;
-    border: none;
-    border-radius: 12px;
-    background: var(--gold);
-    color: #1c1402;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.15s ease;
+    width: 100%; margin-top: 10px; padding: 15px; border: none; border-radius: 12px;
+    background: var(--gold); color: #1c1402; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.15s ease;
   }
   .submit-btn:hover { background: var(--gold-hover); }
   .hint { text-align: center; color: var(--muted); font-size: 13px; margin-top: 14px; }
@@ -369,20 +213,10 @@
   .history-empty { text-align: center; color: var(--muted); padding: 50px 20px; font-size: 15px; }
   .history-controls { margin-bottom: 18px; }
   .history-controls .count-label { color: var(--muted); font-size: 14px; }
-  .entry-card {
-    background: var(--field);
-    border: 1px solid var(--field-border);
-    border-radius: 12px;
-    margin-bottom: 14px;
-    overflow: hidden;
-  }
+  .entry-card { background: var(--field); border: 1px solid var(--field-border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
   .entry-head { display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer; user-select: none; }
   .entry-head:hover { background: rgba(255,255,255,0.02); }
-  .entry-badge {
-    font-size: 12px; font-weight: 600; color: #1c1402;
-    background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    padding: 3px 10px; border-radius: 999px; flex-shrink: 0;
-  }
+  .entry-badge { font-size: 12px; font-weight: 600; color: #1c1402; background: linear-gradient(135deg, var(--gold), var(--gold-light)); padding: 3px 10px; border-radius: 999px; flex-shrink: 0; }
   .entry-meta { flex: 1; min-width: 0; }
   .entry-title { font-size: 15px; color: var(--text); }
   .entry-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
@@ -395,20 +229,17 @@
   .qa .a { font-size: 15px; color: var(--text); white-space: pre-wrap; word-wrap: break-word; }
   .entry-actions { display: flex; gap: 10px; margin-top: 18px; }
   .mini-btn {
-    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--field-border);
-    background: transparent; color: var(--text); font-size: 13px; font-family: inherit;
-    cursor: pointer; transition: all 0.15s ease;
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--field-border); background: transparent;
+    color: var(--text); font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.15s ease;
   }
   .mini-btn:hover { border-color: var(--gold); }
   .mini-btn.danger { color: #f1948a; }
   .mini-btn.danger:hover { border-color: #f1948a; background: rgba(241,148,138,0.08); }
   .toast {
-    position: fixed; bottom: 28px; left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    color: #1c1402; font-weight: 700; padding: 13px 22px; border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4); opacity: 0; pointer-events: none;
-    transition: all 0.3s ease;
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #1c1402; font-weight: 700;
+    padding: 13px 22px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); opacity: 0;
+    pointer-events: none; transition: all 0.3s ease;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -422,7 +253,11 @@
     .brand-sub { letter-spacing: 3px; font-size: 14px; margin-bottom: 18px; }
     .tagline { font-size: 14px; letter-spacing: 1.5px; }
     .hero-desc { font-size: 12px; letter-spacing: 0.5px; }
+    .signin-body { padding: 28px 18px 36px; }
     .landing-body { padding: 22px 16px 28px; }
+    .scoreboard { gap: 8px; }
+    .score-tile { padding: 14px 6px; }
+    .score-tile .num { font-size: 24px; }
     .pillar-cards { grid-template-columns: 1fr; gap: 12px; }
     .pillar-card { padding: 22px 18px; }
     .pillars-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 0; }
@@ -430,9 +265,10 @@
     .verse { flex-direction: column; text-align: center; gap: 10px; }
     .verse .v-ref { white-space: normal; }
     .verse .v-text { text-align: center; }
-    header { padding: 14px 16px; gap: 8px; }
-    header h1 { font-size: 16px; }
-    .back-btn, .hist-btn { padding: 8px 10px; font-size: 13px; }
+    header { padding: 14px 14px; gap: 8px; }
+    header h1 { font-size: 15px; }
+    .pts-chip { font-size: 11px; padding: 3px 8px; }
+    .back-btn, .hist-btn { padding: 8px 9px; font-size: 13px; }
     .body { padding: 18px 16px 26px; }
     .type-selector { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .type-option { font-size: 14px; padding: 13px 12px; }
@@ -445,6 +281,34 @@
 </head>
 <body>
   <div class="card">
+
+    <!-- ===================== SIGN IN VIEW ===================== -->
+    <div id="signInView">
+      <div class="hero">
+        <svg class="mountains" viewBox="0 0 760 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 120 L120 50 L210 95 L330 30 L430 90 L520 45 L640 100 L760 55 L760 120 Z" fill="#0d0f13"/>
+          <path d="M0 120 L160 75 L300 110 L430 65 L560 105 L700 80 L760 100 L760 120 Z" fill="#070809" opacity="0.85"/>
+        </svg>
+        <div class="hero-inner">
+          <div class="crown">
+            <svg width="42" height="26" viewBox="0 0 42 26" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/>
+              <circle cx="6" cy="6" r="2.4"/><circle cx="21" cy="1.6" r="2.4"/><circle cx="36" cy="6" r="2.4"/>
+            </svg>
+          </div>
+          <div class="brand-title"><span class="rise">RISE UP</span><span class="kings">KINGS</span></div>
+          <div class="brand-sub">JOURNAL</div>
+          <div class="tagline">WRITE. REFLECT. GROW. LEAD.</div>
+        </div>
+      </div>
+      <div class="signin-body">
+        <h2>Open your profile</h2>
+        <p>Enter your email to start. Your journals, points and streak are saved privately on this device.</p>
+        <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
+        <button class="signin-btn" id="signInBtn">Continue</button>
+        <div class="signin-note">No password needed — your email simply creates a personal profile on this device. Nothing is sent anywhere.</div>
+      </div>
+    </div>
 
     <!-- ===================== LANDING VIEW ===================== -->
     <div id="landingView">
@@ -460,10 +324,7 @@
               <circle cx="6" cy="6" r="2.4"/><circle cx="21" cy="1.6" r="2.4"/><circle cx="36" cy="6" r="2.4"/>
             </svg>
           </div>
-          <div class="brand-title">
-            <span class="rise">RISE UP</span>
-            <span class="kings">KINGS</span>
-          </div>
+          <div class="brand-title"><span class="rise">RISE UP</span><span class="kings">KINGS</span></div>
           <div class="brand-sub">JOURNAL</div>
           <div class="tagline">WRITE. REFLECT. GROW. LEAD.</div>
           <div class="hero-desc">A journal for men who rise on purpose and live as sons of the King.</div>
@@ -471,6 +332,17 @@
       </div>
 
       <div class="landing-body">
+        <div class="profile-bar">
+          <span>Signed in as <b id="profileEmail"></b></span>
+          <button id="signOutBtn">Sign out</button>
+        </div>
+
+        <div class="scoreboard">
+          <div class="score-tile points"><div class="num" id="scorePoints">0</div><div class="lbl">Points</div></div>
+          <div class="score-tile"><div class="num" id="scoreEntries">0</div><div class="lbl">Entries</div></div>
+          <div class="score-tile"><div class="num" id="scoreStreak">0</div><div class="lbl">Day Streak</div></div>
+        </div>
+
         <div class="pillar-cards">
           <div class="pillar-card pc-freeflow" data-type="freeflow">
             <div class="pc-icon">
@@ -478,6 +350,7 @@
             </div>
             <div class="pc-title">FREE FLOW</div>
             <div class="pc-desc">Just write whatever is on your mind. No structure. No limits. Just you and the page.</div>
+            <span class="pc-pts">+5 pts</span>
           </div>
           <div class="pillar-card pc-guided" data-type="guided">
             <div class="pc-icon">
@@ -485,6 +358,7 @@
             </div>
             <div class="pc-title">GUIDED JOURNAL</div>
             <div class="pc-desc">Answer intentional questions to reflect on your day, your choices, and your growth.</div>
+            <span class="pc-pts">+10 pts</span>
           </div>
           <div class="pillar-card pc-reframe" data-type="reframe">
             <div class="pc-icon">
@@ -492,6 +366,7 @@
             </div>
             <div class="pc-title">RE-FRAME</div>
             <div class="pc-desc">Challenge the view you have toward something and replace it with truth.</div>
+            <span class="pc-pts">+15 pts</span>
           </div>
           <div class="pillar-card pc-devotional" data-type="devotional">
             <div class="pc-icon">
@@ -499,6 +374,7 @@
             </div>
             <div class="pc-title">DEVOTIONAL</div>
             <div class="pc-desc">Spend time in God's Word and prayer. Draw closer to the One who leads and strengthens you.</div>
+            <span class="pc-pts">+10 pts</span>
           </div>
           <div class="pillar-card pc-prayer" data-type="prayer">
             <div class="pc-icon">
@@ -506,6 +382,7 @@
             </div>
             <div class="pc-title">PRAYER REQUESTS</div>
             <div class="pc-desc">Lift up the people and needs on your heart. Write your prayers and bring them before God.</div>
+            <span class="pc-pts">+10 pts</span>
           </div>
           <div class="pillar-card pc-fitness" data-type="fitness">
             <div class="pc-icon">
@@ -513,6 +390,7 @@
             </div>
             <div class="pc-title">FITNESS ROUTINE</div>
             <div class="pc-desc">Track your training, energy and goals. Steward your body and stay disciplined.</div>
+            <span class="pc-pts">+10 pts</span>
           </div>
         </div>
 
@@ -537,9 +415,7 @@
         </div>
 
         <div class="verse">
-          <div class="v-crown">
-            <svg width="30" height="20" viewBox="0 0 42 26" fill="currentColor"><path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/></svg>
-          </div>
+          <div class="v-crown"><svg width="30" height="20" viewBox="0 0 42 26" fill="currentColor"><path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/></svg></div>
           <div class="v-text">Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.</div>
           <div class="v-ref">COLOSSIANS 3:23</div>
         </div>
@@ -553,6 +429,7 @@
       <header>
         <button class="back-btn" id="homeBtn">&larr; Home</button>
         <h1>Rise Up <span class="accent">Kings</span></h1>
+        <span class="pts-chip" id="ptsChip">0 pts</span>
         <button class="hist-btn" id="historyToggle">History <span class="count" id="historyCount">0</span></button>
       </header>
       <div class="body">
@@ -601,11 +478,7 @@
 
 <script>
   const QUESTIONS = {
-    freeflow: {
-      title: "Free Flow",
-      freeform: true,
-      placeholder: "Write anything you want…"
-    },
+    freeflow: { title: "Free Flow", freeform: true, placeholder: "Write anything you want…" },
     guided: {
       title: "Guided Journal",
       items: [
@@ -642,11 +515,7 @@
         "What would I like to pray for or set an intention around?"
       ]
     },
-    prayer: {
-      title: "Prayer Requests",
-      freeform: true,
-      placeholder: "Write your prayer requests here… who and what are you lifting up to God?"
-    },
+    prayer: { title: "Prayer Requests", freeform: true, placeholder: "Write your prayer requests here… who and what are you lifting up to God?" },
     fitness: {
       title: "Fitness Routine",
       items: [
@@ -659,11 +528,46 @@
     }
   };
 
-  const STORAGE_KEY = "riseUpKingsEntries";
+  const POINTS = { freeflow: 5, guided: 10, reframe: 15, devotional: 10, prayer: 10, fitness: 10 };
+  function pointsFor(type) { return POINTS[type] || 0; }
+
+  const APP = "riseUpKings";
+  function currentEmail() { return localStorage.getItem(APP + ":currentEmail"); }
+  function setCurrentEmail(e) { localStorage.setItem(APP + ":currentEmail", e); }
+  function entriesKey(email) { return APP + ":entries:" + email.toLowerCase(); }
+  function loadEntries() {
+    const e = currentEmail();
+    if (!e) return [];
+    try { return JSON.parse(localStorage.getItem(entriesKey(e))) || []; }
+    catch (err) { return []; }
+  }
+  function saveEntries(list) {
+    const e = currentEmail();
+    if (!e) return;
+    try { localStorage.setItem(entriesKey(e), JSON.stringify(list)); }
+    catch (err) { alert("Couldn't save — your browser may be blocking local storage."); }
+  }
+
+  function totalPoints() {
+    return loadEntries().reduce((s, e) => s + (typeof e.points === "number" ? e.points : pointsFor(e.type)), 0);
+  }
+  function dayKey(dt) {
+    return dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+  }
+  function currentStreak() {
+    const dates = new Set(loadEntries().map(e => e.date || (e.savedAt || "").slice(0, 10)).filter(Boolean));
+    if (dates.size === 0) return 0;
+    let streak = 0;
+    const d = new Date();
+    if (!dates.has(dayKey(d))) { d.setDate(d.getDate() - 1); if (!dates.has(dayKey(d))) return 0; }
+    while (dates.has(dayKey(d))) { streak++; d.setDate(d.getDate() - 1); }
+    return streak;
+  }
 
   let currentType = "reframe";
   const questionsEl = document.getElementById("questions");
   const selector = document.getElementById("typeSelector");
+  const signInView = document.getElementById("signInView");
   const landingView = document.getElementById("landingView");
   const appView = document.getElementById("appView");
   const writeView = document.getElementById("writeView");
@@ -672,23 +576,21 @@
   const historyToggle = document.getElementById("historyToggle");
 
   function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    }[c]));
-  }
-  function loadEntries() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch (e) { return []; }
-  }
-  function saveEntries(list) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
-    catch (e) { alert("Couldn't save to history — your browser may be blocking local storage."); }
+    return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
   function updateCount() {
     const n = loadEntries().length;
     document.getElementById("historyCount").textContent = n;
     document.getElementById("historyCountLabel").textContent =
       n === 0 ? "No entries yet" : (n === 1 ? "1 saved entry" : n + " saved entries");
+  }
+  function renderScore() {
+    document.getElementById("scorePoints").textContent = totalPoints();
+    document.getElementById("scoreEntries").textContent = loadEntries().length;
+    document.getElementById("scoreStreak").textContent = currentStreak();
+    document.getElementById("ptsChip").textContent = totalPoints() + " pts";
+    const pe = document.getElementById("profileEmail");
+    if (pe) pe.textContent = currentEmail() || "";
   }
 
   function renderQuestions(type) {
@@ -711,11 +613,9 @@
 
   function setActiveType(type) {
     currentType = type;
-    selector.querySelectorAll(".type-option").forEach(o =>
-      o.classList.toggle("active", o.dataset.type === type));
+    selector.querySelectorAll(".type-option").forEach(o => o.classList.toggle("active", o.dataset.type === type));
     renderQuestions(type);
   }
-
   selector.addEventListener("click", (e) => {
     const opt = e.target.closest(".type-option");
     if (!opt) return;
@@ -723,44 +623,45 @@
   });
 
   // ----- View navigation -----
-  function showApp() { landingView.style.display = "none"; appView.style.display = "block"; }
-  function showLanding() { appView.style.display = "none"; landingView.style.display = "block"; }
+  function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; landingView.style.display = "block"; renderScore(); }
+  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "block"; renderScore(); }
   function showWrite() {
-    writeView.style.display = "block";
-    historyView.style.display = "none";
-    historyToggle.firstChild.textContent = "History ";
-    showingHistory = false;
+    writeView.style.display = "block"; historyView.style.display = "none";
+    historyToggle.firstChild.textContent = "History "; showingHistory = false;
   }
   function showHistory() {
-    renderHistory();
-    writeView.style.display = "none";
-    historyView.style.display = "block";
-    historyToggle.firstChild.textContent = "Back to writing ";
-    showingHistory = true;
+    renderHistory(); writeView.style.display = "none"; historyView.style.display = "block";
+    historyToggle.firstChild.textContent = "Back to writing "; showingHistory = true;
   }
 
   // landing cards open a journal type
   document.querySelectorAll(".pillar-card").forEach(c => {
-    c.addEventListener("click", () => {
-      setActiveType(c.dataset.type);
-      showApp();
-      showWrite();
-      window.scrollTo(0, 0);
-    });
+    c.addEventListener("click", () => { setActiveType(c.dataset.type); showApp(); showWrite(); window.scrollTo(0, 0); });
   });
-  document.getElementById("landingHistory").addEventListener("click", () => {
-    showApp();
-    showHistory();
-    window.scrollTo(0, 0);
-  });
-  document.getElementById("homeBtn").addEventListener("click", () => {
-    showLanding();
-    window.scrollTo(0, 0);
-  });
+  document.getElementById("landingHistory").addEventListener("click", () => { showApp(); showHistory(); window.scrollTo(0, 0); });
+  document.getElementById("homeBtn").addEventListener("click", () => { showLanding(); window.scrollTo(0, 0); });
 
   let showingHistory = false;
-  historyToggle.addEventListener("click", () => {
-    if (showingHistory) showWrite(); else showHistory();
+  historyToggle.addEventListener("click", () => { if (showingHistory) showWrite(); else showHistory(); });
+
+  // ----- Sign in / out -----
+  function signIn() {
+    const v = document.getElementById("emailInput").value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { alert("Please enter a valid email address."); return; }
+    setCurrentEmail(v.toLowerCase());
+    renderQuestions(currentType);
+    updateCount();
+    showLanding();
+    window.scrollTo(0, 0);
+  }
+  document.getElementById("signInBtn").addEventListener("click", signIn);
+  document.getElementById("emailInput").addEventListener("keydown", (e) => { if (e.key === "Enter") signIn(); });
+  document.getElementById("signOutBtn").addEventListener("click", () => {
+    localStorage.removeItem(APP + ":currentEmail");
+    document.getElementById("emailInput").value = "";
+    showSignIn();
+    window.scrollTo(0, 0);
   });
 
   // default date = today
@@ -775,14 +676,12 @@
     const date = document.getElementById("entryDate").value;
     const typeTitle = QUESTIONS[currentType].title;
     const fields = [...questionsEl.querySelectorAll("textarea")];
+    const pts = pointsFor(currentType);
 
     const entry = {
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
-      type: currentType,
-      typeTitle: typeTitle,
-      name: name,
-      date: date,
-      savedAt: new Date().toISOString(),
+      type: currentType, typeTitle: typeTitle, name: name, date: date,
+      points: pts, savedAt: new Date().toISOString(),
       answers: fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }))
     };
 
@@ -790,12 +689,13 @@
     list.push(entry);
     saveEntries(list);
     updateCount();
+    renderScore();
 
     document.getElementById("journalForm").reset();
     document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
     renderQuestions(currentType);
 
-    showToast("Saved to your history");
+    showToast("Saved  ·  +" + pts + " points!");
   });
 
   function showToast(msg) {
@@ -813,7 +713,6 @@
         " · " + d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
     } catch (e) { return ""; }
   }
-
   function renderHistory() {
     const list = loadEntries().slice().sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
     if (list.length === 0) {
@@ -822,8 +721,9 @@
     }
     historyList.innerHTML = list.map(entry => {
       const preview = (entry.answers.find(x => x.a) || {}).a || "(left blank)";
+      const pts = (typeof entry.points === "number" ? entry.points : pointsFor(entry.type));
       const sub = (entry.name ? escapeHtml(entry.name) + " · " : "") +
-        (entry.date ? escapeHtml(entry.date) + " · " : "") + "saved " + fmtSaved(entry.savedAt);
+        (entry.date ? escapeHtml(entry.date) + " · " : "") + "+" + pts + " pts · saved " + fmtSaved(entry.savedAt);
       const qa = entry.answers.map(x => `
         <div class="qa">
           <div class="q">${escapeHtml(x.q)}</div>
@@ -857,8 +757,7 @@
     if (e.target.closest(".js-delete")) {
       if (confirm("Delete this entry? This can't be undone.")) {
         saveEntries(loadEntries().filter(x => x.id !== id));
-        updateCount();
-        renderHistory();
+        updateCount(); renderScore(); renderHistory();
       }
       return;
     }
@@ -884,6 +783,9 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  // ----- Boot -----
+  if (currentEmail()) { showLanding(); } else { showSignIn(); }
 </script>
 </body>
 </html>
