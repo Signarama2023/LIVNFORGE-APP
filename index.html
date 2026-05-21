@@ -72,8 +72,16 @@
   .signin-body input {
     width: 100%; background: var(--field); border: 1px solid var(--field-border);
     border-radius: 12px; color: var(--text); font-family: inherit; font-size: 16px; padding: 14px 16px; text-align: center;
+    margin-bottom: 12px;
   }
   .signin-body input:focus { outline: none; border-color: var(--gold); }
+  .auth-error { color: #f0768a; font-size: 13px; min-height: 18px; margin: 2px 0 4px; }
+  .auth-switch { margin-top: 16px; font-size: 13px; color: var(--muted); }
+  .auth-switch button {
+    background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0;
+  }
+  .auth-switch button:hover { color: var(--gold-light); }
   .signin-btn {
     width: 100%; margin-top: 14px; padding: 15px; border: none; border-radius: 12px;
     background: var(--gold); color: #1c1402; font-size: 16px; font-weight: 700; cursor: pointer;
@@ -321,11 +329,15 @@
         </div>
       </div>
       <div class="signin-body">
-        <h2>Open your profile</h2>
-        <p>Enter your email to start. Your journals, points and streak are saved privately on this device.</p>
+        <h2 id="authTitle">Create your account</h2>
+        <p id="authSubtitle">Sign up with an email and password. Your journals, points and streak are saved privately on this device.</p>
         <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
-        <button class="signin-btn" id="signInBtn">Continue</button>
-        <div class="signin-note">No password needed — your email simply creates a personal profile on this device. Nothing is sent anywhere.</div>
+        <input type="password" id="passwordInput" placeholder="Password (min 6 characters)" autocomplete="current-password">
+        <input type="password" id="passwordConfirm" placeholder="Confirm password" autocomplete="new-password">
+        <div class="auth-error" id="authError"></div>
+        <button class="signin-btn" id="signInBtn">Create account</button>
+        <div class="auth-switch"><span id="authSwitchLabel">Already have an account?</span> <button type="button" id="authToggle">Log in</button></div>
+        <div class="signin-note">Your password is salted and hashed on this device — it is never stored as plain text or sent anywhere.</div>
       </div>
     </div>
 
@@ -556,6 +568,22 @@
   const APP = "riseUpKings";
   function currentEmail() { return localStorage.getItem(APP + ":currentEmail"); }
   function setCurrentEmail(e) { localStorage.setItem(APP + ":currentEmail", e); }
+
+  // ----- Account auth (salted SHA-256, stored on this device) -----
+  function authKey(email) { return APP + ":auth:" + email.toLowerCase(); }
+  function getAccount(email) {
+    try { return JSON.parse(localStorage.getItem(authKey(email))); }
+    catch (e) { return null; }
+  }
+  function randomSalt() {
+    const a = new Uint8Array(16); crypto.getRandomValues(a);
+    return Array.from(a).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function hashPassword(password, salt) {
+    const data = new TextEncoder().encode(salt + ":" + password);
+    const buf = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
   function entriesKey(email) { return APP + ":entries:" + email.toLowerCase(); }
   function loadEntries() {
     const e = currentEmail();
@@ -667,21 +695,76 @@
   let showingHistory = false;
   historyToggle.addEventListener("click", () => { if (showingHistory) showWrite(); else showHistory(); });
 
-  // ----- Sign in / out -----
-  function signIn() {
-    const v = document.getElementById("emailInput").value.trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { alert("Please enter a valid email address."); return; }
-    setCurrentEmail(v.toLowerCase());
+  // ----- Sign up / log in / out -----
+  let authMode = "signup"; // "signup" or "login"
+  function setAuthError(msg) { document.getElementById("authError").textContent = msg || ""; }
+  function applyAuthMode() {
+    const signup = authMode === "signup";
+    document.getElementById("authTitle").textContent = signup ? "Create your account" : "Welcome back";
+    document.getElementById("authSubtitle").textContent = signup
+      ? "Sign up with an email and password. Your journals, points and streak are saved privately on this device."
+      : "Log in to your profile on this device.";
+    document.getElementById("passwordConfirm").style.display = signup ? "block" : "none";
+    document.getElementById("passwordInput").setAttribute("autocomplete", signup ? "new-password" : "current-password");
+    document.getElementById("signInBtn").textContent = signup ? "Create account" : "Log in";
+    document.getElementById("authSwitchLabel").textContent = signup ? "Already have an account?" : "Need an account?";
+    document.getElementById("authToggle").textContent = signup ? "Log in" : "Sign up";
+    setAuthError("");
+  }
+  document.getElementById("authToggle").addEventListener("click", () => {
+    authMode = (authMode === "signup") ? "login" : "signup";
+    applyAuthMode();
+  });
+
+  function finishAuth(email) {
+    setCurrentEmail(email);
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("passwordConfirm").value = "";
+    setAuthError("");
     renderQuestions(currentType);
     updateCount();
     showLanding();
     window.scrollTo(0, 0);
   }
-  document.getElementById("signInBtn").addEventListener("click", signIn);
-  document.getElementById("emailInput").addEventListener("keydown", (e) => { if (e.key === "Enter") signIn(); });
+  async function submitAuth() {
+    setAuthError("");
+    const email = document.getElementById("emailInput").value.trim().toLowerCase();
+    const pw = document.getElementById("passwordInput").value;
+    const pw2 = document.getElementById("passwordConfirm").value;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setAuthError("Please enter a valid email address."); return; }
+    if (pw.length < 6) { setAuthError("Password must be at least 6 characters."); return; }
+    const existing = getAccount(email);
+    try {
+      if (authMode === "signup") {
+        if (existing) { setAuthError("An account with this email already exists on this device. Try logging in."); return; }
+        if (pw !== pw2) { setAuthError("Passwords don't match."); return; }
+        const salt = randomSalt();
+        const hash = await hashPassword(pw, salt);
+        localStorage.setItem(authKey(email), JSON.stringify({ salt: salt, hash: hash, created: new Date().toISOString() }));
+        finishAuth(email);
+      } else {
+        if (!existing) { setAuthError("No account found for that email on this device. Create one to get started."); return; }
+        const hash = await hashPassword(pw, existing.salt);
+        if (hash !== existing.hash) { setAuthError("Incorrect password. Please try again."); return; }
+        finishAuth(email);
+      }
+    } catch (err) {
+      setAuthError("Something went wrong. Please try again.");
+    }
+  }
+  document.getElementById("signInBtn").addEventListener("click", submitAuth);
+  document.getElementById("emailInput").addEventListener("keydown", (e) => { if (e.key === "Enter") submitAuth(); });
+  document.getElementById("passwordInput").addEventListener("keydown", (e) => { if (e.key === "Enter") submitAuth(); });
+  document.getElementById("passwordConfirm").addEventListener("keydown", (e) => { if (e.key === "Enter") submitAuth(); });
+  applyAuthMode();
+
   document.getElementById("signOutBtn").addEventListener("click", () => {
     localStorage.removeItem(APP + ":currentEmail");
     document.getElementById("emailInput").value = "";
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("passwordConfirm").value = "";
+    authMode = "login";
+    applyAuthMode();
     showSignIn();
     window.scrollTo(0, 0);
   });
