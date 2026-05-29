@@ -82,6 +82,12 @@
     cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0;
   }
   .auth-switch button:hover { color: var(--gold-light); }
+  .auth-forgot { margin-top: 8px; font-size: 13px; }
+  .auth-forgot button {
+    background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0;
+  }
+  .auth-forgot button:hover { color: var(--gold-light); }
   .signin-btn {
     width: 100%; margin-top: 14px; padding: 15px; border: none; border-radius: 12px;
     background: var(--gold); color: #1c1402; font-size: 16px; font-weight: 700; cursor: pointer;
@@ -374,6 +380,7 @@
         <div class="auth-error" id="authError"></div>
         <button class="signin-btn" id="signInBtn">Create account</button>
         <div class="auth-switch"><span id="authSwitchLabel">Already have an account?</span> <button type="button" id="authToggle">Log in</button></div>
+        <div class="auth-forgot" id="authForgot" style="display: none;"><button type="button" id="authForgotBtn">Forgot password?</button></div>
         <div class="signin-note">Your password is salted and hashed on this device — it is never stored as plain text or sent anywhere.</div>
       </div>
     </div>
@@ -856,24 +863,41 @@
   historyToggle.addEventListener("click", () => { if (showingHistory) showWrite(); else showHistory(); });
 
   // ----- Sign up / log in / out -----
-  let authMode = "signup"; // "signup" or "login"
+  let authMode = "signup"; // "signup" | "login" | "reset"
   function setAuthError(msg) { document.getElementById("authError").textContent = msg || ""; }
   function applyAuthMode() {
     const signup = authMode === "signup";
-    document.getElementById("authTitle").textContent = signup ? "Create your account" : "Welcome back";
-    document.getElementById("authSubtitle").textContent = signup
-      ? "Sign up with an email and password. Your journals, points and streak are saved privately on this device."
-      : "Log in to your profile on this device.";
-    document.getElementById("passwordConfirm").style.display = signup ? "block" : "none";
-    document.getElementById("passwordInput").setAttribute("autocomplete", signup ? "new-password" : "current-password");
-    document.getElementById("signInBtn").textContent = signup ? "Create account" : "Log in";
-    document.getElementById("authSwitchLabel").textContent = signup ? "Already have an account?" : "Need an account?";
-    document.getElementById("authToggle").textContent = signup ? "Log in" : "Sign up";
+    const reset = authMode === "reset";
+    const login = authMode === "login";
+    document.getElementById("authTitle").textContent =
+      signup ? "Create your account" : (reset ? "Reset password" : "Welcome back");
+    document.getElementById("authSubtitle").textContent =
+      signup ? "Sign up with an email and password. Your journals, points and streak are saved privately on this device."
+      : (reset ? "Enter your email and choose a new password. Your journal entries on this device stay safe."
+      : "Log in to your profile on this device.");
+    document.getElementById("passwordConfirm").style.display = (signup || reset) ? "block" : "none";
+    document.getElementById("passwordInput").setAttribute("autocomplete", (signup || reset) ? "new-password" : "current-password");
+    document.getElementById("passwordInput").setAttribute("placeholder", reset ? "New password (min 6 characters)" : "Password (min 6 characters)");
+    document.getElementById("passwordConfirm").setAttribute("placeholder", reset ? "Confirm new password" : "Confirm password");
+    document.getElementById("signInBtn").textContent =
+      signup ? "Create account" : (reset ? "Reset password" : "Log in");
+    document.getElementById("authSwitchLabel").textContent =
+      signup ? "Already have an account?" : (reset ? "Remembered it?" : "Need an account?");
+    document.getElementById("authToggle").textContent = (signup || reset) ? "Log in" : "Sign up";
+    document.getElementById("authForgot").style.display = login ? "block" : "none";
     setAuthError("");
   }
   document.getElementById("authToggle").addEventListener("click", () => {
-    authMode = (authMode === "signup") ? "login" : "signup";
+    // signup ↔ login, and reset → login
+    if (authMode === "signup") authMode = "login";
+    else authMode = (authMode === "reset") ? "login" : "signup";
     applyAuthMode();
+  });
+  document.getElementById("authForgotBtn").addEventListener("click", () => {
+    authMode = "reset";
+    applyAuthMode();
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("passwordConfirm").value = "";
   });
 
   function finishAuth(email) {
@@ -901,6 +925,15 @@
         const salt = randomSalt();
         const hash = await hashPassword(pw, salt);
         localStorage.setItem(authKey(email), JSON.stringify({ salt: salt, hash: hash, created: new Date().toISOString() }));
+        finishAuth(email);
+      } else if (authMode === "reset") {
+        if (!existing) { setAuthError("No account found for that email on this device. Tap 'Log in' or 'Sign up'."); return; }
+        if (pw !== pw2) { setAuthError("Passwords don't match."); return; }
+        const salt = randomSalt();
+        const hash = await hashPassword(pw, salt);
+        const created = existing.created || new Date().toISOString();
+        localStorage.setItem(authKey(email), JSON.stringify({ salt: salt, hash: hash, created: created, resetAt: new Date().toISOString() }));
+        authMode = "login";
         finishAuth(email);
       } else {
         if (!existing) { setAuthError("No account found for that email on this device. Create one to get started."); return; }
