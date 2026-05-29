@@ -141,6 +141,43 @@
   .pc-fitness:hover { border-color: #34c2c2; }
   .pc-fitness .pc-icon { border-color: #34c2c2; color: #34c2c2; }
 
+  /* Fitness preset workouts (KING300 / KING320) */
+  .fit-presets { margin-bottom: 18px; }
+  .fit-presets-label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .fit-presets-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .fit-preset-btn {
+    flex: 1; min-width: 200px;
+    background: var(--field); border: 1px solid var(--field-border); border-radius: 12px;
+    padding: 12px 14px; color: var(--text); font-family: inherit; cursor: pointer;
+    text-align: left; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .fit-preset-btn:hover { border-color: #34c2c2; transform: translateY(-1px); }
+  .fit-preset-btn.active { border-color: #34c2c2; box-shadow: 0 0 0 2px rgba(52,194,194,0.25); }
+  .fpb-name { font-weight: 700; letter-spacing: 1px; color: #34c2c2; font-size: 14px; }
+  .fpb-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .fpb-pts { font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; align-self: flex-start; margin-top: 2px; }
+  .fit-timer {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--field); border: 1px solid var(--field-border); border-radius: 12px;
+    padding: 12px 16px; margin-bottom: 18px;
+  }
+  .fit-timer-display {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 26px; font-weight: 700; color: #34c2c2; letter-spacing: 2px; min-width: 90px;
+  }
+  .fit-timer-status { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  .fit-timer-controls { display: flex; gap: 8px; margin-left: auto; }
+  .fit-timer-controls button {
+    background: none; border: 1px solid var(--field-border); color: var(--text);
+    border-radius: 8px; padding: 8px 14px; font-size: 13px; font-family: inherit; cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .fit-timer-controls button:hover { border-color: #34c2c2; }
+  #fitTimerToggle.running { background: rgba(240,118,138,0.15); border-color: #f0768a; color: #f0768a; font-weight: 700; }
+  #fitTimerToggle.idle { background: #34c2c2; color: #0c2929; border-color: #34c2c2; font-weight: 700; }
+  #fitTimerToggle.idle:hover { background: #4adfdf; }
+
   .pillars-divider { text-align: center; color: var(--gold); letter-spacing: 4px; font-size: 13px; font-weight: 600; margin: 34px 0 18px; position: relative; }
   .pillars-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
   .pillar { flex: 1; min-width: 110px; text-align: center; padding: 10px; border-left: 1px solid var(--field-border); color: var(--gold); }
@@ -615,6 +652,69 @@
   }
 
   let currentType = "reframe";
+
+  // ----- Fitness preset workouts (KING300 / KING320) + timer -----
+  let currentFitnessPreset = null; // "king300" | "king320" | null
+  const PRESET_POINTS = { king300: 15, king320: 18 };
+  const PRESET_INFO = {
+    king300: { name: "KING300", desc: "4 sets of 25 pushups, 25 situps, 25 squats (100 / 100 / 100 total)" },
+    king320: { name: "KING320", desc: "4 sets of 25 pushups, 25 situps, 25 squats, 5 pullups (100 / 100 / 100 / 20 total)" }
+  };
+  let timerInterval = null;
+  let timerStartMs = 0;
+  let timerElapsedMs = 0;
+  function fmtTimer(ms) {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+  function updateTimerDisplay() {
+    const display = document.getElementById("fitTimerDisplay");
+    if (!display) return;
+    const ms = timerElapsedMs + (timerInterval ? (Date.now() - timerStartMs) : 0);
+    display.textContent = fmtTimer(ms);
+  }
+  function setTimerToggleState(running) {
+    const btn = document.getElementById("fitTimerToggle");
+    const status = document.getElementById("fitTimerStatus");
+    if (btn) {
+      btn.textContent = running ? "Stop" : (timerElapsedMs > 0 ? "Resume" : "Start");
+      btn.classList.toggle("running", running);
+      btn.classList.toggle("idle", !running);
+    }
+    if (status) status.textContent = running ? "Running" : (timerElapsedMs > 0 ? "Paused" : "Ready");
+  }
+  function startTimer() {
+    if (timerInterval) return;
+    timerStartMs = Date.now();
+    timerInterval = setInterval(updateTimerDisplay, 250);
+    setTimerToggleState(true);
+    updateTimerDisplay();
+  }
+  function stopTimer() {
+    if (!timerInterval) return;
+    timerElapsedMs += Date.now() - timerStartMs;
+    clearInterval(timerInterval); timerInterval = null;
+    setTimerToggleState(false);
+    updateTimerDisplay();
+    // auto-fill duration question (q1: "How long did I train, and how hard...")
+    const q1 = document.getElementById("q1");
+    if (q1) {
+      const timeText = "Time: " + fmtTimer(timerElapsedMs);
+      if (!q1.value.includes("Time:")) {
+        q1.value = q1.value ? (timeText + " — " + q1.value) : timeText;
+      } else {
+        q1.value = q1.value.replace(/Time: \d{2}:\d{2}/, timeText);
+      }
+    }
+  }
+  function resetTimerState() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    timerElapsedMs = 0;
+    updateTimerDisplay();
+    setTimerToggleState(false);
+  }
   const questionsEl = document.getElementById("questions");
   const selector = document.getElementById("typeSelector");
   const signInView = document.getElementById("signInView");
@@ -645,25 +745,85 @@
 
   function renderQuestions(type) {
     const data = QUESTIONS[type];
+    let html = "";
+    if (type === "fitness") {
+      html += `
+      <div class="fit-presets" id="fitPresets">
+        <div class="fit-presets-label">Preset workouts</div>
+        <div class="fit-presets-row">
+          <button type="button" class="fit-preset-btn" data-preset="king300">
+            <span class="fpb-name">KING300</span>
+            <span class="fpb-desc">4 sets · 25 pushups · 25 situps · 25 squats</span>
+            <span class="fpb-pts">+15 pts</span>
+          </button>
+          <button type="button" class="fit-preset-btn" data-preset="king320">
+            <span class="fpb-name">KING320</span>
+            <span class="fpb-desc">4 sets · 25 pushups · 25 situps · 25 squats · 5 pullups</span>
+            <span class="fpb-pts">+18 pts</span>
+          </button>
+        </div>
+      </div>
+      <div class="fit-timer" id="fitTimer" style="display: none;">
+        <div>
+          <div class="fit-timer-display" id="fitTimerDisplay">00:00</div>
+          <div class="fit-timer-status" id="fitTimerStatus">Ready</div>
+        </div>
+        <div class="fit-timer-controls">
+          <button type="button" id="fitTimerToggle" class="idle">Start</button>
+          <button type="button" id="fitTimerReset">Reset</button>
+        </div>
+      </div>`;
+    }
     if (data.freeform) {
-      questionsEl.innerHTML = `
+      html += `
       <div class="field-group">
         <label for="q0">Journal entry <span class="req">*</span></label>
         <textarea id="q0" data-question="Journal entry" placeholder="${data.placeholder || 'Write anything you want…'}" style="min-height: 260px;" required></textarea>
       </div>`;
-      return;
+    } else {
+      html += data.items.map((q, i) => `
+        <div class="field-group">
+          <label for="q${i}">${q} <span class="req">*</span></label>
+          <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here" required></textarea>
+        </div>
+      `).join("");
     }
-    questionsEl.innerHTML = data.items.map((q, i) => `
-      <div class="field-group">
-        <label for="q${i}">${q} <span class="req">*</span></label>
-        <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here" required></textarea>
-      </div>
-    `).join("");
+    questionsEl.innerHTML = html;
+
+    if (type === "fitness") {
+      // restore selected preset visual + timer panel state
+      if (currentFitnessPreset) {
+        const sel = document.querySelector('.fit-preset-btn[data-preset="' + currentFitnessPreset + '"]');
+        if (sel) sel.classList.add("active");
+        const timer = document.getElementById("fitTimer");
+        if (timer) timer.style.display = "flex";
+        setTimerToggleState(!!timerInterval);
+        updateTimerDisplay();
+      }
+      document.getElementById("fitPresets").addEventListener("click", (ev) => {
+        const btn = ev.target.closest(".fit-preset-btn");
+        if (!btn) return;
+        const preset = btn.dataset.preset;
+        currentFitnessPreset = preset;
+        document.querySelectorAll(".fit-preset-btn").forEach(b => b.classList.toggle("active", b === btn));
+        const info = PRESET_INFO[preset];
+        const q0 = document.getElementById("q0");
+        if (q0) q0.value = info.name + " — " + info.desc;
+        const timer = document.getElementById("fitTimer");
+        if (timer) timer.style.display = "flex";
+        resetTimerState();
+      });
+      document.getElementById("fitTimerToggle").addEventListener("click", () => {
+        if (timerInterval) stopTimer(); else startTimer();
+      });
+      document.getElementById("fitTimerReset").addEventListener("click", resetTimerState);
+    }
   }
 
   function setActiveType(type) {
     currentType = type;
     selector.querySelectorAll(".type-option").forEach(o => o.classList.toggle("active", o.dataset.type === type));
+    if (type !== "fitness") { currentFitnessPreset = null; resetTimerState(); }
     renderQuestions(type);
   }
   selector.addEventListener("click", (e) => {
@@ -781,7 +941,12 @@
     const date = document.getElementById("entryDate").value;
     const typeTitle = QUESTIONS[currentType].title;
     const fields = [...questionsEl.querySelectorAll("textarea")];
-    const pts = pointsFor(currentType);
+    // capture timer if still running for a fitness preset workout
+    if (currentType === "fitness" && currentFitnessPreset && timerInterval) { stopTimer(); }
+    let pts = pointsFor(currentType);
+    if (currentType === "fitness" && currentFitnessPreset && PRESET_POINTS[currentFitnessPreset]) {
+      pts = PRESET_POINTS[currentFitnessPreset];
+    }
 
     const entry = {
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
@@ -789,6 +954,17 @@
       points: pts, savedAt: new Date().toISOString(),
       answers: fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }))
     };
+    if (currentType === "fitness" && currentFitnessPreset) {
+      entry.preset = currentFitnessPreset;
+      entry.presetName = PRESET_INFO[currentFitnessPreset].name;
+      if (timerElapsedMs > 0) {
+        entry.durationMs = timerElapsedMs;
+        entry.durationText = fmtTimer(timerElapsedMs);
+      }
+    }
+    // reset preset + timer after capturing the entry
+    currentFitnessPreset = null;
+    resetTimerState();
 
     const list = loadEntries();
     list.push(entry);
