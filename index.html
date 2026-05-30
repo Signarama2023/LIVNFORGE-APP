@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rise Up Kings Journal</title>
+<title>Daily Forge</title>
 <style>
   :root {
     --bg: #15161a;
@@ -372,8 +372,8 @@
               <circle cx="6" cy="6" r="2.4"/><circle cx="21" cy="1.6" r="2.4"/><circle cx="36" cy="6" r="2.4"/>
             </svg>
           </div>
-          <div class="brand-title"><span class="rise">RISE UP</span><span class="kings">KINGS</span></div>
-          <div class="brand-sub">JOURNAL</div>
+          <div class="brand-title"><span class="rise">DAILY</span><span class="kings">FORGE</span></div>
+          <div class="brand-sub">KINGDOM JOURNAL</div>
           <div class="tagline">WRITE. REFLECT. GROW. LEAD.</div>
         </div>
       </div>
@@ -405,10 +405,10 @@
               <circle cx="6" cy="6" r="2.4"/><circle cx="21" cy="1.6" r="2.4"/><circle cx="36" cy="6" r="2.4"/>
             </svg>
           </div>
-          <div class="brand-title"><span class="rise">RISE UP</span><span class="kings">KINGS</span></div>
-          <div class="brand-sub">JOURNAL</div>
+          <div class="brand-title"><span class="rise">DAILY</span><span class="kings">FORGE</span></div>
+          <div class="brand-sub">KINGDOM JOURNAL</div>
           <div class="tagline">WRITE. REFLECT. GROW. LEAD.</div>
-          <div class="hero-desc">A journal for men who rise on purpose and live as sons of the King.</div>
+          <div class="hero-desc">A daily forge for men who live on purpose as sons of the King.</div>
         </div>
       </div>
 
@@ -513,7 +513,7 @@
           <div class="v-text">Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.</div>
           <div class="v-ref">COLOSSIANS 3:23</div>
         </div>
-        <div class="landing-footer">RISE UP. WRITE IT DOWN. LIVE IT OUT.</div>
+        <div class="landing-footer">SHOW UP. WRITE IT DOWN. LIVE IT OUT.</div>
         <button class="landing-history" id="landingHistory">Review your history</button>
       </div>
     </div>
@@ -522,7 +522,7 @@
     <div id="appView">
       <header>
         <button class="back-btn" id="homeBtn">&larr; Home</button>
-        <h1>Rise Up <span class="accent">Kings</span></h1>
+        <h1>Daily <span class="accent">Forge</span></h1>
         <span class="pts-chip" id="ptsChip">0 pts</span>
         <button class="hist-btn" id="historyToggle">History <span class="count" id="historyCount">0</span></button>
       </header>
@@ -1267,7 +1267,7 @@
   function downloadEntry(id) {
     const entry = loadEntries().find(x => x.id === id);
     if (!entry) return;
-    let out = "RISE UP KINGS JOURNAL\n";
+    let out = "DAILY FORGE\n";
     out += "Type: " + entry.typeTitle + "\n";
     if (entry.name) out += "Name: " + entry.name + "\n";
     if (entry.date) out += "Date: " + entry.date + "\n";
@@ -1278,7 +1278,7 @@
     const blob = new Blob([out], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "rise-up-kings-" + safeName + ".txt";
+    a.href = url; a.download = "daily-forge-" + safeName + ".txt";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
