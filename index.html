@@ -116,6 +116,12 @@
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .score-tile .lbl { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
+  .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
+  .pb-label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
+  .pb-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .pb-tile { text-align: center; padding: 6px 4px; }
+  .pb-num { font-size: 26px; font-weight: 800; line-height: 1; background: linear-gradient(180deg, var(--gold-light), var(--gold)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .pb-lbl { font-size: 11px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
 
   .pillar-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
   .pillar-card {
@@ -409,13 +415,24 @@
       <div class="landing-body">
         <div class="profile-bar">
           <span>Signed in as <b id="profileEmail"></b></span>
-          <button id="signOutBtn">Sign out</button>
+          <span style="display:flex; gap:8px;">
+            <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
+            <button id="signOutBtn">Sign out</button>
+          </span>
         </div>
 
         <div class="scoreboard">
           <div class="score-tile points"><div class="num" id="scorePoints">0</div><div class="lbl">Points</div></div>
           <div class="score-tile"><div class="num" id="scoreEntries">0</div><div class="lbl">Entries</div></div>
           <div class="score-tile"><div class="num" id="scoreStreak">0</div><div class="lbl">Day Streak</div></div>
+        </div>
+
+        <div class="personal-bests">
+          <div class="pb-label">Personal bests</div>
+          <div class="pb-row">
+            <div class="pb-tile"><div class="pb-num" id="pbBestDay">0</div><div class="pb-lbl">Best day · points</div></div>
+            <div class="pb-tile"><div class="pb-num" id="pbLongestStreak">0</div><div class="pb-lbl">Longest streak · days</div></div>
+          </div>
         </div>
 
         <div class="group-panel" id="groupPanel"></div>
@@ -681,6 +698,8 @@
       answers: e.answers || []
     }));
     try {
+      // Backup before delete so a future recovery can still work even if Supabase fails later
+      localStorage.setItem(entKey + ":backup", localStorage.getItem(entKey));
       const { error } = await sb.from("entries").insert(rows);
       if (error) throw error;
       localStorage.setItem(migKey, new Date().toISOString());
@@ -689,12 +708,91 @@
       return rows.length;
     } catch (err) { console.error("Migration failed:", err); return 0; }
   }
+  // Manual recovery: scan this browser's localStorage for any entries (live or backup) and push missing ones to cloud.
+  async function recoverLostEntries() {
+    if (!__currentUser || !sb) return { recovered: 0, message: "Not signed in." };
+    // Collect candidate sources (current email + backups)
+    const emailLc = __currentUser.email.toLowerCase();
+    const candidates = [];
+    Object.keys(localStorage).forEach(function(k){
+      if (k.startsWith(APP + ":entries:") && (k.includes(emailLc) || k === APP + ":entries:" + emailLc + ":backup")) {
+        candidates.push(k);
+      }
+    });
+    if (candidates.length === 0) return { recovered: 0, message: "No saved entries found on this device." };
+    // Gather all local entries across candidates, dedupe by savedAt+type
+    const seen = new Set(); const local = [];
+    candidates.forEach(function(k){
+      let arr; try { arr = JSON.parse(localStorage.getItem(k)); } catch (e) { arr = null; }
+      if (Array.isArray(arr)) arr.forEach(function(e){
+        const key = (e.savedAt || "") + "|" + (e.type || "");
+        if (!seen.has(key)) { seen.add(key); local.push(e); }
+      });
+    });
+    if (local.length === 0) return { recovered: 0, message: "No saved entries found on this device." };
+    // Fetch cloud saved_at values to skip duplicates
+    let existingSet = new Set();
+    try {
+      const { data } = await sb.from("entries").select("saved_at,type").eq("user_id", __currentUser.id);
+      (data || []).forEach(function(r){ existingSet.add((r.saved_at || "") + "|" + (r.type || "")); });
+    } catch (e) { /* if select fails, we'll still try to insert; duplicates may slip through */ }
+    const missing = local.filter(function(e){ return !existingSet.has((e.savedAt || "") + "|" + (e.type || "")); });
+    if (missing.length === 0) return { recovered: 0, message: "Found " + local.length + " local entries — all already in the cloud." };
+    const rows = missing.map(function(e){
+      return {
+        user_id: __currentUser.id, email: __currentUser.email,
+        type: e.type, type_title: e.typeTitle || ((QUESTIONS[e.type] && QUESTIONS[e.type].title) || e.type),
+        name: e.name || "", date: e.date || null,
+        points: typeof e.points === "number" ? e.points : (pointsFor(e.type) || 0),
+        saved_at: e.savedAt || new Date().toISOString(),
+        preset: e.preset || null, preset_name: e.presetName || null,
+        duration_ms: e.durationMs || null, duration_text: e.durationText || null,
+        answers: e.answers || []
+      };
+    });
+    try {
+      const { error } = await sb.from("entries").insert(rows);
+      if (error) throw error;
+      await fetchEntriesFromCloud();
+      return { recovered: rows.length, message: "Recovered " + rows.length + " entr" + (rows.length === 1 ? "y" : "ies") + " worth " + rows.reduce(function(s,r){return s+(r.points||0);},0) + " points!" };
+    } catch (err) {
+      console.error("Recovery failed:", err);
+      return { recovered: 0, message: "Recovery failed: " + (err.message || "unknown error") };
+    }
+  }
 
   function totalPoints() {
     return loadEntries().reduce((s, e) => s + (typeof e.points === "number" ? e.points : pointsFor(e.type)), 0);
   }
   function dayKey(dt) {
     return dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+  }
+  function bestDayPoints() {
+    // sum points by day-of-entry; return the highest day
+    const byDay = {};
+    loadEntries().forEach(e => {
+      const day = e.date || (e.savedAt || "").slice(0, 10);
+      if (!day) return;
+      const pts = typeof e.points === "number" ? e.points : pointsFor(e.type);
+      byDay[day] = (byDay[day] || 0) + pts;
+    });
+    let best = 0;
+    Object.keys(byDay).forEach(d => { if (byDay[d] > best) best = byDay[d]; });
+    return best;
+  }
+  function longestStreak() {
+    // longest run of consecutive days with at least one entry
+    const dateList = Array.from(new Set(loadEntries().map(e => e.date || (e.savedAt || "").slice(0, 10)).filter(Boolean))).sort();
+    if (dateList.length === 0) return 0;
+    let best = 1, run = 1;
+    for (let i = 1; i < dateList.length; i++) {
+      const prev = new Date(dateList[i - 1] + "T00:00:00");
+      const curr = new Date(dateList[i] + "T00:00:00");
+      const diffDays = Math.round((curr - prev) / 86400000);
+      if (diffDays === 1) { run++; if (run > best) best = run; }
+      else if (diffDays > 1) { run = 1; }
+    }
+    return best;
   }
   function currentStreak() {
     const dates = new Set(loadEntries().map(e => e.date || (e.savedAt || "").slice(0, 10)).filter(Boolean));
@@ -794,6 +892,8 @@
     document.getElementById("scoreEntries").textContent = loadEntries().length;
     document.getElementById("scoreStreak").textContent = currentStreak();
     document.getElementById("ptsChip").textContent = totalPoints() + " pts";
+    const bd = document.getElementById("pbBestDay"); if (bd) bd.textContent = bestDayPoints();
+    const ls = document.getElementById("pbLongestStreak"); if (ls) ls.textContent = longestStreak();
     const pe = document.getElementById("profileEmail");
     if (pe) pe.textContent = currentEmail() || "";
   }
@@ -1017,6 +1117,15 @@
   document.getElementById("passwordConfirm").addEventListener("keydown", (e) => { if (e.key === "Enter") submitAuth(); });
   applyAuthMode();
 
+  document.getElementById("recoverBtn").addEventListener("click", async () => {
+    try {
+      const res = await recoverLostEntries();
+      updateCount(); renderScore(); syncToGroup(true);
+      alert(res.message || ("Recovered " + (res.recovered || 0) + " entries"));
+    } catch (err) {
+      alert("Recovery failed: " + (err.message || "unknown error"));
+    }
+  });
   document.getElementById("signOutBtn").addEventListener("click", async () => {
     if (sb) { try { await sb.auth.signOut(); } catch (e) { /* ignore */ } }
     __currentUser = null;
