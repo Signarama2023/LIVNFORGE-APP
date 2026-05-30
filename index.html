@@ -610,36 +610,84 @@
   function pointsFor(type) { return POINTS[type] || 0; }
 
   const APP = "riseUpKings";
-  function currentEmail() { return localStorage.getItem(APP + ":currentEmail"); }
-  function setCurrentEmail(e) { localStorage.setItem(APP + ":currentEmail", e); }
 
-  // ----- Account auth (salted SHA-256, stored on this device) -----
-  function authKey(email) { return APP + ":auth:" + email.toLowerCase(); }
-  function getAccount(email) {
-    try { return JSON.parse(localStorage.getItem(authKey(email))); }
-    catch (e) { return null; }
+  // ----- Cloud auth (Supabase) + entries cache -----
+  let __currentUser = null; // { id, email }
+  let __entries = [];       // in-memory cache, refreshed from cloud on sign-in & after writes
+  function currentEmail() { return __currentUser ? __currentUser.email : null; }
+  function loadEntries() { return __entries; } // sync read of cache (used by renderScore/streak/history)
+  function entryFromRow(r) {
+    return {
+      id: r.id, type: r.type, typeTitle: r.type_title,
+      name: r.name || "", date: r.date || "",
+      points: r.points || 0, savedAt: r.saved_at,
+      preset: r.preset || undefined, presetName: r.preset_name || undefined,
+      durationMs: r.duration_ms || undefined, durationText: r.duration_text || undefined,
+      answers: r.answers || []
+    };
   }
-  function randomSalt() {
-    const a = new Uint8Array(16); crypto.getRandomValues(a);
-    return Array.from(a).map(b => b.toString(16).padStart(2, "0")).join("");
+  function rowFromEntry(e) {
+    return {
+      user_id: __currentUser.id, email: __currentUser.email,
+      type: e.type, type_title: e.typeTitle,
+      name: e.name || "", date: e.date || null,
+      points: e.points || 0, saved_at: e.savedAt,
+      preset: e.preset || null, preset_name: e.presetName || null,
+      duration_ms: e.durationMs || null, duration_text: e.durationText || null,
+      answers: e.answers || []
+    };
   }
-  async function hashPassword(password, salt) {
-    const data = new TextEncoder().encode(salt + ":" + password);
-    const buf = await crypto.subtle.digest("SHA-256", data);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  async function fetchEntriesFromCloud() {
+    if (!__currentUser || !sb) { __entries = []; return; }
+    try {
+      const { data, error } = await sb.from("entries").select("*").eq("user_id", __currentUser.id).order("saved_at", { ascending: false });
+      if (error) throw error;
+      __entries = (data || []).map(entryFromRow);
+    } catch (err) { console.error("loadEntries failed:", err); __entries = []; }
   }
-  function entriesKey(email) { return APP + ":entries:" + email.toLowerCase(); }
-  function loadEntries() {
-    const e = currentEmail();
-    if (!e) return [];
-    try { return JSON.parse(localStorage.getItem(entriesKey(e))) || []; }
-    catch (err) { return []; }
+  async function insertEntryToCloud(entry) {
+    if (!__currentUser || !sb) throw new Error("Not signed in");
+    const { data, error } = await sb.from("entries").insert(rowFromEntry(entry)).select().single();
+    if (error) throw error;
+    __entries.unshift(entryFromRow(data));
+    return data;
   }
-  function saveEntries(list) {
-    const e = currentEmail();
-    if (!e) return;
-    try { localStorage.setItem(entriesKey(e), JSON.stringify(list)); }
-    catch (err) { alert("Couldn't save — your browser may be blocking local storage."); }
+  async function deleteEntryFromCloud(id) {
+    if (!__currentUser || !sb) throw new Error("Not signed in");
+    const { error } = await sb.from("entries").delete().eq("id", id).eq("user_id", __currentUser.id);
+    if (error) throw error;
+    __entries = __entries.filter(e => e.id !== id);
+  }
+  // One-time migration: read local entries+local-auth-record for this email and push to cloud
+  async function migrateLocalEntriesIfNeeded() {
+    if (!__currentUser || !sb) return 0;
+    const migKey = APP + ":migrated:" + __currentUser.email.toLowerCase();
+    if (localStorage.getItem(migKey)) return 0;
+    const entKey = APP + ":entries:" + __currentUser.email.toLowerCase();
+    let local;
+    try { local = JSON.parse(localStorage.getItem(entKey) || "null"); } catch (e) { local = null; }
+    if (!Array.isArray(local) || local.length === 0) {
+      localStorage.setItem(migKey, new Date().toISOString());
+      return 0;
+    }
+    const rows = local.map(e => ({
+      user_id: __currentUser.id, email: __currentUser.email,
+      type: e.type, type_title: e.typeTitle || ((QUESTIONS[e.type] && QUESTIONS[e.type].title) || e.type),
+      name: e.name || "", date: e.date || null,
+      points: typeof e.points === "number" ? e.points : (pointsFor(e.type) || 0),
+      saved_at: e.savedAt || new Date().toISOString(),
+      preset: e.preset || null, preset_name: e.presetName || null,
+      duration_ms: e.durationMs || null, duration_text: e.durationText || null,
+      answers: e.answers || []
+    }));
+    try {
+      const { error } = await sb.from("entries").insert(rows);
+      if (error) throw error;
+      localStorage.setItem(migKey, new Date().toISOString());
+      localStorage.removeItem(entKey);
+      localStorage.removeItem(APP + ":auth:" + __currentUser.email.toLowerCase());
+      return rows.length;
+    } catch (err) { console.error("Migration failed:", err); return 0; }
   }
 
   function totalPoints() {
@@ -862,35 +910,39 @@
   let showingHistory = false;
   historyToggle.addEventListener("click", () => { if (showingHistory) showWrite(); else showHistory(); });
 
-  // ----- Sign up / log in / out -----
-  let authMode = "signup"; // "signup" | "login" | "reset"
+  // ----- Sign up / log in / reset / out -----
+  let authMode = "signup"; // "signup" | "login" | "reset" | "newPassword"
   function setAuthError(msg) { document.getElementById("authError").textContent = msg || ""; }
   function applyAuthMode() {
     const signup = authMode === "signup";
     const reset = authMode === "reset";
     const login = authMode === "login";
+    const newPw = authMode === "newPassword";
     document.getElementById("authTitle").textContent =
-      signup ? "Create your account" : (reset ? "Reset password" : "Welcome back");
+      signup ? "Create your account" : reset ? "Reset password" : newPw ? "Set a new password" : "Welcome back";
     document.getElementById("authSubtitle").textContent =
-      signup ? "Sign up with an email and password. Your journals, points and streak are saved privately on this device."
-      : (reset ? "Enter your email and choose a new password. Your journal entries on this device stay safe."
-      : "Log in to your profile on this device.");
-    document.getElementById("passwordConfirm").style.display = (signup || reset) ? "block" : "none";
-    document.getElementById("passwordInput").setAttribute("autocomplete", (signup || reset) ? "new-password" : "current-password");
-    document.getElementById("passwordInput").setAttribute("placeholder", reset ? "New password (min 6 characters)" : "Password (min 6 characters)");
-    document.getElementById("passwordConfirm").setAttribute("placeholder", reset ? "Confirm new password" : "Confirm password");
+      signup ? "Sign up with an email and password. Your journals, points and streak sync to your account."
+      : reset ? "Enter your email and we'll send you a reset link."
+      : newPw ? "Choose a new password to finish resetting your account."
+      : "Log in to your account.";
+    document.getElementById("emailInput").style.display = newPw ? "none" : "block";
+    document.getElementById("passwordInput").style.display = reset ? "none" : "block";
+    document.getElementById("passwordConfirm").style.display = (signup || newPw) ? "block" : "none";
+    document.getElementById("passwordInput").setAttribute("autocomplete", (signup || newPw) ? "new-password" : "current-password");
+    document.getElementById("passwordInput").setAttribute("placeholder", newPw ? "New password (min 6 characters)" : "Password (min 6 characters)");
+    document.getElementById("passwordConfirm").setAttribute("placeholder", newPw ? "Confirm new password" : "Confirm password");
     document.getElementById("signInBtn").textContent =
-      signup ? "Create account" : (reset ? "Reset password" : "Log in");
+      signup ? "Create account" : reset ? "Send reset link" : newPw ? "Set new password" : "Log in";
     document.getElementById("authSwitchLabel").textContent =
-      signup ? "Already have an account?" : (reset ? "Remembered it?" : "Need an account?");
-    document.getElementById("authToggle").textContent = (signup || reset) ? "Log in" : "Sign up";
+      signup ? "Already have an account?" : reset ? "Remembered it?" : newPw ? "Cancel?" : "Need an account?";
+    document.getElementById("authToggle").textContent = (signup || reset || newPw) ? "Log in" : "Sign up";
     document.getElementById("authForgot").style.display = login ? "block" : "none";
     setAuthError("");
   }
   document.getElementById("authToggle").addEventListener("click", () => {
-    // signup ↔ login, and reset → login
     if (authMode === "signup") authMode = "login";
-    else authMode = (authMode === "reset") ? "login" : "signup";
+    else if (authMode === "reset" || authMode === "newPassword") authMode = "login";
+    else authMode = "signup";
     applyAuthMode();
   });
   document.getElementById("authForgotBtn").addEventListener("click", () => {
@@ -900,11 +952,15 @@
     document.getElementById("passwordConfirm").value = "";
   });
 
-  function finishAuth(email) {
-    setCurrentEmail(email);
+  async function finishAuth() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session || !session.user) { setAuthError("Couldn't establish session."); return; }
+    __currentUser = { id: session.user.id, email: session.user.email };
     document.getElementById("passwordInput").value = "";
     document.getElementById("passwordConfirm").value = "";
     setAuthError("");
+    await migrateLocalEntriesIfNeeded();
+    await fetchEntriesFromCloud();
     renderQuestions(currentType);
     updateCount();
     showLanding();
@@ -912,36 +968,46 @@
   }
   async function submitAuth() {
     setAuthError("");
+    if (!sb) { setAuthError("Can't reach the server. Check your internet and try again."); return; }
     const email = document.getElementById("emailInput").value.trim().toLowerCase();
     const pw = document.getElementById("passwordInput").value;
     const pw2 = document.getElementById("passwordConfirm").value;
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setAuthError("Please enter a valid email address."); return; }
-    if (pw.length < 6) { setAuthError("Password must be at least 6 characters."); return; }
-    const existing = getAccount(email);
     try {
-      if (authMode === "signup") {
-        if (existing) { setAuthError("An account with this email already exists on this device. Try logging in."); return; }
-        if (pw !== pw2) { setAuthError("Passwords don't match."); return; }
-        const salt = randomSalt();
-        const hash = await hashPassword(pw, salt);
-        localStorage.setItem(authKey(email), JSON.stringify({ salt: salt, hash: hash, created: new Date().toISOString() }));
-        finishAuth(email);
-      } else if (authMode === "reset") {
-        if (!existing) { setAuthError("No account found for that email on this device. Tap 'Log in' or 'Sign up'."); return; }
-        if (pw !== pw2) { setAuthError("Passwords don't match."); return; }
-        const salt = randomSalt();
-        const hash = await hashPassword(pw, salt);
-        const created = existing.created || new Date().toISOString();
-        localStorage.setItem(authKey(email), JSON.stringify({ salt: salt, hash: hash, created: created, resetAt: new Date().toISOString() }));
+      if (authMode === "reset") {
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setAuthError("Please enter a valid email address."); return; }
+        const redirectTo = location.origin + location.pathname;
+        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+        if (error) { setAuthError(error.message || "Couldn't send reset email."); return; }
         authMode = "login";
-        finishAuth(email);
+        applyAuthMode();
+        showToast("Check your email · reset link sent");
+        return;
+      }
+      if (authMode === "newPassword") {
+        if (pw.length < 6) { setAuthError("Password must be at least 6 characters."); return; }
+        if (pw !== pw2) { setAuthError("Passwords don't match."); return; }
+        const { error } = await sb.auth.updateUser({ password: pw });
+        if (error) { setAuthError(error.message || "Couldn't update password."); return; }
+        if (history && history.replaceState) { history.replaceState(null, "", location.pathname); }
+        else { location.hash = ""; }
+        await finishAuth();
+        return;
+      }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setAuthError("Please enter a valid email address."); return; }
+      if (pw.length < 6) { setAuthError("Password must be at least 6 characters."); return; }
+      if (authMode === "signup") {
+        if (pw !== pw2) { setAuthError("Passwords don't match."); return; }
+        const { data, error } = await sb.auth.signUp({ email: email, password: pw });
+        if (error) { setAuthError(error.message || "Couldn't create account."); return; }
+        if (!data.session) { setAuthError("Account created — check your email to finish signing in."); return; }
+        await finishAuth();
       } else {
-        if (!existing) { setAuthError("No account found for that email on this device. Create one to get started."); return; }
-        const hash = await hashPassword(pw, existing.salt);
-        if (hash !== existing.hash) { setAuthError("Incorrect password. Please try again."); return; }
-        finishAuth(email);
+        const { data, error } = await sb.auth.signInWithPassword({ email: email, password: pw });
+        if (error) { setAuthError(error.message || "Incorrect email or password."); return; }
+        await finishAuth();
       }
     } catch (err) {
+      console.error(err);
       setAuthError("Something went wrong. Please try again.");
     }
   }
@@ -951,13 +1017,16 @@
   document.getElementById("passwordConfirm").addEventListener("keydown", (e) => { if (e.key === "Enter") submitAuth(); });
   applyAuthMode();
 
-  document.getElementById("signOutBtn").addEventListener("click", () => {
-    localStorage.removeItem(APP + ":currentEmail");
+  document.getElementById("signOutBtn").addEventListener("click", async () => {
+    if (sb) { try { await sb.auth.signOut(); } catch (e) { /* ignore */ } }
+    __currentUser = null;
+    __entries = [];
     document.getElementById("emailInput").value = "";
     document.getElementById("passwordInput").value = "";
     document.getElementById("passwordConfirm").value = "";
     authMode = "login";
     applyAuthMode();
+    updateCount();
     showSignIn();
     window.scrollTo(0, 0);
   });
@@ -968,7 +1037,7 @@
   updateCount();
 
   // ----- Save on submit -----
-  document.getElementById("journalForm").addEventListener("submit", (e) => {
+  document.getElementById("journalForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("entryName").value.trim();
     const date = document.getElementById("entryDate").value;
@@ -999,9 +1068,12 @@
     currentFitnessPreset = null;
     resetTimerState();
 
-    const list = loadEntries();
-    list.push(entry);
-    saveEntries(list);
+    try {
+      await insertEntryToCloud(entry);
+    } catch (err) {
+      alert("Couldn't save your entry to the cloud. Check your internet and try again.");
+      return;
+    }
     updateCount();
     renderScore();
     syncToGroup(true);
@@ -1067,14 +1139,15 @@
     }).join("");
   }
 
-  historyList.addEventListener("click", (e) => {
+  historyList.addEventListener("click", async (e) => {
     const card = e.target.closest(".entry-card");
     if (!card) return;
     const id = card.dataset.id;
     if (e.target.closest(".js-delete")) {
       if (confirm("Delete this entry? This can't be undone.")) {
-        saveEntries(loadEntries().filter(x => x.id !== id));
-        updateCount(); renderScore(); renderHistory();
+        try { await deleteEntryFromCloud(id); }
+        catch (err) { alert("Couldn't delete that entry — check your internet."); return; }
+        updateCount(); renderScore(); renderHistory(); syncToGroup(true);
       }
       return;
     }
@@ -1185,7 +1258,31 @@
   });
 
   // ----- Boot -----
-  if (currentEmail()) { showLanding(); } else { showSignIn(); }
+  (async function boot() {
+    if (!sb) { showSignIn(); return; }
+    // Detect password-reset redirect (Supabase puts type=recovery in the URL hash)
+    const hash = window.location.hash || "";
+    const isRecovery = /[#&]type=recovery(?:&|$)/.test(hash);
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session && session.user) {
+        __currentUser = { id: session.user.id, email: session.user.email };
+        if (isRecovery) {
+          authMode = "newPassword";
+          applyAuthMode();
+          showSignIn();
+          return;
+        }
+        await migrateLocalEntriesIfNeeded();
+        await fetchEntriesFromCloud();
+        updateCount();
+        renderQuestions(currentType);
+        showLanding();
+      } else {
+        showSignIn();
+      }
+    } catch (err) { console.error(err); showSignIn(); }
+  })();
 </script>
 </body>
 </html>
