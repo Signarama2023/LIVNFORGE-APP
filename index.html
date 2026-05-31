@@ -154,6 +154,9 @@
   .pc-fitness { border-color: rgba(52,194,194,0.4); }
   .pc-fitness:hover { border-color: #34c2c2; }
   .pc-fitness .pc-icon { border-color: #34c2c2; color: #34c2c2; }
+  .pc-gratitude { border-color: rgba(251,191,36,0.4); }
+  .pc-gratitude:hover { border-color: #fbbf24; }
+  .pc-gratitude .pc-icon { border-color: #fbbf24; color: #fbbf24; }
 
   /* Fitness preset workouts (KING300 / KING320) */
   .fit-presets { margin-bottom: 18px; }
@@ -472,6 +475,14 @@
             <div class="pc-desc">Track your training, energy and goals. Steward your body and stay disciplined.</div>
             <span class="pc-pts">+12 pts</span>
           </div>
+          <div class="pillar-card pc-gratitude" data-type="gratitude">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div class="pc-title">GRATITUDE JOURNAL</div>
+            <div class="pc-desc">Count your blessings. Name the people, moments and gifts you're thankful for today.</div>
+            <span class="pc-pts">+5 pts</span>
+          </div>
         </div>
 
         <div class="pillars-divider">FOUR PILLARS. ONE PURPOSE.</div>
@@ -523,6 +534,7 @@
             <div class="type-option" data-type="devotional"><span class="radio"></span> Devotional</div>
             <div class="type-option" data-type="prayer"><span class="radio"></span> Prayer Requests</div>
             <div class="type-option" data-type="fitness"><span class="radio"></span> Fitness Routine</div>
+            <div class="type-option" data-type="gratitude"><span class="radio"></span> Gratitude Journal</div>
           </div>
 
           <div class="meta-row">
@@ -606,10 +618,18 @@
         "How was my nutrition and hydration today?",
         "What is my plan or goal for the next session?"
       ]
+    },
+    gratitude: {
+      title: "Gratitude Journal",
+      items: [
+        "What are 3 things I'm grateful for today?",
+        "Who am I thankful for?",
+        "What blessing did I almost miss?"
+      ]
     }
   };
 
-  const POINTS = { freeflow: 3, guided: 7, reframe: 10, devotional: 7, prayer: 7, fitness: 12 };
+  const POINTS = { freeflow: 3, guided: 7, reframe: 10, devotional: 7, prayer: 7, fitness: 12, gratitude: 5 };
   function pointsFor(type) { return POINTS[type] || 0; }
 
   const APP = "riseUpKings";
