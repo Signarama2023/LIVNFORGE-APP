@@ -381,6 +381,12 @@
   .weekly-banner button { border: none; border-radius: 9px; background: var(--gold); color: #1c1402; font-weight: 700; font-size: 13px; font-family: inherit; padding: 9px 14px; cursor: pointer; }
   .weekly-banner button.wb-dismiss { background: none; border: 1px solid var(--field-border); color: var(--muted); font-weight: 600; }
   .landing-summary { display: block; margin: 22px auto 0; background: none; border: none; color: var(--gold); font-size: 14px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .ai-box { background: var(--panel); border: 1px solid var(--field-border); border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.6; color: #e7e7ea; white-space: pre-wrap; word-wrap: break-word; margin-bottom: 12px; }
+  .ai-box.ai-loading { color: var(--muted); }
+  .ai-box.ai-error { border-color: #f0768a; color: #f0a0ac; }
+  #aiGenBtn { border: none; border-radius: 10px; background: var(--gold); color: #1c1402; font-weight: 700; font-size: 14px; font-family: inherit; padding: 11px 16px; cursor: pointer; }
+  #aiGenBtn:hover:not(:disabled) { background: var(--gold-hover); }
+  #aiGenBtn:disabled { opacity: 0.6; cursor: default; }
 
   /* ---------- MOBILE ---------- */
   @media (max-width: 600px) {
@@ -635,6 +641,11 @@
             <button id="sumNext">Next &rarr;</button>
           </div>
           <div id="summaryBody"></div>
+          <div id="aiSummarySection">
+            <div class="sum-section-title">AI weekly review</div>
+            <div id="aiSummaryBody"></div>
+            <button id="aiGenBtn">Generate AI summary</button>
+          </div>
           <div class="sum-actions">
             <button id="sumEmail">Email this to me</button>
             <button class="ghost" id="sumDownload">Download</button>
@@ -1524,6 +1535,7 @@
       body.innerHTML = '<div class="sum-stats">' +
         statTile("0", "Entries", false) + statTile("0", "Points", true) + statTile("0 / 7", "Days", false) +
         '</div><div class="sum-empty">No journal entries this week.<br>Open a journal from Home to start your week strong.</div>';
+      renderAiSummary();
       return;
     }
     let html = '<div class="sum-stats">' +
@@ -1547,7 +1559,63 @@
         '<div class="se-preview">' + escapeHtml(preview.slice(0, 160)) + (preview.length > 160 ? "…" : "") + '</div></div>';
     }).join("");
     body.innerHTML = html;
+    renderAiSummary();
   }
+
+  // ----- AI weekly review (Supabase Edge Function -> Claude) -----
+  function entriesTextForOffset(off) {
+    var st = weekStats(off);
+    return st.list.map(function (e) {
+      var head = (e.typeTitle || e.type) + " — " + entryDay(e) +
+        (e.presetName ? (" [" + e.presetName + (e.durationText ? " " + e.durationText : "") + "]") : "");
+      var qa = (e.answers || []).map(function (a) { return "Q: " + (a.q || "") + "\nA: " + (a.a || "(blank)"); }).join("\n");
+      return head + "\n" + qa;
+    }).join("\n\n");
+  }
+  function aiCacheKey(off) { var st = weekStats(off); return APP + ":aisum:" + (currentEmail() || "").toLowerCase() + ":" + dayKey(st.start); }
+  function renderAiSummary() {
+    var box = document.getElementById("aiSummaryBody");
+    var btn = document.getElementById("aiGenBtn");
+    if (!box || !btn) return;
+    var cached = localStorage.getItem(aiCacheKey(sumOffset));
+    if (cached) {
+      box.innerHTML = '<div class="ai-box">' + escapeHtml(cached) + '</div>';
+      btn.textContent = "Regenerate AI summary";
+    } else {
+      box.innerHTML = "";
+      btn.textContent = "Generate AI summary";
+    }
+  }
+  async function generateAiSummary() {
+    var box = document.getElementById("aiSummaryBody");
+    var btn = document.getElementById("aiGenBtn");
+    var st = weekStats(sumOffset);
+    var entriesText = entriesTextForOffset(sumOffset);
+    if (!entriesText.trim()) {
+      box.innerHTML = '<div class="ai-box">No entries this week to summarize yet.</div>';
+      return;
+    }
+    if (!sb) { box.innerHTML = '<div class="ai-box ai-error">Can\'t reach the server right now.</div>'; return; }
+    btn.disabled = true;
+    box.innerHTML = '<div class="ai-box ai-loading">Writing your weekly review…</div>';
+    try {
+      var stats = st.list.length + " entries, " + st.points + " points, " + st.days +
+        " of 7 days journaled, current streak " + currentStreak() + " days";
+      var rangeLabel = labelForOffset(sumOffset) + " (" + fmtRange(st.start, st.end) + ")";
+      var resp = await sb.functions.invoke("weekly-ai-summary", { body: { rangeLabel: rangeLabel, stats: stats, entriesText: entriesText } });
+      if (resp.error) throw resp.error;
+      var summary = (resp.data && resp.data.summary) || (resp.data && resp.data.error) || "Couldn't generate a summary.";
+      localStorage.setItem(aiCacheKey(sumOffset), summary);
+      box.innerHTML = '<div class="ai-box">' + escapeHtml(summary) + '</div>';
+      btn.textContent = "Regenerate AI summary";
+    } catch (e) {
+      box.innerHTML = '<div class="ai-box ai-error">Couldn\'t generate the summary right now. ' + escapeHtml(String((e && e.message) || e)) + '</div>';
+      btn.textContent = "Generate AI summary";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  document.getElementById("aiGenBtn").addEventListener("click", generateAiSummary);
 
   function summaryPlainText(offset) {
     const st = weekStats(offset);
