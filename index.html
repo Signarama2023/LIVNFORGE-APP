@@ -387,6 +387,18 @@
   #aiGenBtn { border: none; border-radius: 10px; background: var(--gold); color: #1c1402; font-weight: 700; font-size: 14px; font-family: inherit; padding: 11px 16px; cursor: pointer; }
   #aiGenBtn:hover:not(:disabled) { background: var(--gold-hover); }
   #aiGenBtn:disabled { opacity: 0.6; cursor: default; }
+  .landing-cta {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%; margin: 0 0 22px; padding: 17px 18px; border: none; border-radius: 14px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #1c1402;
+    font-family: inherit; cursor: pointer; text-align: left;
+    box-shadow: 0 6px 18px rgba(217,169,62,0.28);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .landing-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(217,169,62,0.38); }
+  .landing-cta .cta-ico { flex-shrink: 0; display: flex; }
+  .landing-cta .cta-main { font-size: 17px; font-weight: 800; letter-spacing: 0.5px; line-height: 1.1; }
+  .landing-cta .cta-sub { display: block; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; opacity: 0.78; margin-top: 3px; }
 
   /* ---------- MOBILE ---------- */
   @media (max-width: 600px) {
@@ -481,6 +493,16 @@
           <div class="score-tile"><div class="num" id="scoreEntries">0</div><div class="lbl">Entries</div></div>
           <div class="score-tile"><div class="num" id="scoreStreak">0</div><div class="lbl">Day Streak</div></div>
         </div>
+
+        <button class="landing-cta" id="landingSummaryCta">
+          <span class="cta-ico">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+          </span>
+          <span>
+            <span class="cta-main">View Weekly Summary</span>
+            <span class="cta-sub">Your week + AI review</span>
+          </span>
+        </button>
 
         <div class="personal-bests">
           <div class="pb-label">Personal bests</div>
@@ -1113,6 +1135,7 @@
   });
   document.getElementById("landingHistory").addEventListener("click", () => { showApp(); showHistory(); window.scrollTo(0, 0); });
   document.getElementById("landingSummary").addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); });
+  document.getElementById("landingSummaryCta").addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); });
   document.getElementById("homeBtn").addEventListener("click", () => { showLanding(); window.scrollTo(0, 0); });
 
   let showingHistory = false;
