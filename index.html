@@ -324,6 +324,64 @@
   .lb-empty, .lb-loading { color: var(--muted); font-size: 13.5px; padding: 8px 2px; }
   .gp-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
 
+  /* ---------- WEEKLY SUMMARY ---------- */
+  #summaryView { display: none; }
+  .sum-weeknav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+  .sum-weeknav .wn-range { text-align: center; }
+  .sum-weeknav .wn-label { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); }
+  .sum-weeknav .wn-dates { font-size: 14px; color: var(--text); margin-top: 2px; }
+  .sum-weeknav button {
+    background: none; border: 1px solid var(--field-border); color: var(--text); border-radius: 8px;
+    padding: 8px 14px; font-size: 14px; font-family: inherit; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .sum-weeknav button:hover:not(:disabled) { border-color: var(--gold); }
+  .sum-weeknav button:disabled { opacity: 0.35; cursor: default; }
+  .sum-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .sum-stat { background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 10px; text-align: center; }
+  .sum-stat .num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .sum-stat.pts .num {
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .sum-stat .lbl { font-size: 11px; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
+  .sum-section-title { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin: 22px 0 12px; }
+  .sum-type-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; background: var(--field); border: 1px solid var(--field-border); margin-bottom: 8px; }
+  .sum-type-name { flex: 1; font-size: 14px; }
+  .sum-type-count { color: var(--muted); font-size: 13px; }
+  .sum-type-pts { color: var(--gold-light); font-weight: 700; font-size: 13px; white-space: nowrap; }
+  .sum-entry { padding: 10px 14px; border-radius: 10px; background: var(--field); border: 1px solid var(--field-border); margin-bottom: 8px; }
+  .sum-entry .se-top { display: flex; gap: 10px; align-items: center; }
+  .sum-entry .se-badge { font-size: 11px; font-weight: 600; color: #1c1402; background: linear-gradient(135deg, var(--gold), var(--gold-light)); padding: 2px 9px; border-radius: 999px; }
+  .sum-entry .se-date { font-size: 12px; color: var(--muted); }
+  .sum-entry .se-preview { font-size: 13.5px; color: #d6d6da; margin-top: 6px; white-space: pre-wrap; word-wrap: break-word; }
+  .sum-empty { text-align: center; color: var(--muted); padding: 36px 20px; font-size: 15px; }
+  .sum-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 8px; }
+  .sum-actions button {
+    border: none; border-radius: 10px; background: var(--gold); color: #1c1402; font-weight: 700;
+    font-size: 14px; font-family: inherit; padding: 11px 16px; cursor: pointer;
+  }
+  .sum-actions button.ghost { background: none; border: 1px solid var(--field-border); color: var(--gold); font-weight: 600; }
+  .saved-sum-card { background: var(--field); border: 1px solid var(--field-border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .saved-sum-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .saved-sum-head:hover { background: rgba(255,255,255,0.02); }
+  .saved-sum-title { font-size: 14px; }
+  .saved-sum-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .saved-sum-card.open .entry-chevron { transform: rotate(90deg); }
+  .saved-sum-body { display: none; padding: 4px 16px 16px; border-top: 1px solid var(--field-border); }
+  .saved-sum-card.open .saved-sum-body { display: block; }
+  .saved-sum-body pre { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 13.5px; color: #d6d6da; margin: 12px 0 0; }
+  .saved-sum-del { margin-top: 12px; }
+  .weekly-banner {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: linear-gradient(135deg, rgba(217,169,62,0.18), rgba(217,169,62,0.06));
+    border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+  }
+  .weekly-banner .wb-text { flex: 1; min-width: 180px; font-size: 14px; color: var(--text); }
+  .weekly-banner .wb-text b { color: var(--gold-light); }
+  .weekly-banner button { border: none; border-radius: 9px; background: var(--gold); color: #1c1402; font-weight: 700; font-size: 13px; font-family: inherit; padding: 9px 14px; cursor: pointer; }
+  .weekly-banner button.wb-dismiss { background: none; border: 1px solid var(--field-border); color: var(--muted); font-weight: 600; }
+  .landing-summary { display: block; margin: 22px auto 0; background: none; border: none; color: var(--gold); font-size: 14px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
   /* ---------- MOBILE ---------- */
   @media (max-width: 600px) {
     body { padding: 0; -webkit-text-size-adjust: 100%; }
@@ -409,6 +467,8 @@
             <button id="signOutBtn">Sign out</button>
           </span>
         </div>
+
+        <div class="weekly-banner" id="weeklyBanner" style="display:none;"></div>
 
         <div class="scoreboard">
           <div class="score-tile points"><div class="num" id="scorePoints">0</div><div class="lbl">Points</div></div>
@@ -511,6 +571,7 @@
           <div class="v-ref">COLOSSIANS 3:23</div>
         </div>
         <div class="landing-footer">SHOW UP. WRITE IT DOWN. LIVE IT OUT.</div>
+        <button class="landing-summary" id="landingSummary">View weekly summary</button>
         <button class="landing-history" id="landingHistory">Review your history</button>
       </div>
     </div>
@@ -561,6 +622,26 @@
             <span class="count-label" id="historyCountLabel">No entries yet</span>
           </div>
           <div id="historyList"></div>
+        </div>
+
+        <!-- WEEKLY SUMMARY VIEW -->
+        <div id="summaryView">
+          <div class="sum-weeknav">
+            <button id="sumPrev">&larr; Prev</button>
+            <div class="wn-range">
+              <div class="wn-label" id="sumWeekLabel">This week</div>
+              <div class="wn-dates" id="sumWeekDates"></div>
+            </div>
+            <button id="sumNext">Next &rarr;</button>
+          </div>
+          <div id="summaryBody"></div>
+          <div class="sum-actions">
+            <button id="sumEmail">Email this to me</button>
+            <button class="ghost" id="sumDownload">Download</button>
+            <button class="ghost" id="sumSave">Save to summaries</button>
+          </div>
+          <div class="sum-section-title" id="savedSumTitle" style="display:none;">Saved summaries</div>
+          <div id="savedSummaries"></div>
         </div>
 
       </div>
@@ -884,6 +965,7 @@
   const appView = document.getElementById("appView");
   const writeView = document.getElementById("writeView");
   const historyView = document.getElementById("historyView");
+  const summaryView = document.getElementById("summaryView");
   const historyList = document.getElementById("historyList");
   const historyToggle = document.getElementById("historyToggle");
 
@@ -998,15 +1080,20 @@
 
   // ----- View navigation -----
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; landingView.style.display = "block"; renderScore(); renderGroup(); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; landingView.style.display = "block"; renderScore(); renderGroup(); renderWeeklyBanner(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "block"; renderScore(); }
   function showWrite() {
-    writeView.style.display = "block"; historyView.style.display = "none";
+    writeView.style.display = "block"; historyView.style.display = "none"; summaryView.style.display = "none";
     historyToggle.firstChild.textContent = "History "; showingHistory = false;
   }
   function showHistory() {
-    renderHistory(); writeView.style.display = "none"; historyView.style.display = "block";
+    renderHistory(); writeView.style.display = "none"; summaryView.style.display = "none"; historyView.style.display = "block";
     historyToggle.firstChild.textContent = "Back to writing "; showingHistory = true;
+  }
+  function showSummary() {
+    writeView.style.display = "none"; historyView.style.display = "none"; summaryView.style.display = "block";
+    historyToggle.firstChild.textContent = "History "; showingHistory = false;
+    sumOffset = 0; renderSummary(); renderSavedSummaries();
   }
 
   // landing cards open a journal type
@@ -1014,6 +1101,7 @@
     c.addEventListener("click", () => { setActiveType(c.dataset.type); showApp(); showWrite(); window.scrollTo(0, 0); });
   });
   document.getElementById("landingHistory").addEventListener("click", () => { showApp(); showHistory(); window.scrollTo(0, 0); });
+  document.getElementById("landingSummary").addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); });
   document.getElementById("homeBtn").addEventListener("click", () => { showLanding(); window.scrollTo(0, 0); });
 
   let showingHistory = false;
@@ -1373,6 +1461,219 @@
     } else if (e.target.id === "gpRefresh") {
       loadLeaderboard();
     }
+  });
+
+  // ----- Weekly summary -----
+  let sumOffset = 0; // 0 = current week, -1 = last week, etc.
+
+  function startOfWeek(d) {
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    x.setDate(x.getDate() - x.getDay()); // Sunday
+    x.setHours(0, 0, 0, 0);
+    return x;
+  }
+  function weekRange(offset) {
+    const s = startOfWeek(new Date());
+    s.setDate(s.getDate() + offset * 7);
+    const e = new Date(s); e.setDate(e.getDate() + 6); e.setHours(23, 59, 59, 999);
+    return { start: s, end: e };
+  }
+  function fmtRange(s, e) {
+    const opt = { month: "short", day: "numeric" };
+    return s.toLocaleDateString(undefined, opt) + " – " + e.toLocaleDateString(undefined, opt) + ", " + e.getFullYear();
+  }
+  function entryDay(e) { return e.date || (e.savedAt || "").slice(0, 10); }
+  function entriesInRange(start, end) {
+    const sk = dayKey(start), ek = dayKey(end);
+    return loadEntries().filter(e => { const d = entryDay(e); return d && d >= sk && d <= ek; });
+  }
+  function labelForOffset(o) {
+    if (o === 0) return "This week";
+    if (o === -1) return "Last week";
+    return Math.abs(o) + " weeks ago";
+  }
+  function weekStats(offset) {
+    const { start, end } = weekRange(offset);
+    const list = entriesInRange(start, end).slice().sort((a, b) => {
+      const da = entryDay(a), db = entryDay(b);
+      if (da !== db) return da < db ? -1 : 1;
+      return (a.savedAt || "") < (b.savedAt || "") ? -1 : 1;
+    });
+    const points = list.reduce((s, e) => s + (typeof e.points === "number" ? e.points : pointsFor(e.type)), 0);
+    const days = new Set(list.map(entryDay)).size;
+    const byType = {};
+    list.forEach(e => {
+      const key = e.typeTitle || e.type || "Entry";
+      if (!byType[key]) byType[key] = { count: 0, points: 0 };
+      byType[key].count++;
+      byType[key].points += (typeof e.points === "number" ? e.points : pointsFor(e.type));
+    });
+    return { start, end, list, points, days, byType };
+  }
+
+  function statTile(num, lbl, isPts) {
+    return '<div class="sum-stat ' + (isPts ? "pts" : "") + '"><div class="num">' + num + '</div><div class="lbl">' + lbl + '</div></div>';
+  }
+  function renderSummary() {
+    const st = weekStats(sumOffset);
+    document.getElementById("sumWeekLabel").textContent = labelForOffset(sumOffset);
+    document.getElementById("sumWeekDates").textContent = fmtRange(st.start, st.end);
+    document.getElementById("sumNext").disabled = (sumOffset >= 0);
+    const body = document.getElementById("summaryBody");
+    if (st.list.length === 0) {
+      body.innerHTML = '<div class="sum-stats">' +
+        statTile("0", "Entries", false) + statTile("0", "Points", true) + statTile("0 / 7", "Days", false) +
+        '</div><div class="sum-empty">No journal entries this week.<br>Open a journal from Home to start your week strong.</div>';
+      return;
+    }
+    let html = '<div class="sum-stats">' +
+      statTile(st.list.length, "Entries", false) +
+      statTile(st.points, "Points", true) +
+      statTile(st.days + " / 7", "Days", false) +
+      '</div>';
+    html += '<div class="sum-section-title">By journal type</div>';
+    html += Object.keys(st.byType).map(k => {
+      const t = st.byType[k];
+      return '<div class="sum-type-row"><div class="sum-type-name">' + escapeHtml(k) + '</div>' +
+        '<div class="sum-type-count">' + t.count + (t.count === 1 ? " entry" : " entries") + '</div>' +
+        '<div class="sum-type-pts">+' + t.points + ' pts</div></div>';
+    }).join("");
+    html += '<div class="sum-section-title">Entries</div>';
+    html += st.list.map(e => {
+      const preview = (e.answers.find(x => x.a) || {}).a || "(left blank)";
+      return '<div class="sum-entry"><div class="se-top">' +
+        '<span class="se-badge">' + escapeHtml(e.typeTitle || e.type) + '</span>' +
+        '<span class="se-date">' + escapeHtml(entryDay(e)) + '</span></div>' +
+        '<div class="se-preview">' + escapeHtml(preview.slice(0, 160)) + (preview.length > 160 ? "…" : "") + '</div></div>';
+    }).join("");
+    body.innerHTML = html;
+  }
+
+  function summaryPlainText(offset) {
+    const st = weekStats(offset);
+    const L = [];
+    L.push("DAILY FORGE — WEEKLY SUMMARY");
+    L.push(labelForOffset(offset) + "  (" + fmtRange(st.start, st.end) + ")");
+    L.push("=".repeat(44));
+    L.push("");
+    L.push("Entries: " + st.list.length);
+    L.push("Points earned: " + st.points);
+    L.push("Days journaled: " + st.days + " of 7");
+    L.push("Current streak: " + currentStreak() + " days");
+    L.push("");
+    if (Object.keys(st.byType).length) {
+      L.push("BY TYPE");
+      Object.keys(st.byType).forEach(k => {
+        const t = st.byType[k];
+        L.push("  - " + k + ": " + t.count + (t.count === 1 ? " entry" : " entries") + " (+" + t.points + " pts)");
+      });
+      L.push("");
+    }
+    if (st.list.length) {
+      L.push("ENTRIES");
+      st.list.forEach(e => {
+        const preview = (e.answers.find(x => x.a) || {}).a || "(left blank)";
+        L.push("  [" + (e.typeTitle || e.type) + "] " + entryDay(e));
+        L.push("    " + preview.slice(0, 200).replace(/\n/g, " "));
+      });
+      L.push("");
+    } else {
+      L.push("No entries logged this week.");
+      L.push("");
+    }
+    L.push("SHOW UP. WRITE IT DOWN. LIVE IT OUT.");
+    return L.join("\n");
+  }
+
+  document.getElementById("sumPrev").addEventListener("click", () => { sumOffset -= 1; renderSummary(); window.scrollTo(0, 0); });
+  document.getElementById("sumNext").addEventListener("click", () => { if (sumOffset < 0) { sumOffset += 1; renderSummary(); window.scrollTo(0, 0); } });
+
+  document.getElementById("sumEmail").addEventListener("click", () => {
+    const email = currentEmail() || "";
+    const st = weekStats(sumOffset);
+    const subject = "Daily Forge — Weekly Summary (" + fmtRange(st.start, st.end) + ")";
+    const body = summaryPlainText(sumOffset);
+    window.location.href = "mailto:" + encodeURIComponent(email) +
+      "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  });
+  document.getElementById("sumDownload").addEventListener("click", () => {
+    const st = weekStats(sumOffset);
+    const blob = new Blob([summaryPlainText(sumOffset)], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "daily-forge-weekly-" + dayKey(st.start) + ".txt";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // saved-summary archive (kept on this device)
+  function summariesKey() { return APP + ":summaries:" + (currentEmail() || "").toLowerCase(); }
+  function loadSummaries() { try { return JSON.parse(localStorage.getItem(summariesKey())) || []; } catch (e) { return []; } }
+  function saveSummaries(list) { try { localStorage.setItem(summariesKey(), JSON.stringify(list)); } catch (e) {} }
+  document.getElementById("sumSave").addEventListener("click", () => {
+    const st = weekStats(sumOffset);
+    const list = loadSummaries();
+    const startKey = dayKey(st.start);
+    const snap = {
+      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      startKey: startKey,
+      rangeLabel: labelForOffset(sumOffset) + " · " + fmtRange(st.start, st.end),
+      savedAt: new Date().toISOString(),
+      entries: st.list.length, points: st.points, days: st.days,
+      text: summaryPlainText(sumOffset)
+    };
+    const idx = list.findIndex(s => s.startKey === startKey);
+    if (idx >= 0) { snap.id = list[idx].id; list[idx] = snap; } else { list.unshift(snap); }
+    saveSummaries(list);
+    renderSavedSummaries();
+    showToast(idx >= 0 ? "Summary updated" : "Summary saved");
+  });
+  function renderSavedSummaries() {
+    const wrap = document.getElementById("savedSummaries");
+    const title = document.getElementById("savedSumTitle");
+    const list = loadSummaries().slice().sort((a, b) => (a.startKey < b.startKey ? 1 : -1));
+    if (!list.length) { title.style.display = "none"; wrap.innerHTML = ""; return; }
+    title.style.display = "block";
+    wrap.innerHTML = list.map(s =>
+      '<div class="saved-sum-card" data-id="' + s.id + '">' +
+      '<div class="saved-sum-head js-sum-toggle"><div style="flex:1">' +
+      '<div class="saved-sum-title">' + escapeHtml(s.rangeLabel) + '</div>' +
+      '<div class="saved-sum-sub">' + s.entries + ' entries · ' + s.points + ' pts · ' + s.days + '/7 days · saved ' + fmtSaved(s.savedAt) + '</div>' +
+      '</div><span class="entry-chevron">&#9656;</span></div>' +
+      '<div class="saved-sum-body"><pre>' + escapeHtml(s.text) + '</pre>' +
+      '<button class="mini-btn danger saved-sum-del js-sum-del">Delete</button></div></div>'
+    ).join("");
+  }
+  document.getElementById("savedSummaries").addEventListener("click", (e) => {
+    const card = e.target.closest(".saved-sum-card");
+    if (!card) return;
+    if (e.target.closest(".js-sum-del")) {
+      saveSummaries(loadSummaries().filter(s => s.id !== card.dataset.id));
+      renderSavedSummaries();
+      return;
+    }
+    if (e.target.closest(".js-sum-toggle")) card.classList.toggle("open");
+  });
+
+  // weekend reminder banner
+  function weeklyBannerDismissedKey() { return APP + ":wbDismiss:" + (currentEmail() || "").toLowerCase(); }
+  function renderWeeklyBanner() {
+    const el = document.getElementById("weeklyBanner");
+    if (!el) return;
+    const today = new Date();
+    const isWeekend = today.getDay() === 6 || today.getDay() === 0; // Sat or Sun
+    const todayKey = dayKey(today);
+    if (!isWeekend || localStorage.getItem(weeklyBannerDismissedKey()) === todayKey) { el.style.display = "none"; return; }
+    const st = weekStats(0);
+    el.style.display = "flex";
+    el.innerHTML = '<div class="wb-text">It\'s the weekend — your week so far: <b>' + st.list.length +
+      (st.list.length === 1 ? " entry" : " entries") + " · " + st.points + ' pts</b>. Review and send your weekly summary.</div>' +
+      '<button id="wbOpen">View summary</button>' +
+      '<button class="wb-dismiss" id="wbDismiss">Dismiss</button>';
+  }
+  document.getElementById("weeklyBanner").addEventListener("click", (e) => {
+    if (e.target.id === "wbOpen") { showApp(); showSummary(); window.scrollTo(0, 0); }
+    else if (e.target.id === "wbDismiss") { localStorage.setItem(weeklyBannerDismissedKey(), dayKey(new Date())); renderWeeklyBanner(); }
   });
 
   // ----- Boot -----
