@@ -392,6 +392,25 @@
   .wc-actions button { border: none; border-radius: 10px; background: var(--gold); color: #1c1402; font-weight: 700; font-size: 13.5px; font-family: inherit; padding: 10px 18px; cursor: pointer; }
   .wc-actions button.ghost { background: none; border: 1px solid var(--field-border); color: var(--gold); font-weight: 600; }
   .wc-actions button:hover { filter: brightness(1.05); }
+  /* Build chooser (pick men's / women's build) */
+  #buildChooser { display: none; }
+  .chooser-body { padding: 28px 24px 42px; max-width: 480px; margin: 0 auto; text-align: center; }
+  .chooser-body h2 { font-size: 22px; margin: 0 0 8px; }
+  .chooser-body p { color: var(--muted); font-size: 14px; margin: 0 0 24px; line-height: 1.55; }
+  .chooser-opts { display: grid; gap: 14px; }
+  .chooser-card { display: flex; align-items: center; gap: 14px; text-align: left; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 18px; cursor: pointer; font-family: inherit; color: var(--text); transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+  .chooser-card:hover { border-color: var(--gold); transform: translateY(-1px); }
+  .chooser-card.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(217,169,62,0.28); }
+  .chooser-card .cc-crown { color: var(--gold); flex-shrink: 0; display: flex; }
+  .chooser-card .cc-textwrap { display: flex; flex-direction: column; }
+  .chooser-card .cc-name { font-size: 17px; font-weight: 700; }
+  .chooser-card .cc-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .chooser-cancel { margin-top: 20px; background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  /* Devotional reflection card (women's build) */
+  .reflection-card { background: linear-gradient(135deg, rgba(217,169,62,0.16), rgba(217,169,62,0.04)); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
+  .reflection-card .rc-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
+  .reflection-card .rc-text { font-size: 15px; line-height: 1.55; color: #f2f2f4; }
+  .reflection-card .rc-credit { font-size: 11.5px; color: var(--muted); margin-top: 10px; font-style: italic; }
   #aiGenBtn:hover:not(:disabled) { background: var(--gold-hover); }
   #aiGenBtn:disabled { opacity: 0.6; cursor: default; }
   .landing-cta {
@@ -480,14 +499,15 @@
         </svg>
         <div class="hero-inner">
           <img class="logo" src="DailyForge%20LOGO.png" alt="Daily Forge">
-          <div class="hero-desc">A daily forge for men who live on purpose as sons of the King.</div>
+          <div class="hero-desc" id="heroDesc">A daily forge for men who live on purpose as sons of the King.</div>
         </div>
       </div>
 
       <div class="landing-body">
         <div class="profile-bar">
           <span>Signed in as <b id="profileEmail"></b></span>
-          <span style="display:flex; gap:8px;">
+          <span style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="buildToggle" title="Switch between the men's and women's build">Men's build</button>
             <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
             <button id="signOutBtn">Sign out</button>
           </span>
@@ -602,12 +622,40 @@
 
         <div class="verse">
           <div class="v-crown"><svg width="30" height="20" viewBox="0 0 42 26" fill="currentColor"><path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/></svg></div>
-          <div class="v-text">Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.</div>
-          <div class="v-ref">COLOSSIANS 3:23</div>
+          <div class="v-text" id="verseText">Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.</div>
+          <div class="v-ref" id="verseRef">COLOSSIANS 3:23</div>
         </div>
         <div class="landing-footer">SHOW UP. WRITE IT DOWN. LIVE IT OUT.</div>
         <button class="landing-summary" id="landingSummary">View weekly summary</button>
         <button class="landing-history" id="landingHistory">Review your history</button>
+      </div>
+    </div>
+
+    <!-- ===================== BUILD CHOOSER ===================== -->
+    <div id="buildChooser">
+      <div class="hero">
+        <svg class="mountains" viewBox="0 0 760 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 120 L120 50 L210 95 L330 30 L430 90 L520 45 L640 100 L760 55 L760 120 Z" fill="#0d0f13"/>
+          <path d="M0 120 L160 75 L300 110 L430 65 L560 105 L700 80 L760 100 L760 120 Z" fill="#070809" opacity="0.85"/>
+        </svg>
+        <div class="hero-inner">
+          <img class="logo" src="DailyForge%20LOGO.png" alt="Daily Forge">
+        </div>
+      </div>
+      <div class="chooser-body">
+        <h2>Choose your path</h2>
+        <p>Daily Forge comes in two builds — the language, reflections and workouts are tuned for each. Pick the one made for you. You can switch anytime.</p>
+        <div class="chooser-opts">
+          <button type="button" class="chooser-card" data-build="women">
+            <span class="cc-crown"><svg width="34" height="22" viewBox="0 0 42 26" fill="currentColor"><path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/></svg></span>
+            <span class="cc-textwrap"><span class="cc-name">Daughters of the King</span><span class="cc-sub">For women — reflections, language and workouts focused for you.</span></span>
+          </button>
+          <button type="button" class="chooser-card" data-build="men">
+            <span class="cc-crown"><svg width="34" height="22" viewBox="0 0 42 26" fill="currentColor"><path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/></svg></span>
+            <span class="cc-textwrap"><span class="cc-name">Sons of the King</span><span class="cc-sub">For men — the original Daily Forge experience.</span></span>
+          </button>
+        </div>
+        <button type="button" class="chooser-cancel" id="chooserCancel" style="display:none;">Cancel</button>
       </div>
     </div>
 
@@ -764,6 +812,45 @@
   function pointsFor(type) { return POINTS[type] || 0; }
 
   const APP = "riseUpKings";
+
+  // ----- Build variants (men / women), chosen at sign-in and saved to the account -----
+  let BUILD = "men"; // "men" | "women"
+  const BUILDS = {
+    men: {
+      heroDesc: "A daily forge for men who live on purpose as sons of the King.",
+      verseText: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.",
+      verseRef: "COLOSSIANS 3:23",
+      presetOrder: ["king300", "king320"],
+      presets: {
+        king300: { name: "KING300", points: 15, short: "4 sets · 25 pushups · 25 situps · 25 squats", desc: "4 sets of 25 pushups, 25 situps, 25 squats (100 / 100 / 100 total)" },
+        king320: { name: "KING320", points: 18, short: "4 sets · 25 pushups · 25 situps · 25 squats · 5 pullups", desc: "4 sets of 25 pushups, 25 situps, 25 squats, 5 pullups (100 / 100 / 100 / 20 total)" }
+      },
+      reflectionCredit: "",
+      reflections: []
+    },
+    women: {
+      heroDesc: "A daily forge for women who live on purpose as daughters of the King.",
+      verseText: "Strength and dignity are her clothing. She laughs at the time to come.",
+      verseRef: "PROVERBS 31:25",
+      presetOrder: ["reign240", "reign260"],
+      presets: {
+        reign240: { name: "REIGN240", points: 15, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 sit-ups", desc: "4 rounds of 15 squats, 15 glute bridges, 20 walking lunges, 10 sit-ups (240 total)" },
+        reign260: { name: "REIGN260", points: 18, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 push-ups · 5 sit-to-stands", desc: "4 rounds of 15 squats, 15 glute bridges, 20 lunges, 10 push-ups, 5 sit-to-stands (260 total)" }
+      },
+      // Inspired-by, no verbatim: original prompts; named voices credited as general inspiration only.
+      reflectionCredit: "Reflections inspired by women of faith like Lysa TerKeurst, Rebecca Maxwell, and Ali Parsons.",
+      reflections: [
+        "When life isn't what you expected, where can you choose to trust God today?",
+        "What is one lie about your worth you can lay down — and what truth will you pick up in its place?",
+        "Where is God inviting you to show up with courage in the ordinary moments of today?",
+        "What disappointment are you carrying that you can bring honestly to God right now?",
+        "What would it look like to be “clothed with strength and dignity” in the thing you're facing this week?",
+        "Who in your life can you encourage today the way God has encouraged you?",
+        "Where do you need to forgive — yourself or someone else — so you can walk lighter today?"
+      ]
+    }
+  };
+  function build() { return BUILDS[BUILD] || BUILDS.men; }
 
   // ----- Cloud auth (Supabase) + entries cache -----
   let __currentUser = null; // { id, email }
@@ -943,13 +1030,9 @@
 
   let currentType = "reframe";
 
-  // ----- Fitness preset workouts (KING300 / KING320) + timer -----
-  let currentFitnessPreset = null; // "king300" | "king320" | null
-  const PRESET_POINTS = { king300: 15, king320: 18 };
-  const PRESET_INFO = {
-    king300: { name: "KING300", desc: "4 sets of 25 pushups, 25 situps, 25 squats (100 / 100 / 100 total)" },
-    king320: { name: "KING320", desc: "4 sets of 25 pushups, 25 situps, 25 squats, 5 pullups (100 / 100 / 100 / 20 total)" }
-  };
+  // ----- Fitness preset workouts (per build) + timer -----
+  let currentFitnessPreset = null; // preset id within the active build, or null
+  function presetDef(id) { return build().presets[id] || null; }
   let timerInterval = null;
   let timerStartMs = 0;
   let timerElapsedMs = 0;
@@ -1039,22 +1122,30 @@
   function renderQuestions(type) {
     const data = QUESTIONS[type];
     let html = "";
+    if (type === "devotional" && BUILD === "women" && build().reflections.length) {
+      const refs = build().reflections;
+      const idx = (new Date().getDate()) % refs.length;
+      html += `
+      <div class="reflection-card">
+        <div class="rc-label">Reflection for today</div>
+        <div class="rc-text">${escapeHtml(refs[idx])}</div>
+        <div class="rc-credit">${escapeHtml(build().reflectionCredit)}</div>
+      </div>`;
+    }
     if (type === "fitness") {
+      const presetBtns = build().presetOrder.map(id => {
+        const p = build().presets[id];
+        return `
+          <button type="button" class="fit-preset-btn" data-preset="${id}">
+            <span class="fpb-name">${escapeHtml(p.name)}</span>
+            <span class="fpb-desc">${escapeHtml(p.short)}</span>
+            <span class="fpb-pts">+${p.points} pts</span>
+          </button>`;
+      }).join("");
       html += `
       <div class="fit-presets" id="fitPresets">
         <div class="fit-presets-label">Preset workouts</div>
-        <div class="fit-presets-row">
-          <button type="button" class="fit-preset-btn" data-preset="king300">
-            <span class="fpb-name">KING300</span>
-            <span class="fpb-desc">4 sets · 25 pushups · 25 situps · 25 squats</span>
-            <span class="fpb-pts">+15 pts</span>
-          </button>
-          <button type="button" class="fit-preset-btn" data-preset="king320">
-            <span class="fpb-name">KING320</span>
-            <span class="fpb-desc">4 sets · 25 pushups · 25 situps · 25 squats · 5 pullups</span>
-            <span class="fpb-pts">+18 pts</span>
-          </button>
-        </div>
+        <div class="fit-presets-row">${presetBtns}</div>
       </div>
       <div class="fit-timer" id="fitTimer" style="display: none;">
         <div>
@@ -1099,7 +1190,7 @@
         const preset = btn.dataset.preset;
         currentFitnessPreset = preset;
         document.querySelectorAll(".fit-preset-btn").forEach(b => b.classList.toggle("active", b === btn));
-        const info = PRESET_INFO[preset];
+        const info = presetDef(preset);
         const q0 = document.getElementById("q0");
         if (q0) q0.value = info.name + " — " + info.desc;
         const timer = document.getElementById("fitTimer");
@@ -1126,9 +1217,46 @@
   });
 
   // ----- View navigation -----
-  function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; landingView.style.display = "block"; renderScore(); renderGroup(); renderWeeklyBanner(); }
-  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "block"; renderScore(); }
+  const buildChooser = document.getElementById("buildChooser");
+  function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); }
+  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; appView.style.display = "block"; renderScore(); }
+  function showChooser(cancelable) {
+    signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "none";
+    buildChooser.style.display = "block";
+    document.querySelectorAll("#buildChooser .chooser-card").forEach(c => c.classList.toggle("active", c.dataset.build === BUILD));
+    document.getElementById("chooserCancel").style.display = cancelable ? "block" : "none";
+    window.scrollTo(0, 0);
+  }
+
+  // ----- Build selection -----
+  function applyBuild() {
+    const b = build();
+    document.body.setAttribute("data-build", BUILD);
+    const hd = document.getElementById("heroDesc"); if (hd) hd.textContent = b.heroDesc;
+    const vt = document.getElementById("verseText"); if (vt) vt.textContent = b.verseText;
+    const vr = document.getElementById("verseRef"); if (vr) vr.textContent = b.verseRef;
+    const tog = document.getElementById("buildToggle"); if (tog) tog.textContent = (BUILD === "women" ? "Women's build" : "Men's build");
+    // a stale preset id from the other build would no longer exist
+    if (currentFitnessPreset && !presetDef(currentFitnessPreset)) { currentFitnessPreset = null; resetTimerState(); }
+    renderQuestions(currentType);
+  }
+  async function saveBuild(b) {
+    if (b !== "men" && b !== "women") b = "men";
+    BUILD = b;
+    if (__currentUser) __currentUser.build = b;
+    applyBuild();
+    try { if (sb) await sb.auth.updateUser({ data: { build: b } }); }
+    catch (e) { console.error("Couldn't save build preference:", e); }
+  }
+  document.querySelectorAll("#buildChooser .chooser-card").forEach(card => {
+    card.addEventListener("click", async () => {
+      await saveBuild(card.dataset.build);
+      showLanding();
+    });
+  });
+  document.getElementById("chooserCancel").addEventListener("click", () => showLanding());
+  document.getElementById("buildToggle").addEventListener("click", () => showChooser(true));
   function showWrite() {
     writeView.style.display = "block"; historyView.style.display = "none"; summaryView.style.display = "none";
     historyToggle.firstChild.textContent = "History "; showingHistory = false;
@@ -1197,10 +1325,15 @@
     document.getElementById("passwordConfirm").value = "";
   });
 
+  function setUserFromSession(session) {
+    const meta = (session.user && session.user.user_metadata) || {};
+    BUILD = (meta.build === "women" || meta.build === "men") ? meta.build : "men";
+    __currentUser = { id: session.user.id, email: session.user.email, build: meta.build || null };
+  }
   async function finishAuth() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session || !session.user) { setAuthError("Couldn't establish session."); return; }
-    __currentUser = { id: session.user.id, email: session.user.email };
+    setUserFromSession(session);
     document.getElementById("passwordInput").value = "";
     document.getElementById("passwordConfirm").value = "";
     setAuthError("");
@@ -1208,7 +1341,9 @@
     await fetchEntriesFromCloud();
     renderQuestions(currentType);
     updateCount();
-    showLanding();
+    // New (or build-less) users pick their path before the landing page
+    if (!__currentUser.build) { showChooser(false); }
+    else { showLanding(); }
     window.scrollTo(0, 0);
   }
   async function submitAuth() {
@@ -1300,8 +1435,8 @@
     // capture timer if still running for a fitness preset workout
     if (currentType === "fitness" && currentFitnessPreset && timerInterval) { stopTimer(); }
     let pts = pointsFor(currentType);
-    if (currentType === "fitness" && currentFitnessPreset && PRESET_POINTS[currentFitnessPreset]) {
-      pts = PRESET_POINTS[currentFitnessPreset];
+    if (currentType === "fitness" && currentFitnessPreset && presetDef(currentFitnessPreset)) {
+      pts = presetDef(currentFitnessPreset).points;
     }
 
     const entry = {
@@ -1310,9 +1445,9 @@
       points: pts, savedAt: new Date().toISOString(),
       answers: fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }))
     };
-    if (currentType === "fitness" && currentFitnessPreset) {
+    if (currentType === "fitness" && currentFitnessPreset && presetDef(currentFitnessPreset)) {
       entry.preset = currentFitnessPreset;
-      entry.presetName = PRESET_INFO[currentFitnessPreset].name;
+      entry.presetName = presetDef(currentFitnessPreset).name;
       if (timerElapsedMs > 0) {
         entry.durationMs = timerElapsedMs;
         entry.durationText = fmtTimer(timerElapsedMs);
@@ -1800,7 +1935,7 @@
       var stats = st.list.length + " entries, " + st.points + " points, " + st.days +
         " of 7 days journaled, current streak " + currentStreak() + " days";
       var rangeLabel = labelForOffset(sumOffset) + " (" + fmtRange(st.start, st.end) + ")";
-      var resp = await sb.functions.invoke("weekly-ai-summary", { body: { rangeLabel: rangeLabel, stats: stats, entriesText: entriesText } });
+      var resp = await sb.functions.invoke("weekly-ai-summary", { body: { rangeLabel: rangeLabel, stats: stats, entriesText: entriesText, build: BUILD } });
       if (resp.error) throw resp.error;
       var summary = (resp.data && resp.data.summary) || (resp.data && resp.data.error) || "Couldn't generate a summary.";
       localStorage.setItem(aiCacheKey(sumOffset), summary);
@@ -1957,7 +2092,7 @@
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (session && session.user) {
-        __currentUser = { id: session.user.id, email: session.user.email };
+        setUserFromSession(session);
         if (isRecovery) {
           authMode = "newPassword";
           applyAuthMode();
@@ -1968,7 +2103,8 @@
         await fetchEntriesFromCloud();
         updateCount();
         renderQuestions(currentType);
-        showLanding();
+        if (!__currentUser.build) { showChooser(false); }
+        else { showLanding(); }
       } else {
         showSignIn();
       }
