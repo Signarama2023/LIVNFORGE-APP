@@ -16,6 +16,21 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "202
 const APP_URL = Deno.env.get("APP_URL") || "https://signarama2023.github.io/reframe-journal";
 const TRIAL_DAYS = 7;
 
+// Daily Forge Stripe products (test mode). The active recurring price for each
+// is resolved at request time, so we never hard-code price IDs.
+const PRODUCTS: Record<string, string> = {
+  monthly: "prod_UdXCGKzOWjvnGK",
+  annual: "prod_UdXDMJEQIrVxaH",
+};
+
+async function priceForPlan(plan: string): Promise<string | null> {
+  const productId = PRODUCTS[plan];
+  if (!productId) return null;
+  const prices = await stripe.prices.list({ product: productId, active: true, limit: 10 });
+  const recurring = prices.data.find((p) => p.recurring) || prices.data[0];
+  return recurring ? recurring.id : null;
+}
+
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -35,8 +50,9 @@ Deno.serve(async (req) => {
     const { data: { user }, error: userErr } = await supabase.auth.getUser();
     if (userErr || !user) return json({ error: "Not signed in." }, 401);
 
-    const { priceId } = await req.json();
-    if (!priceId) return json({ error: "Missing priceId." }, 400);
+    const { plan } = await req.json();
+    const priceId = await priceForPlan(plan);
+    if (!priceId) return json({ error: "Unknown or unpriced plan: " + plan }, 400);
 
     // Reuse an existing Stripe customer for this user, or create one.
     const { data: existing } = await supabase
