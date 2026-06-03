@@ -256,6 +256,15 @@
   .bs-row label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin: 0; }
   .bs-row select, .bs-row input { background: var(--field); border: 1px solid var(--field-border); color: var(--text); padding: 11px 12px; border-radius: 8px; font-size: 14px; font-family: inherit; }
   .bs-row input:focus, .bs-row select:focus { outline: none; border-color: var(--gold); }
+  .bs-picker { display: grid; grid-template-columns: 1.6fr 0.7fr 0.7fr auto 0.7fr; gap: 6px; align-items: center; }
+  .bs-picker select, .bs-picker input { background: var(--field); border: 1px solid var(--field-border); color: var(--text); padding: 10px 8px; border-radius: 8px; font-size: 14px; font-family: inherit; min-width: 0; }
+  .bs-picker select:focus, .bs-picker input:focus { outline: none; border-color: var(--gold); }
+  .bs-dash { color: var(--muted); text-align: center; font-weight: 700; padding: 0 2px; }
+  .bs-or { font-size: 11px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; text-align: center; margin: 4px 0; position: relative; }
+  .bs-or::before, .bs-or::after { content: ""; position: absolute; top: 50%; width: 30%; height: 1px; background: var(--field-border); }
+  .bs-or::before { left: 0; }
+  .bs-or::after { right: 0; }
+  @media (max-width: 520px) { .bs-picker { grid-template-columns: 1fr 0.6fr 0.6fr 16px 0.6fr; } }
   .bs-btn { background: var(--gold); color: #15161a; border: none; padding: 12px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; letter-spacing: 0.5px; }
   .bs-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .bs-btn:hover:not(:disabled) { background: var(--gold-light); }
@@ -729,6 +738,56 @@
     "jude":"JUD",
     "revelation":"REV","rev":"REV","re":"REV"
   };
+  const BIBLE_BOOKS = [
+    {n:"Genesis",c:50},{n:"Exodus",c:40},{n:"Leviticus",c:27},{n:"Numbers",c:36},{n:"Deuteronomy",c:34},
+    {n:"Joshua",c:24},{n:"Judges",c:21},{n:"Ruth",c:4},{n:"1 Samuel",c:31},{n:"2 Samuel",c:24},
+    {n:"1 Kings",c:22},{n:"2 Kings",c:25},{n:"1 Chronicles",c:29},{n:"2 Chronicles",c:36},{n:"Ezra",c:10},
+    {n:"Nehemiah",c:13},{n:"Esther",c:10},{n:"Job",c:42},{n:"Psalm",c:150},{n:"Proverbs",c:31},
+    {n:"Ecclesiastes",c:12},{n:"Song of Solomon",c:8},{n:"Isaiah",c:66},{n:"Jeremiah",c:52},{n:"Lamentations",c:5},
+    {n:"Ezekiel",c:48},{n:"Daniel",c:12},{n:"Hosea",c:14},{n:"Joel",c:3},{n:"Amos",c:9},
+    {n:"Obadiah",c:1},{n:"Jonah",c:4},{n:"Micah",c:7},{n:"Nahum",c:3},{n:"Habakkuk",c:3},
+    {n:"Zephaniah",c:3},{n:"Haggai",c:2},{n:"Zechariah",c:14},{n:"Malachi",c:4},
+    {n:"Matthew",c:28},{n:"Mark",c:16},{n:"Luke",c:24},{n:"John",c:21},{n:"Acts",c:28},
+    {n:"Romans",c:16},{n:"1 Corinthians",c:16},{n:"2 Corinthians",c:13},{n:"Galatians",c:6},{n:"Ephesians",c:6},
+    {n:"Philippians",c:4},{n:"Colossians",c:4},{n:"1 Thessalonians",c:5},{n:"2 Thessalonians",c:3},{n:"1 Timothy",c:6},
+    {n:"2 Timothy",c:4},{n:"Titus",c:3},{n:"Philemon",c:1},{n:"Hebrews",c:13},{n:"James",c:5},
+    {n:"1 Peter",c:5},{n:"2 Peter",c:3},{n:"1 John",c:5},{n:"2 John",c:1},{n:"3 John",c:1},
+    {n:"Jude",c:1},{n:"Revelation",c:22}
+  ];
+  function fillPickerOptions() {
+    const bookSel = document.getElementById("bsBook");
+    if (!bookSel || bookSel.options.length > 1) return;
+    BIBLE_BOOKS.forEach(function(b){
+      const o = document.createElement("option"); o.value = b.n; o.textContent = b.n; bookSel.appendChild(o);
+    });
+  }
+  function onBookChange() {
+    const bookSel = document.getElementById("bsBook");
+    const chSel = document.getElementById("bsChapter");
+    const book = BIBLE_BOOKS.find(function(b){ return b.n === bookSel.value; });
+    chSel.innerHTML = '<option value="">Ch</option>';
+    if (!book) { chSel.disabled = true; updateRefFromPicker(); return; }
+    chSel.disabled = false;
+    for (let i = 1; i <= book.c; i++) {
+      const o = document.createElement("option"); o.value = i; o.textContent = i; chSel.appendChild(o);
+    }
+    updateRefFromPicker();
+  }
+  function updateRefFromPicker() {
+    const b = (document.getElementById("bsBook")||{}).value || "";
+    const c = (document.getElementById("bsChapter")||{}).value || "";
+    const vs = (document.getElementById("bsVerseStart")||{}).value || "";
+    const ve = (document.getElementById("bsVerseEnd")||{}).value || "";
+    const refInput = document.getElementById("bsReference");
+    if (!refInput) return;
+    if (!b || !c) { return; }
+    let ref = b + " " + c;
+    if (vs) {
+      ref += ":" + vs;
+      if (ve && ve !== vs) ref += "-" + ve;
+    }
+    refInput.value = ref;
+  }
   function parseReference(ref) {
     ref = (ref || "").trim();
     const m = ref.match(/^(\d?\s*[A-Za-z][A-Za-z ]*?)\s+(\d+)(?::(\d+)(?:\s*-\s*(\d+))?)?$/);
@@ -1121,7 +1180,17 @@
               </select>
             </div>
             <div class="bs-row">
-              <label for="bsReference">Passage</label>
+              <label>Passage — pick book, chapter, verses</label>
+              <div class="bs-picker">
+                <select id="bsBook"><option value="">— Book —</option></select>
+                <select id="bsChapter" disabled><option value="">Ch</option></select>
+                <input id="bsVerseStart" type="number" min="1" placeholder="v" inputmode="numeric">
+                <span class="bs-dash">–</span>
+                <input id="bsVerseEnd" type="number" min="1" placeholder="v" inputmode="numeric">
+              </div>
+            </div>
+            <div class="bs-or">or type a reference</div>
+            <div class="bs-row">
               <input id="bsReference" type="text" placeholder="e.g. John 3:16 · Romans 8:28-39 · Psalm 23" autocomplete="off">
             </div>
             <button type="button" id="bsLoadBtn" class="bs-btn">Load passage</button>
@@ -1158,6 +1227,11 @@
       document.getElementById("bsLoadBtn").addEventListener("click", loadBiblePassage);
       document.getElementById("bsGenerateBtn").addEventListener("click", generateDevotionalQuestions);
       document.getElementById("bsReference").addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); loadBiblePassage(); } });
+      fillPickerOptions();
+      document.getElementById("bsBook").addEventListener("change", onBookChange);
+      document.getElementById("bsChapter").addEventListener("change", updateRefFromPicker);
+      document.getElementById("bsVerseStart").addEventListener("input", updateRefFromPicker);
+      document.getElementById("bsVerseEnd").addEventListener("input", updateRefFromPicker);
     }
 
     if (type === "fitness") {
