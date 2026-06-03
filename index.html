@@ -311,6 +311,16 @@
   .kv-label { font-size: 10px; letter-spacing: 2px; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
   .kv-text { font-size: 15px; line-height: 1.5; color: var(--text); font-style: italic; margin-bottom: 6px; }
   .kv-ref { font-size: 12px; color: var(--muted); }
+  .bs-section-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin: 22px 0 12px; }
+  .bs-mcq { margin-bottom: 20px; }
+  .bs-mcq .mcq-q { font-size: 15px; line-height: 1.45; color: var(--text); margin-bottom: 10px; }
+  .bs-choice { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1px solid var(--field-border); border-radius: 10px; background: var(--field); margin-bottom: 8px; cursor: pointer; font-size: 14px; color: var(--text); transition: border-color 0.15s ease, background 0.15s ease; }
+  .bs-choice:hover { border-color: var(--gold); }
+  .bs-choice input { accent-color: var(--gold); flex-shrink: 0; }
+  .bs-choice.correct { border-color: #3fae6b; background: rgba(63,174,107,0.14); }
+  .bs-choice.incorrect { border-color: #e0736b; background: rgba(224,115,107,0.12); }
+  .mcq-explain { display: none; font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 8px; padding-left: 2px; }
+  .bs-mcq.answered .mcq-explain { display: block; }
   .field-group textarea {
     width: 100%; background: var(--field); border: 1px solid var(--field-border); border-radius: 12px;
     color: var(--text); font-family: inherit; font-size: 15px; padding: 14px 16px; resize: vertical;
@@ -1054,7 +1064,7 @@
     if (vEnd) return { id: bookId + "." + chapter + "." + vStart + "-" + bookId + "." + chapter + "." + vEnd, label: ref };
     return { id: bookId + "." + chapter + "." + vStart, label: ref };
   }
-  let __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", questions: [] };
+  let __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", questions: [], understanding: [], reflection: [] };
   async function loadBiblePassage() {
     const refRaw = (document.getElementById("bsReference") || {}).value || "";
     const translation = (document.getElementById("bsTranslation") || {}).value || "78a9f6124f344018-01";
@@ -1079,7 +1089,7 @@
       document.getElementById("bsPassageWrap").style.display = "block";
       document.getElementById("bsQuestionsWrap").style.display = "none";
       status.textContent = "";
-      __devo = { passage: text, reference: reference, translation: translation, keyVerse: "", keyVerseRef: "", questions: [] };
+      __devo = { passage: text, reference: reference, translation: translation, keyVerse: "", keyVerseRef: "", questions: [], understanding: [], reflection: [] };
     } catch (err) {
       status.textContent = "Couldn't load that passage. Check the reference and try again.";
       console.error(err);
@@ -1101,17 +1111,39 @@
       });
       if (!resp.ok) { const t = await resp.text(); throw new Error(t || "Edge function returned " + resp.status); }
       const data = await resp.json();
+      if (data && data.error) throw new Error(data.error);
       __devo.keyVerse = data.key_verse || "";
       __devo.keyVerseRef = data.key_verse_reference || "";
-      __devo.questions = Array.isArray(data.questions) ? data.questions : [];
+      __devo.understanding = Array.isArray(data.understanding) ? data.understanding : [];
+      __devo.reflection = Array.isArray(data.reflection) ? data.reflection : [];
+      // backward-compat: older function returned a single flat questions[] array
+      if (!__devo.understanding.length && !__devo.reflection.length && Array.isArray(data.questions)) {
+        __devo.reflection = data.questions;
+      }
       const kv = document.getElementById("bsKeyVerse");
       if (__devo.keyVerse) {
         kv.innerHTML = '<div class="kv-label">KEY VERSE</div><div class="kv-text">"' + escapeHtml(__devo.keyVerse) + '"</div><div class="kv-ref">— ' + escapeHtml(__devo.keyVerseRef) + '</div>';
       } else { kv.innerHTML = ""; }
-      const qContainer = document.getElementById("bsQuestions");
-      qContainer.innerHTML = __devo.questions.map(function(q, i) {
-        return '<div class="field-group"><label for="bsq' + i + '">' + escapeHtml(q) + ' <span class="req">*</span></label><textarea id="bsq' + i + '" data-question="' + escapeHtml(q) + '" placeholder="Write your text here" required></textarea></div>';
-      }).join("");
+      let qHtml = "";
+      if (__devo.understanding.length) {
+        qHtml += '<div class="bs-section-label">Understanding the passage</div>';
+        qHtml += __devo.understanding.map(function(u, i) {
+          var choices = (u.choices || []).map(function(c, ci) {
+            return '<label class="bs-choice"><input type="radio" name="bsu' + i + '" value="' + ci + '"><span>' + escapeHtml(c) + '</span></label>';
+          }).join("");
+          return '<div class="bs-mcq" data-answer="' + (typeof u.answer === "number" ? u.answer : 0) + '">' +
+            '<div class="mcq-q">' + (i + 1) + '. ' + escapeHtml(u.q || "") + '</div>' + choices +
+            '<div class="mcq-explain">' + escapeHtml(u.explanation || "") + '</div></div>';
+        }).join("");
+      }
+      if (__devo.reflection.length) {
+        qHtml += '<div class="bs-section-label">Reflect &amp; apply</div>';
+        qHtml += __devo.reflection.map(function(q, j) {
+          return '<div class="field-group"><label for="bsr' + j + '">' + escapeHtml(q) + '</label>' +
+            '<textarea id="bsr' + j + '" data-question="' + escapeHtml(q) + '" placeholder="Write your reflection here"></textarea></div>';
+        }).join("");
+      }
+      document.getElementById("bsQuestions").innerHTML = qHtml;
       document.getElementById("bsQuestionsWrap").style.display = "block";
       status.textContent = "";
     } catch (err) {
@@ -1483,7 +1515,7 @@
     questionsEl.innerHTML = html;
 
     if (type === "devotional") {
-      __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", questions: [] };
+      __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", questions: [], understanding: [], reflection: [] };
       document.getElementById("bsLoadBtn").addEventListener("click", loadBiblePassage);
       document.getElementById("bsGenerateBtn").addEventListener("click", generateDevotionalQuestions);
       document.getElementById("bsReference").addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); loadBiblePassage(); } });
@@ -1492,6 +1524,19 @@
       document.getElementById("bsChapter").addEventListener("change", updateRefFromPicker);
       document.getElementById("bsVerseStart").addEventListener("input", updateRefFromPicker);
       document.getElementById("bsVerseEnd").addEventListener("input", updateRefFromPicker);
+      document.getElementById("bsQuestions").addEventListener("change", function (e) {
+        const input = e.target.closest('input[type="radio"]');
+        if (!input) return;
+        const mcq = input.closest(".bs-mcq");
+        if (!mcq) return;
+        const correctIdx = parseInt(mcq.dataset.answer, 10);
+        mcq.classList.add("answered");
+        [...mcq.querySelectorAll(".bs-choice")].forEach((c, idx) => {
+          c.classList.remove("correct", "incorrect");
+          if (idx === correctIdx) c.classList.add("correct");
+          else if (c.contains(input)) c.classList.add("incorrect");
+        });
+      });
     }
 
     if (type === "fitness") {
@@ -1763,11 +1808,30 @@
       pts = presetDef(currentFitnessPreset).points;
     }
 
+    let answers;
+    if (currentType === "devotional") {
+      answers = [];
+      if (__devo.keyVerse) answers.push({ q: "Key verse", a: __devo.keyVerse + (__devo.keyVerseRef ? " — " + __devo.keyVerseRef : "") });
+      (__devo.understanding || []).forEach((u, i) => {
+        const sel = document.querySelector('input[name="bsu' + i + '"]:checked');
+        const chosen = sel ? (u.choices[+sel.value] || "") : "(not answered)";
+        let a = chosen;
+        if (sel) a += (+sel.value === u.answer) ? "  ✓" : "  (answer: " + (u.choices[u.answer] || "") + ")";
+        answers.push({ q: u.q, a: a });
+      });
+      (__devo.reflection || []).forEach((q, j) => {
+        const ta = document.getElementById("bsr" + j);
+        answers.push({ q: q, a: ta ? ta.value.trim() : "" });
+      });
+    } else {
+      answers = fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }));
+    }
+
     const entry = {
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
       type: currentType, typeTitle: typeTitle, name: name, date: date,
       points: pts, savedAt: new Date().toISOString(),
-      answers: fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }))
+      answers: answers
     };
     if (currentType === "fitness" && currentFitnessPreset && presetDef(currentFitnessPreset)) {
       entry.preset = currentFitnessPreset;
