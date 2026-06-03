@@ -481,6 +481,23 @@
   .chooser-card .cc-name { font-size: 17px; font-weight: 700; }
   .chooser-card .cc-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
   .chooser-cancel { margin-top: 20px; background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  /* Paywall (subscribe / free trial) */
+  #paywallView { display: none; }
+  .paywall-body { padding: 30px 24px 40px; max-width: 460px; margin: 0 auto; text-align: center; }
+  .paywall-body h2 { font-size: 23px; margin: 0 0 8px; }
+  .paywall-body p { color: var(--muted); font-size: 14px; line-height: 1.55; margin: 0 0 26px; }
+  .plan-cards { display: grid; gap: 14px; }
+  .plan-card { position: relative; text-align: center; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 20px 18px; cursor: pointer; font-family: inherit; color: var(--text); transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+  .plan-card:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+  .plan-card .pc-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #1c1402; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 12px; border-radius: 999px; }
+  .plan-card .plan-name { display: block; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .plan-card .plan-price { display: block; font-size: 30px; font-weight: 800; margin-top: 4px; line-height: 1; }
+  .plan-card .plan-per { font-size: 14px; font-weight: 600; color: var(--muted); }
+  .plan-card .plan-sub { display: block; font-size: 12px; color: var(--gold-light); margin-top: 6px; }
+  .paywall-status { min-height: 18px; font-size: 13px; margin: 16px 0 0; color: var(--gold-light); }
+  .paywall-status.err { color: #f0768a; }
+  .paywall-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.5; }
+  .paywall-signout { margin-top: 20px; background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   /* Devotional reflection card (women's build) */
   .reflection-card { background: linear-gradient(135deg, rgba(217,169,62,0.16), rgba(217,169,62,0.04)); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
   .reflection-card .rc-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
@@ -583,6 +600,7 @@
           <span>Signed in as <b id="profileEmail"></b></span>
           <span style="display:flex; gap:8px; flex-wrap:wrap;">
             <button id="buildToggle" title="Switch between the men's and women's build">Men's build</button>
+            <button id="manageBilling" title="Manage your subscription" style="display:none;">Manage billing</button>
             <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
             <button id="signOutBtn">Sign out</button>
           </span>
@@ -731,6 +749,37 @@
           </button>
         </div>
         <button type="button" class="chooser-cancel" id="chooserCancel" style="display:none;">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ===================== PAYWALL ===================== -->
+    <div id="paywallView">
+      <div class="hero">
+        <svg class="mountains" viewBox="0 0 760 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 120 L120 50 L210 95 L330 30 L430 90 L520 45 L640 100 L760 55 L760 120 Z" fill="#0d0f13"/>
+          <path d="M0 120 L160 75 L300 110 L430 65 L560 105 L700 80 L760 100 L760 120 Z" fill="#070809" opacity="0.85"/>
+        </svg>
+        <div class="hero-inner"><img class="logo" src="DailyForge%20LOGO.png" alt="Daily Forge"></div>
+      </div>
+      <div class="paywall-body">
+        <h2>Start your 7-day free trial</h2>
+        <p>Unlock all of Daily Forge — journaling, scripture devotionals, AI weekly reviews, the Week in Review, and group leaderboards. Cancel anytime.</p>
+        <div class="plan-cards">
+          <button type="button" class="plan-card" data-plan="annual">
+            <span class="pc-badge">Best value</span>
+            <span class="plan-name">Annual</span>
+            <span class="plan-price">$49.99<span class="plan-per">/year</span></span>
+            <span class="plan-sub">about 2 months free</span>
+          </button>
+          <button type="button" class="plan-card" data-plan="monthly">
+            <span class="plan-name">Monthly</span>
+            <span class="plan-price">$5.99<span class="plan-per">/month</span></span>
+            <span class="plan-sub">billed monthly</span>
+          </button>
+        </div>
+        <div class="paywall-status" id="paywallStatus"></div>
+        <div class="paywall-note">7 days free, then your selected plan. A card is required to start the trial; cancel anytime before it ends and you won't be charged.</div>
+        <button type="button" class="paywall-signout" id="paywallSignOut">Sign out</button>
       </div>
     </div>
 
@@ -934,6 +983,10 @@
   const BIBLE_API_BASE = "https://api.scripture.api.bible/v1";
   const EDGE_FN_URL = "https://ihhctwmgfleihlnfnfsv.supabase.co/functions/v1/bible-questions";
   const EDGE_FN_APIKEY = "sb_publishable_CRtK7cSwNjDDgu31fulMIQ_rwptULXs";
+
+  // Paywall: keep FALSE until the Stripe backend (functions + webhook) is deployed
+  // and tested. Flipping to true gates the whole app behind a trial/subscription.
+  const PAYWALL_ENABLED = false;
   const BOOK_MAP = {
     "genesis":"GEN","gen":"GEN","ge":"GEN",
     "exodus":"EXO","exod":"EXO","exo":"EXO","ex":"EXO",
@@ -1583,11 +1636,70 @@
 
   // ----- View navigation -----
   const buildChooser = document.getElementById("buildChooser");
-  function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); }
-  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; appView.style.display = "block"; renderScore(); }
+  const paywallView = document.getElementById("paywallView");
+  function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); }
+  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
+
+  // ----- Paywall / subscription gate -----
+  async function isEntitled() {
+    if (!PAYWALL_ENABLED) return true;            // dormant: full access for everyone
+    if (!sb || !__currentUser) return false;
+    try {
+      const { data } = await sb.from("subscriptions").select("status, current_period_end").eq("user_id", __currentUser.id).maybeSingle();
+      if (!data) return false;
+      const ok = data.status === "active" || data.status === "trialing";
+      const notExpired = !data.current_period_end || new Date(data.current_period_end) > new Date();
+      return ok && notExpired;
+    } catch (e) { return false; }
+  }
+  function showPaywall() {
+    signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none";
+    paywallView.style.display = "block";
+    try { applyBuild(); } catch (e) {}
+    document.getElementById("paywallStatus").textContent = "";
+    window.scrollTo(0, 0);
+  }
+  // Decide where an authenticated user lands: paywall -> build chooser -> landing.
+  async function gateEntry() {
+    const entitled = await isEntitled();
+    if (!entitled) { showPaywall(); return; }
+    if (!__currentUser.build) { showChooser(false); }
+    else { showLanding(); }
+  }
+  async function startCheckout(plan) {
+    const status = document.getElementById("paywallStatus");
+    status.className = "paywall-status"; status.textContent = "Redirecting to secure checkout…";
+    try {
+      if (!sb) throw new Error("Can't reach the server.");
+      const { data, error } = await sb.functions.invoke("create-checkout-session", { body: { plan: plan } });
+      if (error) throw error;
+      if (data && data.url) { window.location.href = data.url; return; }
+      throw new Error((data && data.error) || "Couldn't start checkout.");
+    } catch (e) {
+      status.className = "paywall-status err";
+      status.textContent = "Couldn't start checkout: " + ((e && e.message) || e);
+    }
+  }
+  async function openBillingPortal() {
+    try {
+      const { data, error } = await sb.functions.invoke("customer-portal", { body: {} });
+      if (error) throw error;
+      if (data && data.url) { window.location.href = data.url; return; }
+      alert((data && data.error) || "Couldn't open billing.");
+    } catch (e) { alert("Couldn't open billing right now."); }
+  }
+  document.querySelectorAll("#paywallView .plan-card").forEach(card => {
+    card.addEventListener("click", () => startCheckout(card.dataset.plan));
+  });
+  document.getElementById("paywallSignOut").addEventListener("click", () => document.getElementById("signOutBtn").click());
+  if (PAYWALL_ENABLED) {
+    const mb = document.getElementById("manageBilling");
+    if (mb) { mb.style.display = ""; mb.addEventListener("click", openBillingPortal); }
+  }
+
   function showChooser(cancelable) {
-    signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "none";
+    signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "none"; paywallView.style.display = "none";
     buildChooser.style.display = "block";
     document.querySelectorAll("#buildChooser .chooser-card").forEach(c => c.classList.toggle("active", c.dataset.build === BUILD));
     document.getElementById("chooserCancel").style.display = cancelable ? "block" : "none";
@@ -1710,9 +1822,8 @@
     await fetchEntriesFromCloud();
     renderQuestions(currentType);
     updateCount();
-    // New (or build-less) users pick their path before the landing page
-    if (!__currentUser.build) { showChooser(false); }
-    else { showLanding(); }
+    // Gate: paywall (if enabled) -> build chooser -> landing
+    await gateEntry();
     window.scrollTo(0, 0);
   }
   async function submitAuth() {
@@ -2526,8 +2637,13 @@
         await fetchEntriesFromCloud();
         updateCount();
         renderQuestions(currentType);
-        if (!__currentUser.build) { showChooser(false); }
-        else { showLanding(); }
+        if (/[?&]checkout=success/.test(location.search)) {
+          // Returning from Stripe Checkout — let the webhook record the subscription.
+          paywallView.style.display = "none";
+          for (let i = 0; i < 6; i++) { if (await isEntitled()) break; await new Promise(r => setTimeout(r, 1500)); }
+          if (history.replaceState) history.replaceState(null, "", location.pathname);
+        }
+        await gateEntry();
       } else {
         showSignIn();
       }
