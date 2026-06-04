@@ -41,7 +41,8 @@
       radial-gradient(ellipse at 72% 18%, rgba(230,180,158,0.55), transparent 52%),
       linear-gradient(180deg, #fbe6db 0%, #fbf1ea 60%, #fffaf6 100%);
   }
-  body[data-build="women"] .logo { mix-blend-mode: normal; }
+  body[data-build="women"] .logo { mix-blend-mode: normal; max-width: 384px; }
+  @media (max-width: 480px) { body[data-build="women"] .logo { max-width: 312px; } }
   body[data-build="women"] .hero .mountains { opacity: 0.4; }
   body[data-build="women"] .hero .mountains path { fill: #e6c6b6; }
   body[data-build="women"] .hero-desc { color: #b0795f; }
