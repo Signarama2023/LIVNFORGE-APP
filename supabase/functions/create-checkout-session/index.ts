@@ -40,33 +40,34 @@ const cors = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
-    const authHeader = req.headers.get("Authorization") || "";
-    const supabase = createClient(
+    // Service-role client (NO user auth header → DB ops bypass RLS). Identify the
+    // caller by validating their JWT explicitly via getUser(token).
+    const token = (req.headers.get("Authorization") || "").replace("Bearer ", "");
+    const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
     );
-    // Identify the caller from their JWT.
-    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+    const { data: { user }, error: userErr } = await admin.auth.getUser(token);
     if (userErr || !user) return json({ error: "Not signed in." }, 401);
 
     const { plan } = await req.json();
     const priceId = await priceForPlan(plan);
     if (!priceId) return json({ error: "Unknown or unpriced plan: " + plan }, 400);
 
-    // Reuse an existing Stripe customer for this user, or create one.
-    const { data: existing } = await supabase
+    // Find this user's Stripe customer: DB row, then Stripe-by-email, else create one.
+    const { data: existing } = await admin
       .from("subscriptions").select("stripe_customer_id").eq("user_id", user.id).maybeSingle();
-
     let customerId = existing?.stripe_customer_id as string | undefined;
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { supabase_user_id: user.id },
-      });
-      customerId = customer.id;
-      await supabase.from("subscriptions").upsert({ user_id: user.id, stripe_customer_id: customerId });
+    if (!customerId && user.email) {
+      const found = await stripe.customers.list({ email: user.email, limit: 1 });
+      customerId = found.data[0]?.id;
     }
+    if (!customerId) {
+      const customer = await stripe.customers.create({ email: user.email, metadata: { supabase_user_id: user.id } });
+      customerId = customer.id;
+    }
+    // Always record the link (service role → write succeeds).
+    await admin.from("subscriptions").upsert({ user_id: user.id, stripe_customer_id: customerId });
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",

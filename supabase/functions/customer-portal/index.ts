@@ -19,21 +19,22 @@ const cors = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
-    const authHeader = req.headers.get("Authorization") || "";
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
-    const { data: { user } } = await supabase.auth.getUser();
+    const token = (req.headers.get("Authorization") || "").replace("Bearer ", "");
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data: { user } } = await admin.auth.getUser(token);
     if (!user) return json({ error: "Not signed in." }, 401);
 
-    const { data: row } = await supabase
+    const { data: row } = await admin
       .from("subscriptions").select("stripe_customer_id").eq("user_id", user.id).maybeSingle();
-    if (!row?.stripe_customer_id) return json({ error: "No billing account yet." }, 400);
+    let customerId = row?.stripe_customer_id as string | undefined;
+    if (!customerId && user.email) {
+      const found = await stripe.customers.list({ email: user.email, limit: 1 });
+      customerId = found.data[0]?.id;
+    }
+    if (!customerId) return json({ error: "No billing account yet." }, 400);
 
     const session = await stripe.billingPortal.sessions.create({
-      customer: row.stripe_customer_id,
+      customer: customerId,
       return_url: APP_URL,
     });
     return json({ url: session.url });

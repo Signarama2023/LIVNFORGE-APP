@@ -22,21 +22,30 @@ const ENTITLED = ["trialing", "active"];
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
-    const authHeader = req.headers.get("Authorization") || "";
-    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user } } = await admin.auth.getUser();
+    const token = (req.headers.get("Authorization") || "").replace("Bearer ", "");
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data: { user } } = await admin.auth.getUser(token);
     if (!user) return json({ entitled: false, error: "Not signed in." }, 401);
 
     const { data: row } = await admin.from("subscriptions").select("stripe_customer_id").eq("user_id", user.id).maybeSingle();
-    const customerId = row?.stripe_customer_id as string | undefined;
-    if (!customerId) return json({ entitled: false, status: "none" });
+    // Candidate customers: the linked one + any with this email (covers duplicates
+    // created before the DB link was saved). Search each for a subscription.
+    const candidates: string[] = [];
+    if (row?.stripe_customer_id) candidates.push(row.stripe_customer_id);
+    if (user.email) {
+      const found = await stripe.customers.list({ email: user.email, limit: 20 });
+      for (const c of found.data) if (!candidates.includes(c.id)) candidates.push(c.id);
+    }
+    if (candidates.length === 0) return json({ entitled: false, status: "none" });
 
-    const subs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 10 });
-    // pick the most useful subscription: an entitled one if present, else the latest
-    const sub = subs.data.find((s) => ENTITLED.includes(s.status)) || subs.data[0];
-    if (!sub) return json({ entitled: false, status: "none" });
+    let customerId = candidates[0];
+    let sub: Stripe.Subscription | null = null;
+    for (const cid of candidates) {
+      const subs = await stripe.subscriptions.list({ customer: cid, status: "all", limit: 10 });
+      const s = subs.data.find((x) => ENTITLED.includes(x.status)) || subs.data[0] || null;
+      if (s) { customerId = cid; sub = s; break; }
+    }
+    if (!sub) return json({ entitled: false, status: "no_subscription" });
 
     const entitled = ENTITLED.includes(sub.status) &&
       (!sub.current_period_end || sub.current_period_end * 1000 > Date.now());
