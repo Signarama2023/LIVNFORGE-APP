@@ -80,6 +80,13 @@ Deno.serve(async (req) => {
     const { data: existing } = await admin
       .from("subscriptions").select("stripe_customer_id").eq("user_id", user.id).maybeSingle();
     let customerId = existing?.stripe_customer_id as string | undefined;
+    // Ignore a saved customer that isn't valid in the current Stripe mode (test vs live).
+    if (customerId) {
+      try {
+        const c = await stripe.customers.retrieve(customerId);
+        if ((c as { deleted?: boolean }).deleted) customerId = undefined;
+      } catch (_e) { customerId = undefined; }
+    }
     if (!customerId && user.email) {
       const found = await stripe.customers.list({ email: user.email, limit: 1 });
       customerId = found.data[0]?.id;

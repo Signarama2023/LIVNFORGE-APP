@@ -38,14 +38,17 @@ Deno.serve(async (req) => {
     }
     if (candidates.length === 0) return json({ entitled: false, status: "none" });
 
-    let customerId = candidates[0];
+    let customerId: string | undefined;
     let sub: Stripe.Subscription | null = null;
     for (const cid of candidates) {
-      const subs = await stripe.subscriptions.list({ customer: cid, status: "all", limit: 10 });
-      const s = subs.data.find((x) => ENTITLED.includes(x.status)) || subs.data[0] || null;
-      if (s) { customerId = cid; sub = s; break; }
+      try {
+        const subs = await stripe.subscriptions.list({ customer: cid, status: "all", limit: 10 });
+        if (!customerId) customerId = cid; // first customer valid in this mode
+        const s = subs.data.find((x) => ENTITLED.includes(x.status)) || subs.data[0] || null;
+        if (s) { customerId = cid; sub = s; break; }
+      } catch (_e) { /* customer not valid in current mode — skip */ }
     }
-    if (!sub) return json({ entitled: false, status: "no_subscription" });
+    if (!sub) return json({ entitled: false, status: customerId ? "no_subscription" : "none" });
 
     const entitled = ENTITLED.includes(sub.status) &&
       (!sub.current_period_end || sub.current_period_end * 1000 > Date.now());
