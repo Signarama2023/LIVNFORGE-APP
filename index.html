@@ -1012,6 +1012,8 @@
   const PAYWALL_ENABLED = PAYWALL_LIVE || /[?&]paywall=1/.test(location.search);
   // Accounts that always have free access (owners/comp). Lowercase emails.
   const OWNER_EMAILS = ["markbailey1@me.com"];
+  // True only when running inside the native iOS/Android app (Capacitor). On the web this is false.
+  const IN_NATIVE_APP = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
   const BOOK_MAP = {
     "genesis":"GEN","gen":"GEN","ge":"GEN",
     "exodus":"EXO","exod":"EXO","exo":"EXO","ex":"EXO",
@@ -1689,6 +1691,23 @@
     signInView.style.display = "none"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none";
     paywallView.style.display = "block";
     try { applyBuild(); } catch (e) {}
+    // Apple forbids selling/linking to outside purchases inside the app. In the native
+    // app, non-members see a sign-in message only — no plan cards, no checkout, no link.
+    const cards = paywallView.querySelector(".plan-cards");
+    const note = paywallView.querySelector(".paywall-note");
+    const h2 = paywallView.querySelector(".paywall-body h2");
+    const sub = paywallView.querySelector(".paywall-body p");
+    if (IN_NATIVE_APP) {
+      if (cards) cards.style.display = "none";
+      if (note) note.style.display = "none";
+      if (h2) h2.textContent = "Welcome to Daily Forge";
+      if (sub) sub.textContent = "This account doesn't have an active membership yet. Sign in with your member account to continue.";
+    } else {
+      if (cards) cards.style.display = "";
+      if (note) note.style.display = "";
+      if (h2) h2.textContent = "Start your 7-day free trial";
+      if (sub) sub.textContent = "Unlock all of Daily Forge — journaling, scripture devotionals, AI weekly reviews, the Week in Review, and group leaderboards. Cancel anytime.";
+    }
     document.getElementById("paywallStatus").textContent = "";
     window.scrollTo(0, 0);
   }
