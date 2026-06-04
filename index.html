@@ -985,11 +985,12 @@
   const EDGE_FN_URL = "https://ihhctwmgfleihlnfnfsv.supabase.co/functions/v1/bible-questions";
   const EDGE_FN_APIKEY = "sb_publishable_CRtK7cSwNjDDgu31fulMIQ_rwptULXs";
 
-  // Paywall: PAYWALL_LIVE=false keeps it off for everyone. Append ?paywall=1 to the
-  // URL to preview/test the paywall without turning it on globally. To go live for
-  // everyone, set PAYWALL_LIVE = true.
-  const PAYWALL_LIVE = false;
+  // Paywall: PAYWALL_LIVE=true gates the whole app behind a trial/subscription for
+  // everyone. ?paywall=1 still forces it on for previews when LIVE is false.
+  const PAYWALL_LIVE = true;
   const PAYWALL_ENABLED = PAYWALL_LIVE || /[?&]paywall=1/.test(location.search);
+  // Accounts that always have free access (owners/comp). Lowercase emails.
+  const OWNER_EMAILS = ["markbailey1@me.com"];
   const BOOK_MAP = {
     "genesis":"GEN","gen":"GEN","ge":"GEN",
     "exodus":"EXO","exod":"EXO","exo":"EXO","ex":"EXO",
@@ -1648,6 +1649,7 @@
   async function isEntitled() {
     if (!PAYWALL_ENABLED) return true;            // dormant: full access for everyone
     if (!sb || !__currentUser) return false;
+    if (OWNER_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // owner free pass
     // Ask Stripe (via the edge function) for live status; it also syncs the DB row.
     try {
       const { data, error } = await sb.functions.invoke("check-subscription", { body: {} });
