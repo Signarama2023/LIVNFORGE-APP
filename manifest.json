@@ -1,0 +1,13 @@
+{
+  "name": "Daily Forge",
+  "short_name": "Daily Forge",
+  "description": "A faith-driven daily journal — journaling, scripture devotionals, fitness, and an AI weekly review.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#15161a",
+  "theme_color": "#15161a",
+  "icons": [
+    { "src": "DailyForge%20LOGO.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
