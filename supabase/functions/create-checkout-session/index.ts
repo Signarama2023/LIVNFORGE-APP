@@ -16,19 +16,41 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "202
 const APP_URL = Deno.env.get("APP_URL") || "https://signarama2023.github.io/reframe-journal";
 const TRIAL_DAYS = 7;
 
-// Daily Forge Stripe products (test mode). The active recurring price for each
-// is resolved at request time, so we never hard-code price IDs.
+// Live dashboard products. Used when the active key is live; in test mode these
+// IDs don't exist, so we fall back to a price resolved/created by lookup_key —
+// making the function work in whichever mode STRIPE_SECRET_KEY is for.
 const PRODUCTS: Record<string, string> = {
   monthly: "prod_UdXCGKzOWjvnGK",
   annual: "prod_UdXDMJEQIrVxaH",
 };
+const PLANS: Record<string, { lookup: string; amount: number; interval: "month" | "year"; name: string }> = {
+  monthly: { lookup: "daily_forge_monthly", amount: 599, interval: "month", name: "Daily Forge Monthly" },
+  annual: { lookup: "daily_forge_annual", amount: 4999, interval: "year", name: "Daily Forge Annual" },
+};
 
 async function priceForPlan(plan: string): Promise<string | null> {
+  const cfg = PLANS[plan];
+  if (!cfg) return null;
+  // 1) Prefer the configured dashboard product's active recurring price (live mode).
   const productId = PRODUCTS[plan];
-  if (!productId) return null;
-  const prices = await stripe.prices.list({ product: productId, active: true, limit: 10 });
-  const recurring = prices.data.find((p) => p.recurring) || prices.data[0];
-  return recurring ? recurring.id : null;
+  if (productId) {
+    try {
+      const prices = await stripe.prices.list({ product: productId, active: true, limit: 10 });
+      const rec = prices.data.find((p) => p.recurring) || prices.data[0];
+      if (rec) return rec.id;
+    } catch (_e) { /* product doesn't exist in this mode — fall through */ }
+  }
+  // 2) Resolve (or create) a price by lookup_key — works in test or live mode.
+  const existing = await stripe.prices.list({ lookup_keys: [cfg.lookup], active: true, limit: 1 });
+  if (existing.data[0]) return existing.data[0].id;
+  const price = await stripe.prices.create({
+    currency: "usd",
+    unit_amount: cfg.amount,
+    recurring: { interval: cfg.interval },
+    lookup_key: cfg.lookup,
+    product_data: { name: cfg.name },
+  });
+  return price.id;
 }
 
 const cors = {
