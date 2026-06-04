@@ -985,9 +985,11 @@
   const EDGE_FN_URL = "https://ihhctwmgfleihlnfnfsv.supabase.co/functions/v1/bible-questions";
   const EDGE_FN_APIKEY = "sb_publishable_CRtK7cSwNjDDgu31fulMIQ_rwptULXs";
 
-  // Paywall: keep FALSE until the Stripe backend (functions + webhook) is deployed
-  // and tested. Flipping to true gates the whole app behind a trial/subscription.
-  const PAYWALL_ENABLED = false;
+  // Paywall: PAYWALL_LIVE=false keeps it off for everyone. Append ?paywall=1 to the
+  // URL to preview/test the paywall without turning it on globally. To go live for
+  // everyone, set PAYWALL_LIVE = true.
+  const PAYWALL_LIVE = false;
+  const PAYWALL_ENABLED = PAYWALL_LIVE || /[?&]paywall=1/.test(location.search);
   const BOOK_MAP = {
     "genesis":"GEN","gen":"GEN","ge":"GEN",
     "exodus":"EXO","exod":"EXO","exo":"EXO","ex":"EXO",
