@@ -622,6 +622,8 @@
           <span>Signed in as <b id="profileEmail"></b></span>
           <span style="display:flex; gap:8px; flex-wrap:wrap;">
             <button id="buildToggle" title="Switch between the men's and women's build">Men's build</button>
+            <button id="reminderBtn" title="Set your daily reminder time" style="display:none;">⏰ Reminder</button>
+            <input type="time" id="reminderTime" aria-label="Daily reminder time" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
             <button id="manageBilling" title="Manage your subscription" style="display:none;">Manage billing</button>
             <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
             <button id="signOutBtn">Sign out</button>
@@ -2669,6 +2671,51 @@
   });
 
   // ----- Boot -----
+  // ---- Daily reminder (native app only): schedules an on-device notification ----
+  const DailyReminder = (function () {
+    const KEY = "dailyforge:reminderTime";
+    function getTime() { return localStorage.getItem(KEY) || "08:00"; }
+    function plugin() { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) || null; }
+    function fmt(hhmm) {
+      const p = (hhmm || "08:00").split(":").map(Number);
+      const h = p[0], m = p[1] || 0;
+      const ampm = h >= 12 ? "PM" : "AM";
+      const h12 = ((h + 11) % 12) + 1;
+      return h12 + ":" + String(m).padStart(2, "0") + " " + ampm;
+    }
+    async function schedule() {
+      const LN = plugin(); if (!LN) return;
+      try {
+        const perm = await LN.requestPermissions();
+        if (perm && perm.display && perm.display !== "granted") return;
+        const p = getTime().split(":").map(Number);
+        try { await LN.cancel({ notifications: [{ id: 1001 }] }); } catch (e) {}
+        await LN.schedule({ notifications: [{
+          id: 1001,
+          title: "Daily Forge",
+          body: "Time to forge today — write, reflect, grow. 🔨",
+          schedule: { on: { hour: p[0], minute: p[1] || 0 }, allowWhileIdle: true, repeats: true }
+        }] });
+      } catch (e) { console.warn("reminder schedule failed", e); }
+    }
+    async function setTime(hhmm) { localStorage.setItem(KEY, hhmm); await schedule(); }
+    function wireUI() {
+      const rb = document.getElementById("reminderBtn");
+      const rt = document.getElementById("reminderTime");
+      if (!rb || !rt) return;
+      rb.style.display = "";
+      rt.value = getTime();
+      rb.textContent = "⏰ " + fmt(getTime());
+      rb.addEventListener("click", function () { try { rt.showPicker(); } catch (e) { rt.click(); } });
+      rt.addEventListener("change", async function () {
+        if (!rt.value) return;
+        await setTime(rt.value);
+        rb.textContent = "⏰ " + fmt(rt.value);
+      });
+    }
+    return { getTime, setTime, schedule, fmt, wireUI };
+  })();
+
   (async function boot() {
     if (!sb) { showSignIn(); return; }
     // Detect password-reset redirect (Supabase puts type=recovery in the URL hash)
@@ -2695,6 +2742,7 @@
           if (history.replaceState) history.replaceState(null, "", location.pathname);
         }
         await gateEntry();
+        if (IN_NATIVE_APP) { DailyReminder.wireUI(); DailyReminder.schedule(); }
       } else {
         showSignIn();
       }
