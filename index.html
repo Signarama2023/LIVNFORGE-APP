@@ -1646,6 +1646,12 @@
   async function isEntitled() {
     if (!PAYWALL_ENABLED) return true;            // dormant: full access for everyone
     if (!sb || !__currentUser) return false;
+    // Ask Stripe (via the edge function) for live status; it also syncs the DB row.
+    try {
+      const { data, error } = await sb.functions.invoke("check-subscription", { body: {} });
+      if (!error && data && typeof data.entitled === "boolean") return data.entitled;
+    } catch (e) { /* fall through to cached row */ }
+    // Fallback: read the last-synced row if the function is unreachable.
     try {
       const { data } = await sb.from("subscriptions").select("status, current_period_end").eq("user_id", __currentUser.id).maybeSingle();
       if (!data) return false;
