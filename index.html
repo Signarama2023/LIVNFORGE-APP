@@ -206,6 +206,14 @@
   .rw-submit { background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#1c1402; border:none; }
   .rw-error { color:#f87171; font-size:13px; margin-top:8px; min-height:1em; }
   .rw-claim-item { border-top:1px solid var(--field-border); padding:10px 0; font-size:13px; line-height:1.5; }
+  /* Bottom tab navigation */
+  .bottom-nav { position: fixed; left:0; right:0; bottom:0; z-index:900; display:flex; background:var(--panel); border-top:1px solid var(--field-border); padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px)); box-shadow:0 -4px 16px rgba(0,0,0,0.18); }
+  .bottom-nav button { flex:1; background:none; border:none; color:var(--muted); font-family:inherit; font-size:10px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
+  .bottom-nav .bn-ico { font-size:21px; line-height:1; }
+  .bottom-nav button.active { color:var(--gold-light); }
+  #landingView .landing-body { padding-bottom: 88px; }
+  .tab-off { display:none !important; }
+  .tab-title { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:4px 0 16px; }
   .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
   .pb-label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
   .pb-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -651,7 +659,7 @@
       </div>
 
       <div class="landing-body">
-        <div class="profile-bar">
+        <div class="profile-bar" data-tab="settings">
           <span>Signed in as <b id="profileEmail"></b></span>
           <span style="display:flex; gap:8px; flex-wrap:wrap;">
             <button id="buildToggle" title="Switch between the men's and women's build">Men's build</button>
@@ -663,15 +671,15 @@
           </span>
         </div>
 
-        <div class="weekly-banner" id="weeklyBanner" style="display:none;"></div>
+        <div class="weekly-banner" id="weeklyBanner" data-tab="today" style="display:none;"></div>
 
-        <div class="scoreboard">
+        <div class="scoreboard" data-tab="today">
           <div class="score-tile points"><div class="num" id="scorePoints">0</div><div class="lbl">Points</div></div>
           <div class="score-tile"><div class="num" id="scoreEntries">0</div><div class="lbl">Entries</div></div>
           <div class="score-tile"><div class="num" id="scoreStreak">0</div><div class="lbl">Day Streak</div></div>
         </div>
 
-        <div class="rewards-card" id="rewardsCard" style="display:none;"></div>
+        <div class="rewards-card" id="rewardsCard" data-tab="rewards" style="display:none;"></div>
 
         <div class="rw-modal" id="claimModal">
           <div class="rw-modal-inner">
@@ -703,7 +711,7 @@
           </div>
         </div>
 
-        <button class="landing-cta" id="landingSummaryCta">
+        <button class="landing-cta" id="landingSummaryCta" data-tab="progress">
           <span class="cta-ico">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
           </span>
@@ -713,7 +721,7 @@
           </span>
         </button>
 
-        <div class="personal-bests">
+        <div class="personal-bests" data-tab="progress">
           <div class="pb-label">Personal bests</div>
           <div class="pb-row">
             <div class="pb-tile"><div class="pb-num" id="pbBestDay">0</div><div class="pb-lbl">Best day · points</div></div>
@@ -721,9 +729,10 @@
           </div>
         </div>
 
-        <div class="group-panel" id="groupPanel"></div>
+        <div class="group-panel" id="groupPanel" data-tab="circles"></div>
+        <div class="prayer-circles" id="prayerCircles" data-tab="circles"></div>
 
-        <div class="pillar-cards">
+        <div class="pillar-cards" data-tab="today">
           <div class="pillar-card pc-freeflow" data-type="freeflow">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -782,8 +791,8 @@
           </div>
         </div>
 
-        <div class="pillars-divider">FOUR PILLARS. ONE PURPOSE.</div>
-        <div class="pillars-row">
+        <div class="pillars-divider" data-tab="today">FOUR PILLARS. ONE PURPOSE.</div>
+        <div class="pillars-row" data-tab="today">
           <div class="pillar">
             <div class="p-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M7 8h10"/></svg></div>
             <div class="p-name">FAITH</div>
@@ -802,15 +811,23 @@
           </div>
         </div>
 
-        <div class="verse">
+        <div class="verse" data-tab="today">
           <div class="v-crown"><svg width="30" height="20" viewBox="0 0 42 26" fill="currentColor"><path d="M2 24 L6 7 L14 15 L21 2 L28 15 L36 7 L40 24 Z"/></svg></div>
           <div class="v-text" id="verseText">Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.</div>
           <div class="v-ref" id="verseRef">COLOSSIANS 3:23</div>
         </div>
-        <div class="landing-footer">SHOW UP. WRITE IT DOWN. LIVE IT OUT.</div>
-        <button class="landing-summary" id="landingSummary">View weekly summary</button>
-        <button class="landing-history" id="landingHistory">Review your history</button>
+        <div class="landing-footer" data-tab="today">SHOW UP. WRITE IT DOWN. LIVE IT OUT.</div>
+        <button class="landing-summary" id="landingSummary" data-tab="progress">View weekly summary</button>
+        <button class="landing-history" id="landingHistory" data-tab="progress">Review your history</button>
       </div>
+
+      <nav class="bottom-nav" id="bottomNav">
+        <button data-go="today"><span class="bn-ico">🏠</span>Today</button>
+        <button data-go="circles"><span class="bn-ico">👥</span>Circles</button>
+        <button data-go="rewards"><span class="bn-ico">🏆</span>Rewards</button>
+        <button data-go="progress"><span class="bn-ico">📊</span>Progress</button>
+        <button data-go="settings"><span class="bn-ico">⚙️</span>Settings</button>
+      </nav>
     </div>
 
     <!-- ===================== BUILD CHOOSER ===================== -->
@@ -1732,7 +1749,7 @@
   const buildChooser = document.getElementById("buildChooser");
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderRewards(); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderRewards(); showTab(__activeTab); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
 
   // ----- Paywall / subscription gate -----
@@ -2738,6 +2755,30 @@
   });
 
   // ----- Boot -----
+  // ---- Bottom tab navigation ----
+  let __activeTab = "today";
+  function showTab(name) {
+    __activeTab = name;
+    document.querySelectorAll("#landingView [data-tab]").forEach(function (el) {
+      const tabs = (el.getAttribute("data-tab") || "").split(/\s+/);
+      el.classList.toggle("tab-off", tabs.indexOf(name) < 0);
+    });
+    document.querySelectorAll("#bottomNav button").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-go") === name);
+    });
+    try {
+      if (name === "rewards") renderRewards();
+      if (name === "circles") { renderGroup(); if (typeof renderCircles === "function") renderCircles(); }
+      if (name === "progress") renderScore();
+    } catch (e) {}
+    window.scrollTo(0, 0);
+  }
+  (function initTabs() {
+    document.querySelectorAll("#bottomNav button").forEach(function (b) {
+      b.addEventListener("click", function () { showTab(b.getAttribute("data-go")); });
+    });
+  })();
+
   // ---- Merch rewards (loyalty ladder) ----
   const REWARD_TIERS = [
     { key: "coin",  name: "Daily Forge Coin",  emoji: "🪙", points: 1500, needsSize: false },
