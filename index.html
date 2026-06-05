@@ -253,7 +253,7 @@
   .settings-card .sc-desc { font-size:12px; color:var(--muted); margin:0 0 10px; line-height:1.45; }
   .settings-card textarea { width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:14px; resize:vertical; min-height:48px; margin-bottom:10px; }
   .sc-saved { font-size:12px; color:#4ade80; margin-left:10px; }
-  .settings-card .sc-field { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .settings-card .sc-field { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; cursor:pointer; }
   .settings-card .sc-field span { font-size:14px; color:var(--text); font-weight:600; }
   .settings-card input[type="time"] { padding:9px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; }
   .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
@@ -3215,7 +3215,11 @@
       const save = document.getElementById("reminderSave");
       const savedMsg = document.getElementById("reminderNoteSaved");
       if (card) card.style.display = "";
-      if (tf) tf.value = getTime();
+      if (tf) {
+        tf.value = getTime();
+        const row = tf.closest(".sc-field");
+        if (row) row.addEventListener("click", function (e) { if (e.target !== tf) { try { tf.showPicker(); } catch (err) { tf.focus(); } } });
+      }
       if (ta) ta.value = getNote();
       if (save) save.addEventListener("click", async function () {
         save.disabled = true;
