@@ -1091,13 +1091,33 @@
   const POINTS = { freeflow: 3, guided: 7, reframe: 10, devotional: 7, prayer: 7, fitness: 12, gratitude: 5 };
   function pointsFor(type) { return POINTS[type] || 0; }
 
+  // ============================================================
+  // WHITE-LABEL BRAND  —  edit THIS block to rebrand for another group.
+  //   name      : product name (sets the document/page title)
+  //   tagline   : canonical brand tagline (the visible one is baked into the logo art)
+  //   logo      : default + men's-build logo  (PNG filename in the repo root)
+  //   logoWomen : women's-build logo          (PNG filename in the repo root)
+  // Other brand levers live nearby:
+  //   • accent colors  ->  CSS :root  --gold / --gold-light  (top of <style>)
+  //   • taglines / verses / workouts per build  ->  BUILDS (men / women) below
+  // To launch a new white-label: copy the repo, edit BRAND, drop in the new
+  // logo PNG(s), and (optionally) tweak the :root accent colors. Nothing else.
+  // ============================================================
+  const BRAND = {
+    name: "Daily Forge",
+    tagline: "Rooted in Faith. Growing with Purpose.",
+    logo: "DailyForge%20LOGO.png",
+    logoWomen: "Womens%20Daily%20Forge%20Logo2.png",
+  };
+  try { if (BRAND.name) document.title = BRAND.name; } catch (e) {}
+
   const APP = "riseUpKings";
 
   // ----- Build variants (men / women), chosen at sign-in and saved to the account -----
   let BUILD = "men"; // "men" | "women"
   const BUILDS = {
     men: {
-      logo: "DailyForge%20LOGO.png",
+      logo: BRAND.logo,
       heroDesc: "A daily forge for men who live on purpose as sons of the King.",
       verseText: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.",
       verseRef: "COLOSSIANS 3:23",
@@ -1110,7 +1130,7 @@
       reflections: []
     },
     women: {
-      logo: "Womens%20Daily%20Forge%20Logo2.png",
+      logo: BRAND.logoWomen,
       heroDesc: "A daily forge for women who live on purpose as daughters of the King.",
       verseText: "Strength and dignity are her clothing. She laughs at the time to come.",
       verseRef: "PROVERBS 31:25",
