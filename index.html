@@ -253,6 +253,9 @@
   .settings-card .sc-desc { font-size:12px; color:var(--muted); margin:0 0 10px; line-height:1.45; }
   .settings-card textarea { width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:14px; resize:vertical; min-height:48px; margin-bottom:10px; }
   .sc-saved { font-size:12px; color:#4ade80; margin-left:10px; }
+  .settings-card .sc-field { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .settings-card .sc-field span { font-size:14px; color:var(--text); font-weight:600; }
+  .settings-card input[type="time"] { padding:9px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; }
   .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
   .pb-label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
   .pb-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -702,8 +705,6 @@
           <span>Signed in as <b id="profileEmail"></b></span>
           <span style="display:flex; gap:8px; flex-wrap:wrap;">
             <button id="buildToggle" title="Switch between the men's and women's build">Men's build</button>
-            <button id="reminderBtn" title="Set your daily reminder time" style="display:none;">⏰ Reminder</button>
-            <input type="time" id="reminderTime" aria-label="Daily reminder time" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
             <button id="manageBilling" title="Manage your subscription" style="display:none;">Manage billing</button>
             <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
             <button id="signOutBtn">Sign out</button>
@@ -711,10 +712,11 @@
         </div>
 
         <div class="settings-card" id="reminderSettings" data-tab="settings" style="display:none;">
-          <div class="sc-title">⏰ Daily reminder note</div>
-          <p class="sc-desc">Write a note to yourself — it becomes the message in your daily reminder notification. Use the ⏰ Reminder button above to change the time.</p>
+          <div class="sc-title">⏰ Daily reminder</div>
+          <p class="sc-desc">Pick a time and write a note to yourself — it pops up every day with your message.</p>
+          <label class="sc-field"><span>Time</span><input type="time" id="reminderTimeField"></label>
           <textarea id="reminderNote" rows="3" placeholder="e.g. Lead your family well today. Stay disciplined. 🔨"></textarea>
-          <button class="pcc-btn" id="reminderNoteSave" type="button">Save note</button>
+          <button class="pcc-btn" id="reminderSave" type="button">Save reminder</button>
           <span class="sc-saved" id="reminderNoteSaved"></span>
         </div>
 
@@ -3206,30 +3208,21 @@
     async function setTime(hhmm) { localStorage.setItem(KEY, hhmm); await schedule(); }
     async function setNote(s) { localStorage.setItem(NOTE_KEY, s); await schedule(); }
     function wireUI() {
-      const rb = document.getElementById("reminderBtn");
-      const rt = document.getElementById("reminderTime");
-      if (rb && rt) {
-        rb.style.display = "";
-        rt.value = getTime();
-        rb.textContent = "⏰ " + fmt(getTime());
-        rb.addEventListener("click", function () { try { rt.showPicker(); } catch (e) { rt.click(); } });
-        rt.addEventListener("change", async function () {
-          if (!rt.value) return;
-          await setTime(rt.value);
-          rb.textContent = "⏰ " + fmt(rt.value);
-        });
-      }
-      // Daily note (shown in Settings, native app only)
+      // Time + note together (Settings, native app only)
       const card = document.getElementById("reminderSettings");
+      const tf = document.getElementById("reminderTimeField");
       const ta = document.getElementById("reminderNote");
-      const save = document.getElementById("reminderNoteSave");
+      const save = document.getElementById("reminderSave");
       const savedMsg = document.getElementById("reminderNoteSaved");
       if (card) card.style.display = "";
+      if (tf) tf.value = getTime();
       if (ta) ta.value = getNote();
-      if (save && ta) save.addEventListener("click", async function () {
+      if (save) save.addEventListener("click", async function () {
         save.disabled = true;
-        await setNote((ta.value || "").trim());
-        if (savedMsg) { savedMsg.textContent = "Saved ✓ — it'll show in your next reminder"; setTimeout(function () { savedMsg.textContent = ""; }, 4000); }
+        if (tf && tf.value) localStorage.setItem(KEY, tf.value);
+        if (ta) localStorage.setItem(NOTE_KEY, (ta.value || "").trim());
+        await schedule();
+        if (savedMsg) { savedMsg.textContent = "Saved ✓ — daily reminder set for " + fmt(getTime()); setTimeout(function () { savedMsg.textContent = ""; }, 4500); }
         save.disabled = false;
       });
     }
