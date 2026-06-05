@@ -247,6 +247,12 @@
   .reorder-ctrls { position:absolute; top:8px; right:8px; display:flex; flex-direction:column; gap:5px; z-index:2; }
   .reorder-ctrls button { width:34px; height:30px; border-radius:8px; border:1px solid var(--field-border); background:var(--bg); color:var(--text); font-size:13px; cursor:pointer; line-height:1; }
   .reorder-ctrls button:active { background:var(--gold); color:#1c1402; }
+  /* Settings cards */
+  .settings-card { background:var(--panel); border:1px solid var(--field-border); border-radius:14px; padding:16px; margin-bottom:14px; }
+  .settings-card .sc-title { font-weight:800; font-size:15px; margin-bottom:4px; }
+  .settings-card .sc-desc { font-size:12px; color:var(--muted); margin:0 0 10px; line-height:1.45; }
+  .settings-card textarea { width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:14px; resize:vertical; min-height:48px; margin-bottom:10px; }
+  .sc-saved { font-size:12px; color:#4ade80; margin-left:10px; }
   .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
   .pb-label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
   .pb-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -702,6 +708,14 @@
             <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
             <button id="signOutBtn">Sign out</button>
           </span>
+        </div>
+
+        <div class="settings-card" id="reminderSettings" data-tab="settings" style="display:none;">
+          <div class="sc-title">⏰ Daily reminder note</div>
+          <p class="sc-desc">Write a note to yourself — it becomes the message in your daily reminder notification. Use the ⏰ Reminder button above to change the time.</p>
+          <textarea id="reminderNote" rows="3" placeholder="e.g. Lead your family well today. Stay disciplined. 🔨"></textarea>
+          <button class="pcc-btn" id="reminderNoteSave" type="button">Save note</button>
+          <span class="sc-saved" id="reminderNoteSaved"></span>
         </div>
 
         <div class="weekly-banner" id="weeklyBanner" data-tab="today" style="display:none;"></div>
@@ -3161,7 +3175,10 @@
   // ---- Daily reminder (native app only): schedules an on-device notification ----
   const DailyReminder = (function () {
     const KEY = "dailyforge:reminderTime";
+    const NOTE_KEY = "dailyforge:remindernote";
+    const DEFAULT_BODY = "Time to forge today — write, reflect, grow. 🔨";
     function getTime() { return localStorage.getItem(KEY) || "08:00"; }
+    function getNote() { return localStorage.getItem(NOTE_KEY) || ""; }
     function plugin() { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) || null; }
     function fmt(hhmm) {
       const p = (hhmm || "08:00").split(":").map(Number);
@@ -3176,31 +3193,47 @@
         const perm = await LN.requestPermissions();
         if (perm && perm.display && perm.display !== "granted") return;
         const p = getTime().split(":").map(Number);
+        const body = getNote().trim() || DEFAULT_BODY;
         try { await LN.cancel({ notifications: [{ id: 1001 }] }); } catch (e) {}
         await LN.schedule({ notifications: [{
           id: 1001,
           title: "Daily Forge",
-          body: "Time to forge today — write, reflect, grow. 🔨",
+          body: body,
           schedule: { on: { hour: p[0], minute: p[1] || 0 }, allowWhileIdle: true, repeats: true }
         }] });
       } catch (e) { console.warn("reminder schedule failed", e); }
     }
     async function setTime(hhmm) { localStorage.setItem(KEY, hhmm); await schedule(); }
+    async function setNote(s) { localStorage.setItem(NOTE_KEY, s); await schedule(); }
     function wireUI() {
       const rb = document.getElementById("reminderBtn");
       const rt = document.getElementById("reminderTime");
-      if (!rb || !rt) return;
-      rb.style.display = "";
-      rt.value = getTime();
-      rb.textContent = "⏰ " + fmt(getTime());
-      rb.addEventListener("click", function () { try { rt.showPicker(); } catch (e) { rt.click(); } });
-      rt.addEventListener("change", async function () {
-        if (!rt.value) return;
-        await setTime(rt.value);
-        rb.textContent = "⏰ " + fmt(rt.value);
+      if (rb && rt) {
+        rb.style.display = "";
+        rt.value = getTime();
+        rb.textContent = "⏰ " + fmt(getTime());
+        rb.addEventListener("click", function () { try { rt.showPicker(); } catch (e) { rt.click(); } });
+        rt.addEventListener("change", async function () {
+          if (!rt.value) return;
+          await setTime(rt.value);
+          rb.textContent = "⏰ " + fmt(rt.value);
+        });
+      }
+      // Daily note (shown in Settings, native app only)
+      const card = document.getElementById("reminderSettings");
+      const ta = document.getElementById("reminderNote");
+      const save = document.getElementById("reminderNoteSave");
+      const savedMsg = document.getElementById("reminderNoteSaved");
+      if (card) card.style.display = "";
+      if (ta) ta.value = getNote();
+      if (save && ta) save.addEventListener("click", async function () {
+        save.disabled = true;
+        await setNote((ta.value || "").trim());
+        if (savedMsg) { savedMsg.textContent = "Saved ✓ — it'll show in your next reminder"; setTimeout(function () { savedMsg.textContent = ""; }, 4000); }
+        save.disabled = false;
       });
     }
-    return { getTime, setTime, schedule, fmt, wireUI };
+    return { getTime, setTime, getNote, setNote, schedule, fmt, wireUI };
   })();
 
   (async function boot() {
