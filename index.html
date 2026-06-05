@@ -62,8 +62,8 @@
       radial-gradient(ellipse at 72% 18%, rgba(230,180,158,0.55), transparent 52%),
       linear-gradient(180deg, #fbe6db 0%, #fbf1ea 60%, #fffaf6 100%);
   }
-  body[data-build="women"] .logo { mix-blend-mode: normal; max-width: 461px; }
-  @media (max-width: 480px) { body[data-build="women"] .logo { max-width: 374px; } }
+  body[data-build="women"] .logo { mix-blend-mode: normal; max-width: 680px; }
+  @media (max-width: 480px) { body[data-build="women"] .logo { max-width: 460px; } }
   body[data-build="women"] .hero .mountains { opacity: 0.4; }
   body[data-build="women"] .hero .mountains path { fill: #e6c6b6; }
   body[data-build="women"] .hero-desc { color: #b0795f; }
@@ -237,6 +237,16 @@
   .pc-prayed-count { font-size:13px; color:var(--muted); }
   .pc-addreq { margin-top:12px; }
   .pc-leave { background:none; border:none; color:var(--muted); font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; margin-top:10px; }
+  /* Pillar done-today state + reorder mode */
+  .pillar-card { position: relative; }
+  .pillar-card.pc-done { opacity: 0.5; }
+  .pillar-card.pc-done::after { content: "✓ done today"; position: absolute; top: 8px; left: 10px; font-size: 10px; letter-spacing: .3px; color: #4ade80; font-weight: 700; }
+  .reorder-btn { background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:6px 16px; font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; margin:0 0 12px; }
+  .pillar-cards.reordering .pillar-card { cursor: default; opacity: 1; }
+  .pillar-cards.reordering .pillar-card.pc-done::after { display:none; }
+  .reorder-ctrls { position:absolute; top:8px; right:8px; display:flex; flex-direction:column; gap:5px; z-index:2; }
+  .reorder-ctrls button { width:34px; height:30px; border-radius:8px; border:1px solid var(--field-border); background:var(--bg); color:var(--text); font-size:13px; cursor:pointer; line-height:1; }
+  .reorder-ctrls button:active { background:var(--gold); color:#1c1402; }
   .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
   .pb-label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
   .pb-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -755,6 +765,7 @@
         <div class="group-panel" id="groupPanel" data-tab="circles"></div>
         <div class="prayer-circles" id="prayerCircles" data-tab="circles"></div>
 
+        <button class="reorder-btn" id="reorderToggle" data-tab="today" type="button">✎ Reorder</button>
         <div class="pillar-cards" data-tab="today">
           <div class="pillar-card pc-freeflow" data-type="freeflow">
             <div class="pc-icon">
@@ -1912,9 +1923,74 @@
     sumOffset = 0; renderSummary(); renderSavedSummaries();
   }
 
+  // ----- Customizable pillar order + 1-per-day done state -----
+  const DEFAULT_PILLAR_ORDER = ["freeflow", "guided", "reframe", "devotional", "prayer", "fitness", "gratitude"];
+  function pillarOrderKey() { return APP + ":pillarorder:" + (currentEmail() || ""); }
+  function getPillarOrder() {
+    let a; try { a = JSON.parse(localStorage.getItem(pillarOrderKey())); } catch (e) { a = null; }
+    if (!Array.isArray(a)) a = [];
+    a = a.filter(function (t) { return DEFAULT_PILLAR_ORDER.indexOf(t) >= 0; });
+    DEFAULT_PILLAR_ORDER.forEach(function (t) { if (a.indexOf(t) < 0) a.push(t); });
+    return a;
+  }
+  function savePillarOrder(a) { localStorage.setItem(pillarOrderKey(), JSON.stringify(a)); }
+  function applyPillarOrder() {
+    const wrap = document.querySelector(".pillar-cards"); if (!wrap) return;
+    getPillarOrder().forEach(function (type) {
+      const card = wrap.querySelector('.pillar-card[data-type="' + type + '"]');
+      if (card) wrap.appendChild(card);
+    });
+  }
+  let __reorderMode = false;
+  function setReorderMode(on) {
+    __reorderMode = on;
+    const wrap = document.querySelector(".pillar-cards"); if (wrap) wrap.classList.toggle("reordering", on);
+    const btn = document.getElementById("reorderToggle"); if (btn) btn.textContent = on ? "✓ Done reordering" : "✎ Reorder";
+    document.querySelectorAll(".pillar-cards .reorder-ctrls").forEach(function (e) { e.remove(); });
+    if (on) {
+      document.querySelectorAll(".pillar-cards .pillar-card").forEach(function (card) {
+        const c = document.createElement("div"); c.className = "reorder-ctrls";
+        c.innerHTML = '<button type="button" class="ro-up">▲</button><button type="button" class="ro-down">▼</button>';
+        card.appendChild(c);
+      });
+    }
+  }
+  function movePillar(type, dir) {
+    const order = getPillarOrder(); const i = order.indexOf(type); if (i < 0) return;
+    const j = i + dir; if (j < 0 || j >= order.length) return;
+    const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+    savePillarOrder(order); applyPillarOrder();
+    if (__reorderMode) setReorderMode(true);
+  }
+  function doneTodayTypes() {
+    const today = dayKey(new Date()); const s = {};
+    loadEntries().forEach(function (e) { const d = e.date || (e.savedAt || "").slice(0, 10); if (d === today) s[e.type] = true; });
+    return s;
+  }
+  function markDonePillars() {
+    const done = doneTodayTypes();
+    document.querySelectorAll(".pillar-card").forEach(function (c) { c.classList.toggle("pc-done", !!done[c.dataset.type]); });
+  }
+  (function initReorder() {
+    const btn = document.getElementById("reorderToggle");
+    if (btn) btn.addEventListener("click", function () { setReorderMode(!__reorderMode); });
+  })();
+
   // landing cards open a journal type
   document.querySelectorAll(".pillar-card").forEach(c => {
-    c.addEventListener("click", () => { setActiveType(c.dataset.type); showApp(); showWrite(); window.scrollTo(0, 0); });
+    c.addEventListener("click", (e) => {
+      if (__reorderMode) {
+        if (e.target.classList.contains("ro-up")) movePillar(c.dataset.type, -1);
+        else if (e.target.classList.contains("ro-down")) movePillar(c.dataset.type, 1);
+        return;
+      }
+      if (doneTodayTypes()[c.dataset.type]) {
+        const tt = QUESTIONS[c.dataset.type] ? QUESTIONS[c.dataset.type].title : "this";
+        if (typeof showToast === "function") showToast("You've already done " + tt + " today 🙌 Come back tomorrow.");
+        return;
+      }
+      setActiveType(c.dataset.type); showApp(); showWrite(); window.scrollTo(0, 0);
+    });
   });
   document.getElementById("landingHistory").addEventListener("click", () => { showApp(); showHistory(); window.scrollTo(0, 0); });
   document.getElementById("landingSummary").addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); });
@@ -2072,6 +2148,15 @@
     const date = document.getElementById("entryDate").value;
     const typeTitle = QUESTIONS[currentType].title;
     const fields = [...questionsEl.querySelectorAll("textarea")];
+    // One entry per item per day
+    const alreadyToday = loadEntries().some(function (en) {
+      return en.type === currentType && (en.date || (en.savedAt || "").slice(0, 10)) === date;
+    });
+    if (alreadyToday) {
+      if (typeof showToast === "function") showToast("You've already logged " + typeTitle + " for that day — one entry per item per day.");
+      else alert("You've already logged " + typeTitle + " for that day. One entry per item per day.");
+      return;
+    }
     // capture timer if still running for a fitness preset workout
     if (currentType === "fitness" && currentFitnessPreset && timerInterval) { stopTimer(); }
     let pts = pointsFor(currentType);
@@ -2918,6 +3003,7 @@
       if (name === "rewards") renderRewards();
       if (name === "circles") { renderGroup(); if (typeof renderCircles === "function") renderCircles(); }
       if (name === "progress") renderScore();
+      if (name === "today") { if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); }
     } catch (e) {}
     window.scrollTo(0, 0);
   }
@@ -2954,27 +3040,34 @@
     const lifetime = totalPoints();
     const claimed = {};
     (__redemptions || []).forEach(function (r) { claimed[r.tier] = r; });
-    const target = REWARD_TIERS.find(function (t) { return !claimed[t.key]; });
+    const activeIndex = REWARD_TIERS.findIndex(function (t) { return !claimed[t.key]; });
+    const target = activeIndex >= 0 ? REWARD_TIERS[activeIndex] : null;
 
-    const rows = REWARD_TIERS.map(function (t) {
+    const rows = REWARD_TIERS.map(function (t, ti) {
       const done = !!claimed[t.key];
+      const isActive = ti === activeIndex;
       const reached = lifetime >= t.points;
-      const state = done ? "claimed" : (reached ? "ready" : "locked");
-      const pct = Math.min(100, Math.round((lifetime / t.points) * 100));
-      let right;
-      if (done) right = '<span class="rw-status rw-done">Claimed ✓</span>';
-      else if (reached && rwCanClaim()) right = '<button class="rw-claim" data-tier="' + t.key + '">Claim</button>';
-      else right = '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + "</span>";
+      let state, right, barW;
+      if (done) { state = "claimed"; barW = 100; right = '<span class="rw-status rw-done">Claimed ✓</span>'; }
+      else if (isActive) {
+        state = reached ? "ready" : "active";
+        barW = Math.min(100, Math.round((lifetime / t.points) * 100));
+        right = (reached && rwCanClaim())
+          ? '<button class="rw-claim" data-tier="' + t.key + '">Claim</button>'
+          : '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + "</span>";
+      } else { state = "locked"; barW = 0; right = '<span class="rw-status">🔒 Locked</span>'; }
       return '<div class="rw-tier rw-' + state + '">' +
         '<div class="rw-emoji">' + t.emoji + "</div>" +
         '<div class="rw-info"><div class="rw-name">' + t.name + "</div>" +
-        '<div class="rw-bar"><span style="width:' + (done ? 100 : pct) + '%"></span></div></div>' +
+        '<div class="rw-bar"><span style="width:' + barW + '%"></span></div></div>' +
         '<div class="rw-right">' + right + "</div></div>";
     }).join("");
 
-    const header = '<div class="rw-head"><span class="rw-title">Rewards</span><span class="rw-next">' +
-      (target ? (Math.max(0, target.points - lifetime).toLocaleString() + " pts to your " + target.name) : "All rewards unlocked 🏆") +
-      "</span></div>";
+    let headerText;
+    if (!target) headerText = "All rewards unlocked 🏆";
+    else if (lifetime >= target.points) headerText = "Ready to claim your " + target.name + "! 🎉";
+    else headerText = (target.points - lifetime).toLocaleString() + " pts to your " + target.name;
+    const header = '<div class="rw-head"><span class="rw-title">Rewards</span><span class="rw-next">' + headerText + "</span></div>";
     const foot = rwCanClaim() ? "" : '<div class="rw-foot">An active membership is required to claim rewards.</div>';
     const admin = OWNER_EMAILS.includes((currentEmail() || "").toLowerCase()) ? '<button class="rw-admin-link" id="rwAdminLink">View all claims (admin)</button>' : "";
     host.innerHTML = header + rows + foot + admin;
