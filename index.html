@@ -207,11 +207,11 @@
   .rw-error { color:#f87171; font-size:13px; margin-top:8px; min-height:1em; }
   .rw-claim-item { border-top:1px solid var(--field-border); padding:10px 0; font-size:13px; line-height:1.5; }
   /* Bottom tab navigation */
-  .bottom-nav { position: fixed; left:0; right:0; bottom:0; z-index:900; display:flex; background:var(--panel); border-top:1px solid var(--field-border); padding:9px 4px calc(18px + env(safe-area-inset-bottom,0px)); box-shadow:0 -4px 16px rgba(0,0,0,0.18); }
-  .bottom-nav button { flex:1; background:none; border:none; color:var(--muted); font-family:inherit; font-size:10px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
-  .bottom-nav .bn-ico { font-size:21px; line-height:1; }
+  .bottom-nav { position: fixed; left:0; right:0; bottom:0; z-index:900; display:flex; background:var(--panel); border-top:1px solid var(--field-border); padding:8px 4px calc(8px + env(safe-area-inset-bottom,0px)); box-shadow:0 -4px 16px rgba(0,0,0,0.18); }
+  .bottom-nav button { flex:1; background:none; border:none; color:var(--muted); font-family:inherit; font-size:10px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
+  .bottom-nav .bn-ico { width:23px; height:23px; }
   .bottom-nav button.active { color:var(--gold-light); }
-  #landingView .landing-body { padding-bottom: 108px; }
+  #landingView .landing-body { padding-bottom: 92px; }
   .tab-off { display:none !important; }
   .tab-title { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:4px 0 16px; }
   /* Prayer circles */
@@ -872,11 +872,11 @@
       </div>
 
       <nav class="bottom-nav" id="bottomNav">
-        <button data-go="today"><span class="bn-ico">🏠</span>Today</button>
-        <button data-go="circles"><span class="bn-ico">👥</span>Circles</button>
-        <button data-go="rewards"><span class="bn-ico">🏆</span>Rewards</button>
-        <button data-go="progress"><span class="bn-ico">📊</span>Progress</button>
-        <button data-go="settings"><span class="bn-ico">⚙️</span>Settings</button>
+        <button data-go="today"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg>Today</button>
+        <button data-go="circles"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg>Circles</button>
+        <button data-go="rewards"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M7 5H4.5v1.5A2.5 2.5 0 0 0 7 9"/><path d="M17 5h2.5v1.5A2.5 2.5 0 0 1 17 9"/></svg>Rewards</button>
+        <button data-go="progress"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Progress</button>
+        <button data-go="settings"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>Settings</button>
       </nav>
     </div>
 
