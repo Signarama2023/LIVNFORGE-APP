@@ -173,6 +173,39 @@
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .score-tile .lbl { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
+  /* Rewards ladder */
+  .rewards-card { background: var(--panel); border: 1px solid var(--field-border); border-radius: 16px; padding: 16px 16px 14px; margin-bottom: 22px; }
+  .rw-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px; gap:10px; flex-wrap:wrap; }
+  .rw-title { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; }
+  .rw-next { font-size:12px; color:var(--gold-light); font-weight:600; }
+  .rw-tier { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--field-border); }
+  .rw-tier:first-of-type { border-top:none; }
+  .rw-emoji { font-size:26px; width:34px; text-align:center; }
+  .rw-locked .rw-emoji { filter:grayscale(1); opacity:.45; }
+  .rw-info { flex:1; min-width:0; }
+  .rw-name { font-weight:700; font-size:14px; margin-bottom:6px; }
+  .rw-bar { height:7px; border-radius:99px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .rw-bar > span { display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--gold),var(--gold-light)); transition:width .4s ease; }
+  .rw-right { flex-shrink:0; }
+  .rw-status { font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .rw-done { color:#4ade80; font-weight:700; }
+  .rw-claim { background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#1c1402; border:none; border-radius:99px; padding:7px 16px; font-weight:800; font-size:13px; cursor:pointer; font-family:inherit; }
+  .rw-claim:hover { filter:brightness(1.05); }
+  .rw-foot { margin-top:10px; font-size:12px; color:var(--muted); text-align:center; }
+  .rw-admin-link { display:inline-block; margin-top:10px; font-size:12px; color:var(--gold-light); background:none; border:none; cursor:pointer; text-decoration:underline; font-family:inherit; padding:0; }
+  .rw-modal { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:18px; }
+  .rw-modal-inner { background:var(--panel); border:1px solid var(--field-border); border-radius:18px; padding:22px; width:100%; max-width:420px; max-height:90vh; overflow:auto; }
+  .rw-modal h3 { margin:0 0 14px; font-size:18px; }
+  .rw-field { margin-bottom:10px; }
+  .rw-field label { display:block; font-size:12px; color:var(--muted); margin-bottom:4px; }
+  .rw-modal input, .rw-modal select { width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:15px; }
+  .rw-row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .rw-modal-actions { display:flex; gap:10px; margin-top:16px; }
+  .rw-modal-actions button { flex:1; padding:11px; border-radius:10px; font-weight:700; font-family:inherit; font-size:14px; cursor:pointer; border:1px solid var(--field-border); }
+  .rw-cancel { background:transparent; color:var(--text); }
+  .rw-submit { background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#1c1402; border:none; }
+  .rw-error { color:#f87171; font-size:13px; margin-top:8px; min-height:1em; }
+  .rw-claim-item { border-top:1px solid var(--field-border); padding:10px 0; font-size:13px; line-height:1.5; }
   .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
   .pb-label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
   .pb-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -636,6 +669,38 @@
           <div class="score-tile points"><div class="num" id="scorePoints">0</div><div class="lbl">Points</div></div>
           <div class="score-tile"><div class="num" id="scoreEntries">0</div><div class="lbl">Entries</div></div>
           <div class="score-tile"><div class="num" id="scoreStreak">0</div><div class="lbl">Day Streak</div></div>
+        </div>
+
+        <div class="rewards-card" id="rewardsCard" style="display:none;"></div>
+
+        <div class="rw-modal" id="claimModal">
+          <div class="rw-modal-inner">
+            <h3 id="claimTitle">Claim your reward</h3>
+            <div class="rw-field"><label>Full name</label><input id="claimName" autocomplete="name"></div>
+            <div class="rw-field" id="claimSizeWrap" style="display:none;"><label>Size</label>
+              <select id="claimSize"><option value="">Choose a size…</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option></select>
+            </div>
+            <div class="rw-field"><label>Shipping address</label><input id="claimAddr1" autocomplete="address-line1" placeholder="Street address"></div>
+            <div class="rw-field"><input id="claimAddr2" autocomplete="address-line2" placeholder="Apt, suite (optional)"></div>
+            <div class="rw-row2">
+              <div class="rw-field"><label>City</label><input id="claimCity" autocomplete="address-level2"></div>
+              <div class="rw-field"><label>State</label><input id="claimState" autocomplete="address-level1"></div>
+            </div>
+            <div class="rw-field"><label>ZIP</label><input id="claimZip" autocomplete="postal-code" inputmode="numeric"></div>
+            <div class="rw-error" id="claimError"></div>
+            <div class="rw-modal-actions">
+              <button class="rw-cancel" id="claimCancel" type="button">Cancel</button>
+              <button class="rw-submit" id="claimSubmit" type="button">Submit claim</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rw-modal" id="adminClaimsModal">
+          <div class="rw-modal-inner">
+            <h3>Reward claims</h3>
+            <div id="adminClaimsList">Loading…</div>
+            <div class="rw-modal-actions"><button class="rw-cancel" id="adminClaimsClose" type="button">Close</button></div>
+          </div>
         </div>
 
         <button class="landing-cta" id="landingSummaryCta">
@@ -1667,7 +1732,7 @@
   const buildChooser = document.getElementById("buildChooser");
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderRewards(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
 
   // ----- Paywall / subscription gate -----
@@ -1716,7 +1781,9 @@
   // Decide where an authenticated user lands: paywall -> build chooser -> landing.
   async function gateEntry() {
     const entitled = await isEntitled();
+    __entitled = entitled;
     if (!entitled) { showPaywall(); return; }
+    await loadRedemptions();
     if (!__currentUser.build) { showChooser(false); }
     else { showLanding(); }
   }
@@ -2671,6 +2738,144 @@
   });
 
   // ----- Boot -----
+  // ---- Merch rewards (loyalty ladder) ----
+  const REWARD_TIERS = [
+    { key: "coin",  name: "Daily Forge Coin",  emoji: "🪙", points: 1500, needsSize: false },
+    { key: "shirt", name: "Daily Forge Shirt", emoji: "👕", points: 4000, needsSize: true  },
+    { key: "hat",   name: "Daily Forge Hat",   emoji: "🧢", points: 7000, needsSize: false },
+  ];
+  let __redemptions = [];
+  let __entitled = false;
+  function rwEsc(s) { return (s == null ? "" : String(s)).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
+  function rwCanClaim() { return OWNER_EMAILS.includes((currentEmail() || "").toLowerCase()) || __entitled; }
+
+  async function loadRedemptions() {
+    __redemptions = [];
+    if (!sb || !__currentUser) return;
+    try {
+      const { data, error } = await sb.from("redemptions").select("*").eq("user_id", __currentUser.id);
+      if (!error && Array.isArray(data)) __redemptions = data;
+    } catch (e) { /* table may not exist yet */ }
+  }
+
+  function renderRewards() {
+    const host = document.getElementById("rewardsCard");
+    if (!host) return;
+    host.style.display = "";
+    const lifetime = totalPoints();
+    const claimed = {};
+    (__redemptions || []).forEach(function (r) { claimed[r.tier] = r; });
+    const target = REWARD_TIERS.find(function (t) { return !claimed[t.key]; });
+
+    const rows = REWARD_TIERS.map(function (t) {
+      const done = !!claimed[t.key];
+      const reached = lifetime >= t.points;
+      const state = done ? "claimed" : (reached ? "ready" : "locked");
+      const pct = Math.min(100, Math.round((lifetime / t.points) * 100));
+      let right;
+      if (done) right = '<span class="rw-status rw-done">Claimed ✓</span>';
+      else if (reached && rwCanClaim()) right = '<button class="rw-claim" data-tier="' + t.key + '">Claim</button>';
+      else right = '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + "</span>";
+      return '<div class="rw-tier rw-' + state + '">' +
+        '<div class="rw-emoji">' + t.emoji + "</div>" +
+        '<div class="rw-info"><div class="rw-name">' + t.name + "</div>" +
+        '<div class="rw-bar"><span style="width:' + (done ? 100 : pct) + '%"></span></div></div>' +
+        '<div class="rw-right">' + right + "</div></div>";
+    }).join("");
+
+    const header = '<div class="rw-head"><span class="rw-title">Rewards</span><span class="rw-next">' +
+      (target ? (Math.max(0, target.points - lifetime).toLocaleString() + " pts to your " + target.name) : "All rewards unlocked 🏆") +
+      "</span></div>";
+    const foot = rwCanClaim() ? "" : '<div class="rw-foot">An active membership is required to claim rewards.</div>';
+    const admin = OWNER_EMAILS.includes((currentEmail() || "").toLowerCase()) ? '<button class="rw-admin-link" id="rwAdminLink">View all claims (admin)</button>' : "";
+    host.innerHTML = header + rows + foot + admin;
+
+    host.querySelectorAll(".rw-claim").forEach(function (b) {
+      b.addEventListener("click", function () { openClaim(b.getAttribute("data-tier")); });
+    });
+    const al = document.getElementById("rwAdminLink");
+    if (al) al.addEventListener("click", openAdminClaims);
+  }
+
+  function openClaim(tierKey) {
+    const tier = REWARD_TIERS.find(function (t) { return t.key === tierKey; });
+    if (!tier || !rwCanClaim()) return;
+    const m = document.getElementById("claimModal");
+    document.getElementById("claimTitle").textContent = "Claim your " + tier.name + " " + tier.emoji;
+    document.getElementById("claimSizeWrap").style.display = tier.needsSize ? "" : "none";
+    document.getElementById("claimError").textContent = "";
+    const nm = document.getElementById("claimName"); if (nm && !nm.value) nm.value = (typeof getName === "function" ? getName() : "") || "";
+    m.setAttribute("data-tier", tierKey);
+    m.style.display = "flex";
+  }
+  function closeClaim() { document.getElementById("claimModal").style.display = "none"; }
+
+  async function submitClaim() {
+    const m = document.getElementById("claimModal");
+    const tier = REWARD_TIERS.find(function (t) { return t.key === m.getAttribute("data-tier"); });
+    if (!tier) return;
+    const val = function (id) { return (document.getElementById(id).value || "").trim(); };
+    const payload = {
+      user_id: __currentUser.id, email: currentEmail(),
+      tier: tier.key, item_name: tier.name,
+      points_at_claim: totalPoints(), threshold: tier.points,
+      size: tier.needsSize ? val("claimSize") : null,
+      ship_name: val("claimName"), ship_address1: val("claimAddr1"), ship_address2: val("claimAddr2"),
+      ship_city: val("claimCity"), ship_state: val("claimState"), ship_zip: val("claimZip"),
+    };
+    const err = document.getElementById("claimError");
+    if (!payload.ship_name || !payload.ship_address1 || !payload.ship_city || !payload.ship_state || !payload.ship_zip) {
+      err.textContent = "Please fill in your name and full shipping address."; return;
+    }
+    if (tier.needsSize && !payload.size) { err.textContent = "Please choose a size."; return; }
+    const btn = document.getElementById("claimSubmit"); btn.disabled = true; btn.textContent = "Submitting…";
+    try {
+      const { error } = await sb.from("redemptions").insert(payload);
+      if (error) throw error;
+      closeClaim();
+      if (typeof showToast === "function") showToast("Claim received! We'll forge and ship your " + tier.name + " 🔨");
+      await loadRedemptions(); renderRewards();
+    } catch (e) {
+      err.textContent = (e && e.message) ? e.message : "Couldn't submit claim. Please try again.";
+    } finally { btn.disabled = false; btn.textContent = "Submit claim"; }
+  }
+
+  async function openAdminClaims() {
+    const m = document.getElementById("adminClaimsModal");
+    const list = document.getElementById("adminClaimsList");
+    list.textContent = "Loading…";
+    m.style.display = "flex";
+    try {
+      const { data, error } = await sb.from("redemptions").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      if (!data || !data.length) { list.textContent = "No claims yet."; return; }
+      list.innerHTML = data.map(function (r) {
+        return '<div class="rw-claim-item"><b>' + rwEsc(r.item_name) + "</b>" + (r.size ? (" · " + rwEsc(r.size)) : "") +
+          ' — <span style="color:' + (r.status === "fulfilled" ? "#4ade80" : "var(--gold-light)") + '">' + rwEsc(r.status) + "</span><br>" +
+          rwEsc(r.email || "") + "<br>" +
+          rwEsc(r.ship_name || "") + ", " + rwEsc(r.ship_address1 || "") + " " + rwEsc(r.ship_address2 || "") + ", " +
+          rwEsc(r.ship_city || "") + " " + rwEsc(r.ship_state || "") + " " + rwEsc(r.ship_zip || "") +
+          (r.status !== "fulfilled" ? ('<br><button class="rw-admin-link" data-fulfill="' + r.id + '">Mark fulfilled</button>') : "") +
+          "</div>";
+      }).join("");
+      list.querySelectorAll("[data-fulfill]").forEach(function (b) {
+        b.addEventListener("click", async function () {
+          b.disabled = true;
+          try { await sb.from("redemptions").update({ status: "fulfilled" }).eq("id", b.getAttribute("data-fulfill")); } catch (e) {}
+          openAdminClaims();
+        });
+      });
+    } catch (e) { list.textContent = (e && e.message) ? e.message : "Couldn't load claims."; }
+  }
+
+  (function initRewardsUI() {
+    const cc = document.getElementById("claimCancel"); if (cc) cc.addEventListener("click", closeClaim);
+    const cs = document.getElementById("claimSubmit"); if (cs) cs.addEventListener("click", submitClaim);
+    const ac = document.getElementById("adminClaimsClose"); if (ac) ac.addEventListener("click", function () { document.getElementById("adminClaimsModal").style.display = "none"; });
+    const cm = document.getElementById("claimModal"); if (cm) cm.addEventListener("click", function (e) { if (e.target === cm) closeClaim(); });
+    const am = document.getElementById("adminClaimsModal"); if (am) am.addEventListener("click", function (e) { if (e.target === am) am.style.display = "none"; });
+  })();
+
   // ---- Daily reminder (native app only): schedules an on-device notification ----
   const DailyReminder = (function () {
     const KEY = "dailyforge:reminderTime";
