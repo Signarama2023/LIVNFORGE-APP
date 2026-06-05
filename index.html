@@ -214,6 +214,29 @@
   #landingView .landing-body { padding-bottom: 88px; }
   .tab-off { display:none !important; }
   .tab-title { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:4px 0 16px; }
+  /* Prayer circles */
+  .pc-wrap { margin-bottom: 22px; }
+  .pc-wrap > h3 { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:0 0 12px; }
+  .pc-join { background:var(--panel); border:1px solid var(--field-border); border-radius:14px; padding:14px; margin-bottom:14px; }
+  .pc-join input, .pc-join textarea, .pc-addreq textarea { width:100%; box-sizing:border-box; padding:9px 11px; border-radius:9px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:14px; margin-bottom:8px; }
+  .pc-addreq textarea { resize:vertical; min-height:40px; }
+  .pcc-btn { background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#1c1402; border:none; border-radius:99px; padding:8px 16px; font-weight:800; font-size:13px; cursor:pointer; font-family:inherit; }
+  .pcc-btn.secondary { background:transparent; color:var(--text); border:1px solid var(--field-border); }
+  .pc-card { background:var(--panel); border:1px solid var(--field-border); border-radius:14px; padding:16px; margin-bottom:14px; }
+  .pcc-name { font-weight:800; font-size:16px; }
+  .pcc-focus { color:var(--gold-light); font-size:13px; margin:4px 0 10px; }
+  .pc-meta { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-bottom:12px; }
+  .pc-pray-row { margin-bottom:14px; }
+  .pc-reqs { border-top:1px solid var(--field-border); padding-top:12px; }
+  .pc-req { padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .pc-req:last-of-type { border-bottom:none; }
+  .prq-body { font-size:14px; line-height:1.45; white-space:pre-wrap; }
+  .prq-meta { font-size:11px; color:var(--muted); margin-top:5px; display:flex; gap:10px; align-items:center; }
+  .prq-pray { background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:3px 10px; font-size:12px; cursor:pointer; font-family:inherit; }
+  .prq-pray.done { background:rgba(240,180,80,0.15); }
+  .pc-prayed-count { font-size:13px; color:var(--muted); }
+  .pc-addreq { margin-top:12px; }
+  .pc-leave { background:none; border:none; color:var(--muted); font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; margin-top:10px; }
   .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
   .pb-label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
   .pb-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -2302,6 +2325,131 @@
     } else if (e.target.id === "gpRefresh") {
       loadLeaderboard();
     }
+  });
+
+  // ----- Prayer Circles -----
+  function pcKey() { return APP + ":prayercircles:" + (currentEmail() || ""); }
+  function getCircles() { try { return JSON.parse(localStorage.getItem(pcKey())) || []; } catch (e) { return []; } }
+  function saveCircles(a) { localStorage.setItem(pcKey(), JSON.stringify(a)); }
+  function addCircleCode(c) { const a = getCircles(); if (!a.includes(c)) { a.push(c); saveCircles(a); } }
+  function removeCircleCode(c) { saveCircles(getCircles().filter(function (x) { return x !== c; })); }
+  const prayerCirclesEl = document.getElementById("prayerCircles");
+
+  function renderCircles() {
+    if (!prayerCirclesEl) return;
+    const codes = getCircles();
+    let html = '<div class="pc-wrap"><h3>Prayer Circles</h3>' +
+      '<div class="pc-join">' +
+      '<input id="pcName" placeholder="Your name" value="' + escapeHtml(getName() || "") + '">' +
+      '<input id="pcCode" placeholder="Circle code (e.g. MENS-GROUP)" autocapitalize="characters">' +
+      '<input id="pcFocus" placeholder="Prayer focus (only when creating a new circle)">' +
+      '<button class="pcc-btn" id="pcJoin" type="button">Join / Create circle</button>' +
+      '</div>';
+    if (codes.length) {
+      codes.forEach(function (code, i) { html += '<div class="pc-card" id="pcCard_' + i + '"><div class="pcc-name">' + escapeHtml(code) + '</div><div class="pcc-focus">Loading…</div></div>'; });
+    } else {
+      html += '<div class="gp-empty-note">You haven\'t joined a prayer circle yet. Enter a code above to create or join one and pray together.</div>';
+    }
+    html += '</div>';
+    prayerCirclesEl.innerHTML = html;
+    codes.forEach(function (code, i) { loadCircle(code, i); });
+  }
+
+  async function loadCircle(code, i) {
+    const card = document.getElementById("pcCard_" + i);
+    if (!card || !sb) return;
+    const me = (currentEmail() || "").toLowerCase();
+    const today = dayKey(new Date());
+    try {
+      const results = await Promise.all([
+        sb.from("prayer_circles").select("name,focus").eq("code", code).maybeSingle(),
+        sb.from("prayer_circle_members").select("email,name").eq("code", code),
+        sb.from("prayer_logs").select("email").eq("code", code).eq("day", today),
+        sb.from("prayer_requests").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }),
+      ]);
+      const circle = results[0].data || {};
+      const members = results[1].data || [];
+      const logs = results[2].data || [];
+      const requests = results[3].data || [];
+      const prayedToday = logs.length;
+      const iPrayed = logs.some(function (r) { return (r.email || "").toLowerCase() === me; });
+      const prayerCounts = {}, iPrayedReq = {};
+      if (requests.length) {
+        const ids = requests.map(function (r) { return r.id; });
+        const pp = (await sb.from("prayer_request_prayers").select("request_id,email").in("request_id", ids)).data || [];
+        pp.forEach(function (p) { prayerCounts[p.request_id] = (prayerCounts[p.request_id] || 0) + 1; if ((p.email || "").toLowerCase() === me) iPrayedReq[p.request_id] = true; });
+      }
+      const reqHtml = requests.length ? requests.map(function (r) {
+        return '<div class="pc-req"><div class="prq-body">' + escapeHtml(r.body) + '</div>' +
+          '<div class="prq-meta"><span>' + escapeHtml(r.name || (r.email || "").split("@")[0]) + '</span>' +
+          '<button class="prq-pray ' + (iPrayedReq[r.id] ? "done" : "") + '" data-req="' + r.id + '">🙏 ' + (prayerCounts[r.id] || 0) + ' praying</button></div></div>';
+      }).join("") : '<div class="pc-prayed-count">No prayer requests yet — be the first to share one.</div>';
+
+      card.innerHTML =
+        '<div class="pcc-name">' + escapeHtml(circle.name || code) + '</div>' +
+        '<div class="pcc-focus">🙏 ' + escapeHtml(circle.focus || "A circle praying together") + '</div>' +
+        '<div class="pc-meta"><span>' + members.length + ' member' + (members.length === 1 ? "" : "s") + '</span><span>' + prayedToday + ' prayed today</span></div>' +
+        '<div class="pc-pray-row"><button class="pcc-btn ' + (iPrayed ? "secondary" : "") + '" data-pray="' + escapeHtml(code) + '">' + (iPrayed ? "✓ You prayed today" : "I prayed today 🙏") + '</button></div>' +
+        '<div class="pc-reqs">' + reqHtml +
+        '<div class="pc-addreq"><textarea id="pcReqText_' + i + '" placeholder="Share a prayer request with this circle…"></textarea><button class="pcc-btn" data-addreq="' + escapeHtml(code) + '" data-i="' + i + '">Post request</button></div>' +
+        '</div>' +
+        '<button class="pc-leave" data-leave="' + escapeHtml(code) + '">Leave circle</button>';
+    } catch (e) {
+      card.innerHTML = '<div class="pcc-name">' + escapeHtml(code) + '</div><div class="pcc-focus">Couldn\'t load this circle right now.</div>';
+    }
+  }
+
+  async function joinCircle(code, focus, name) {
+    if (!sb) return;
+    try {
+      const existing = (await sb.from("prayer_circles").select("code,focus").eq("code", code).maybeSingle()).data;
+      if (!existing) {
+        await sb.from("prayer_circles").insert({ code: code, name: code, focus: focus || "A circle praying together", created_by: currentEmail() });
+      } else if (focus && !existing.focus) {
+        await sb.from("prayer_circles").update({ focus: focus }).eq("code", code);
+      }
+      await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: name || getName() }, { onConflict: "code,email" });
+      addCircleCode(code);
+      renderCircles();
+    } catch (e) { alert("Couldn't join that circle right now. Check your connection and try again."); }
+  }
+  async function prayToday(code) {
+    if (!sb) return;
+    try { await sb.from("prayer_logs").upsert({ code: code, email: currentEmail(), day: dayKey(new Date()) }, { onConflict: "code,email,day" }); } catch (e) {}
+    renderCircles();
+  }
+  async function postRequest(code, body) {
+    if (!sb) return;
+    try { await sb.from("prayer_requests").insert({ code: code, email: currentEmail(), name: getName(), body: body }); renderCircles(); } catch (e) { alert("Couldn't post your request right now."); }
+  }
+  async function prayForRequest(reqId) {
+    if (!sb) return;
+    try { await sb.from("prayer_request_prayers").upsert({ request_id: reqId, email: currentEmail() }, { onConflict: "request_id,email" }); } catch (e) {}
+    renderCircles();
+  }
+  async function leaveCircle(code) {
+    if (!sb) return;
+    try { await sb.from("prayer_circle_members").delete().eq("code", code).eq("email", currentEmail()); } catch (e) {}
+    removeCircleCode(code);
+    renderCircles();
+  }
+  if (prayerCirclesEl) prayerCirclesEl.addEventListener("click", async function (e) {
+    const t = e.target;
+    if (t.id === "pcJoin") {
+      const name = (document.getElementById("pcName").value || "").trim();
+      const code = (document.getElementById("pcCode").value || "").trim().toUpperCase();
+      const focus = (document.getElementById("pcFocus").value || "").trim();
+      if (!code) { alert("Enter a circle code to create or join."); return; }
+      if (name) setName(name);
+      await joinCircle(code, focus, name);
+    } else if (t.dataset.pray) { await prayToday(t.dataset.pray); }
+    else if (t.dataset.addreq) {
+      const ta = document.getElementById("pcReqText_" + t.dataset.i);
+      const body = (ta && ta.value || "").trim();
+      if (!body) { alert("Write your prayer request first."); return; }
+      await postRequest(t.dataset.addreq, body);
+    } else if (t.dataset.req) { await prayForRequest(t.dataset.req); }
+    else if (t.dataset.leave) { if (confirm('Leave "' + t.dataset.leave + '"? You can rejoin anytime with the code.')) { await leaveCircle(t.dataset.leave); } }
   });
 
   // ----- Weekly summary -----
