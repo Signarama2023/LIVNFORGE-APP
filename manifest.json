@@ -1,6 +1,6 @@
 {
-  "name": "Daily Forge",
-  "short_name": "Daily Forge",
+  "name": "LIVN FORGE",
+  "short_name": "LIVN FORGE",
   "description": "A faith-driven daily journal — journaling, scripture devotionals, fitness, and an AI weekly review.",
   "start_url": "./",
   "scope": "./",
@@ -8,6 +8,6 @@
   "background_color": "#15161a",
   "theme_color": "#15161a",
   "icons": [
-    { "src": "DailyForge%20LOGO.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "LIVNFORGE%20Icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }
