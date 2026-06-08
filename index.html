@@ -1251,12 +1251,21 @@
     {n:"1 Peter",c:5},{n:"2 Peter",c:3},{n:"1 John",c:5},{n:"2 John",c:1},{n:"3 John",c:1},
     {n:"Jude",c:1},{n:"Revelation",c:22}
   ];
+  // First 39 books are Old Testament, the rest New Testament (canonical order).
+  function testamentOf(i) { return i < 39 ? "OT" : "NT"; }
   function fillPickerOptions() {
     const bookSel = document.getElementById("bsBook");
-    if (!bookSel || bookSel.options.length > 1) return;
-    BIBLE_BOOKS.forEach(function(b){
+    if (!bookSel) return;
+    const t = (document.getElementById("bsTestament") || {}).value || "all";
+    const prev = bookSel.value;
+    bookSel.innerHTML = '<option value="">— Book —</option>';
+    BIBLE_BOOKS.forEach(function(b, i){
+      if (t !== "all" && testamentOf(i) !== t) return;
       const o = document.createElement("option"); o.value = b.n; o.textContent = b.n; bookSel.appendChild(o);
     });
+    if (prev && Array.prototype.some.call(bookSel.options, function(o){ return o.value === prev; })) {
+      bookSel.value = prev;
+    }
   }
   function onBookChange() {
     const bookSel = document.getElementById("bsBook");
@@ -1704,6 +1713,14 @@
               </select>
             </div>
             <div class="bs-row">
+              <label for="bsTestament">Testament</label>
+              <select id="bsTestament">
+                <option value="all">All books</option>
+                <option value="OT">Old Testament</option>
+                <option value="NT">New Testament</option>
+              </select>
+            </div>
+            <div class="bs-row">
               <label>Passage — pick book, chapter, verses</label>
               <div class="bs-picker">
                 <select id="bsBook"><option value="">— Book —</option></select>
@@ -1753,6 +1770,7 @@
       document.getElementById("bsGenerateBtn").addEventListener("click", generateDevotionalQuestions);
       document.getElementById("bsReference").addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); loadBiblePassage(); } });
       fillPickerOptions();
+      document.getElementById("bsTestament").addEventListener("change", function(){ fillPickerOptions(); onBookChange(); });
       document.getElementById("bsBook").addEventListener("change", onBookChange);
       document.getElementById("bsChapter").addEventListener("change", updateRefFromPicker);
       document.getElementById("bsVerseStart").addEventListener("input", updateRefFromPicker);
