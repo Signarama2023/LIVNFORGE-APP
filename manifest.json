@@ -8,6 +8,6 @@
   "background_color": "#15161a",
   "theme_color": "#15161a",
   "icons": [
-    { "src": "LIVNFORGE%20Icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "LIVNFORGE%20Icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
   ]
 }
