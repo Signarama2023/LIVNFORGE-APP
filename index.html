@@ -233,6 +233,20 @@
   .prq-body { font-size:14px; line-height:1.45; white-space:pre-wrap; }
   .prq-meta { font-size:11px; color:var(--muted); margin-top:5px; display:flex; gap:10px; align-items:center; }
   .prq-pray { background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:3px 10px; font-size:12px; cursor:pointer; font-family:inherit; }
+  .pc-chat { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
+  .pc-chat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; }
+  .pc-chat-list { max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:10px; padding-right:2px; }
+  .pc-chat-empty { color:var(--muted); font-size:13px; padding:6px 0; }
+  .pc-msg { max-width:85%; padding:8px 11px; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid var(--field-border); align-self:flex-start; }
+  .pc-msg.mine { align-self:flex-end; background:linear-gradient(135deg, rgba(217,169,62,0.22), rgba(217,169,62,0.10)); border-color:var(--gold); }
+  .pcm-head { display:flex; gap:8px; align-items:center; margin-bottom:3px; }
+  .pcm-name { font-size:11px; font-weight:700; color:var(--gold-light); }
+  .pcm-time { font-size:10px; color:var(--muted); }
+  .pcm-del { margin-left:auto; background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; line-height:1; padding:0 2px; }
+  .pcm-del:hover { color:#f0768a; }
+  .pcm-body { font-size:14px; line-height:1.4; white-space:pre-wrap; word-wrap:break-word; }
+  .pc-chat-input { display:flex; gap:8px; align-items:flex-end; }
+  .pc-chat-input textarea { flex:1; box-sizing:border-box; padding:9px 11px; border-radius:9px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:38px; }
   .prq-pray.done { background:rgba(240,180,80,0.15); }
   .pc-prayed-count { font-size:13px; color:var(--muted); }
   .pc-addreq { margin-top:12px; }
@@ -2505,11 +2519,13 @@
         sb.from("prayer_circle_members").select("email,name").eq("code", code),
         sb.from("prayer_logs").select("email").eq("code", code).eq("day", today),
         sb.from("prayer_requests").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }),
+        sb.from("circle_messages").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }).limit(50),
       ]);
       const circle = results[0].data || {};
       const members = results[1].data || [];
       const logs = results[2].data || [];
       const requests = results[3].data || [];
+      const messages = (results[4].data || []).slice().reverse();
       const prayedToday = logs.length;
       const iPrayed = logs.some(function (r) { return (r.email || "").toLowerCase() === me; });
       const prayerCounts = {}, iPrayedReq = {};
@@ -2524,6 +2540,15 @@
           '<button class="prq-pray ' + (iPrayedReq[r.id] ? "done" : "") + '" data-req="' + r.id + '">🙏 ' + (prayerCounts[r.id] || 0) + ' praying</button></div></div>';
       }).join("") : '<div class="pc-prayed-count">No prayer requests yet — be the first to share one.</div>';
 
+      const msgHtml = messages.length ? messages.map(function (m) {
+        const mine = (m.email || "").toLowerCase() === me;
+        return '<div class="pc-msg ' + (mine ? "mine" : "") + '">' +
+          '<div class="pcm-head"><span class="pcm-name">' + escapeHtml(mine ? "You" : (m.name || (m.email || "").split("@")[0])) + '</span>' +
+          '<span class="pcm-time">' + fmtMsgTime(m.created_at) + '</span>' +
+          (mine ? '<button class="pcm-del" data-delmsg="' + m.id + '" title="Delete">&times;</button>' : '') +
+          '</div><div class="pcm-body">' + escapeHtml(m.body) + '</div></div>';
+      }).join("") : '<div class="pc-chat-empty">No messages yet. Say hello to your circle.</div>';
+
       card.innerHTML =
         '<div class="pcc-name">' + escapeHtml(circle.name || code) + '</div>' +
         '<div class="pcc-focus">🙏 ' + escapeHtml(circle.focus || "A circle praying together") + '</div>' +
@@ -2532,7 +2557,12 @@
         '<div class="pc-reqs">' + reqHtml +
         '<div class="pc-addreq"><textarea id="pcReqText_' + i + '" placeholder="Share a prayer request with this circle…"></textarea><button class="pcc-btn" data-addreq="' + escapeHtml(code) + '" data-i="' + i + '">Post request</button></div>' +
         '</div>' +
+        '<div class="pc-chat"><div class="pc-chat-label">Circle chat</div>' +
+        '<div class="pc-chat-list" id="pcChatList_' + i + '">' + msgHtml + '</div>' +
+        '<div class="pc-chat-input"><textarea id="pcMsgText_' + i + '" placeholder="Message your circle…" rows="1"></textarea>' +
+        '<button class="pcc-btn" data-sendmsg="' + escapeHtml(code) + '" data-i="' + i + '">Send</button></div></div>' +
         '<button class="pc-leave" data-leave="' + escapeHtml(code) + '">Leave circle</button>';
+      const _cl = document.getElementById("pcChatList_" + i); if (_cl) _cl.scrollTop = _cl.scrollHeight;
     } catch (e) {
       card.innerHTML = '<div class="pcc-name">' + escapeHtml(code) + '</div><div class="pcc-focus">Couldn\'t load this circle right now.</div>';
     }
@@ -2561,6 +2591,22 @@
     if (!sb) return;
     try { await sb.from("prayer_requests").insert({ code: code, email: currentEmail(), name: getName(), body: body }); renderCircles(); } catch (e) { alert("Couldn't post your request right now."); }
   }
+  function fmtMsgTime(iso) {
+    try {
+      const d = new Date(iso), now = new Date();
+      const t = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+      return d.toDateString() === now.toDateString() ? t : (d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + t);
+    } catch (e) { return ""; }
+  }
+  async function sendCircleMessage(code, body) {
+    if (!sb) return;
+    try { await sb.from("circle_messages").insert({ code: code, email: currentEmail(), name: getName(), body: body }); renderCircles(); }
+    catch (e) { alert("Couldn't send your message right now."); }
+  }
+  async function deleteCircleMessage(id) {
+    if (!sb) return;
+    try { await sb.from("circle_messages").delete().eq("id", id); renderCircles(); } catch (e) {}
+  }
   async function prayForRequest(reqId) {
     if (!sb) return;
     try { await sb.from("prayer_request_prayers").upsert({ request_id: reqId, email: currentEmail() }, { onConflict: "request_id,email" }); } catch (e) {}
@@ -2588,6 +2634,13 @@
       if (!body) { alert("Write your prayer request first."); return; }
       await postRequest(t.dataset.addreq, body);
     } else if (t.dataset.req) { await prayForRequest(t.dataset.req); }
+    else if (t.dataset.sendmsg) {
+      const ta = document.getElementById("pcMsgText_" + t.dataset.i);
+      const body = (ta && ta.value || "").trim();
+      if (!body) return;
+      await sendCircleMessage(t.dataset.sendmsg, body);
+    }
+    else if (t.dataset.delmsg) { if (confirm("Delete this message?")) await deleteCircleMessage(t.dataset.delmsg); }
     else if (t.dataset.leave) { if (confirm('Leave "' + t.dataset.leave + '"? You can rejoin anytime with the code.')) { await leaveCircle(t.dataset.leave); } }
   });
 
