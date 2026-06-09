@@ -246,7 +246,12 @@
   .pcm-del:hover { color:#f0768a; }
   .pcm-body { font-size:14px; line-height:1.4; white-space:pre-wrap; word-wrap:break-word; }
   .pc-chat-input { display:flex; gap:8px; align-items:flex-end; }
-  .pc-chat-input textarea { flex:1; box-sizing:border-box; padding:9px 11px; border-radius:9px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:38px; }
+  .pc-chat-input textarea { flex:1; min-width:0; box-sizing:border-box; padding:9px 11px; border-radius:9px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:38px; }
+  .pc-attach-btn { background:none; border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:0 11px; height:38px; font-size:18px; cursor:pointer; line-height:1; flex:0 0 auto; }
+  .pc-att { margin-top:6px; }
+  .pc-att-img { max-width:100%; border-radius:10px; display:block; }
+  .pc-att-loading { color:var(--muted); font-size:12px; }
+  .pc-att-file { display:inline-block; margin-top:6px; color:var(--gold-light); font-size:13px; text-decoration:none; border:1px solid var(--field-border); border-radius:8px; padding:6px 10px; max-width:100%; box-sizing:border-box; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .pc-type-label { font-size:11px; color:var(--muted); letter-spacing:0.5px; margin:2px 0 6px; }
   .pc-type-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
   .pc-type-chip { background:rgba(255,255,255,0.05); border:1px solid var(--field-border); color:var(--text); border-radius:99px; padding:6px 12px; font-size:13px; font-family:inherit; cursor:pointer; }
@@ -2656,7 +2661,7 @@
         sb.from("prayer_circle_members").select("email,name").eq("code", code),
         sb.from("prayer_logs").select("email").eq("code", code).eq("day", today),
         sb.from("prayer_requests").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }),
-        sb.from("circle_messages").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }).limit(50),
+        sb.from("circle_messages").select("id,email,name,body,created_at,attachment_path,attachment_type,attachment_name").eq("code", code).order("created_at", { ascending: false }).limit(50),
         sb.from("scores").select("email,name,points").eq("group_code", code).order("points", { ascending: false }),
       ]);
       const circle = results[0].data || {};
@@ -2685,11 +2690,20 @@
 
       const msgHtml = messages.length ? messages.map(function (m) {
         const mine = (m.email || "").toLowerCase() === me;
+        let att = "";
+        if (m.attachment_path) {
+          if ((m.attachment_type || "").indexOf("image/") === 0) {
+            att = '<div class="pc-att" data-attpath="' + escapeHtml(m.attachment_path) + '" data-atttype="img"><div class="pc-att-loading">Loading photo…</div></div>';
+          } else {
+            att = '<a class="pc-att-file" data-attpath="' + escapeHtml(m.attachment_path) + '" data-atttype="file" target="_blank" rel="noopener">📎 ' + escapeHtml(m.attachment_name || "file") + '</a>';
+          }
+        }
+        const bodyHtml = m.body ? '<div class="pcm-body">' + escapeHtml(m.body) + '</div>' : "";
         return '<div class="pc-msg ' + (mine ? "mine" : "") + '">' +
           '<div class="pcm-head"><span class="pcm-name">' + escapeHtml(mine ? "You" : (m.name || (m.email || "").split("@")[0])) + '</span>' +
           '<span class="pcm-time">' + fmtMsgTime(m.created_at) + '</span>' +
           (mine ? '<button class="pcm-del" data-delmsg="' + m.id + '" title="Delete">&times;</button>' : '') +
-          '</div><div class="pcm-body">' + escapeHtml(m.body) + '</div></div>';
+          '</div>' + bodyHtml + att + '</div>';
       }).join("") : '<div class="pc-chat-empty">No messages yet. Say hello to your circle.</div>';
 
       const lbHtml = lb.length ? lb.map(function (r, idx) {
@@ -2724,12 +2738,15 @@
         '<div class="pc-lb"><div class="pc-chat-label">Leaderboard</div><div class="lb-list">' + lbHtml + '</div></div>' +
         '<div class="pc-chat"><div class="pc-chat-label">Circle chat</div>' +
         '<div class="pc-chat-list" id="pcChatList_' + i + '">' + msgHtml + '</div>' +
-        '<div class="pc-chat-input"><textarea id="pcMsgText_' + i + '" placeholder="Message your circle…" rows="1"></textarea>' +
+        '<div class="pc-chat-input"><input type="file" id="pcFile_' + i + '" data-attachcode="' + escapeHtml(code) + '" accept="image/*,application/pdf,.doc,.docx,.txt" style="display:none">' +
+        '<button class="pc-attach-btn" data-attach="' + i + '" title="Attach a photo or file" type="button">📎</button>' +
+        '<textarea id="pcMsgText_' + i + '" placeholder="Message your circle…" rows="1"></textarea>' +
         '<button class="pcc-btn" data-sendmsg="' + escapeHtml(code) + '" data-i="' + i + '">Send</button></div></div>' +
         adminBlock +
         '<div class="pc-foot"><button class="pc-leave" data-leave="' + escapeHtml(code) + '">Leave circle</button>' +
         (iAmCreator ? '<button class="pc-delete" data-deletecircle="' + escapeHtml(code) + '">Delete circle</button>' : '') + '</div>';
       const _cl = document.getElementById("pcChatList_" + i); if (_cl) _cl.scrollTop = _cl.scrollHeight;
+      try { hydrateAttachments(); } catch (e) {}
     } catch (e) {
       card.innerHTML = '<div class="pcc-name">' + escapeHtml(code) + '</div><div class="pcc-focus">Couldn\'t load this circle right now.</div>';
     }
@@ -2784,6 +2801,36 @@
       return d.toDateString() === now.toDateString() ? t : (d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + t);
     } catch (e) { return ""; }
   }
+  async function sendCircleAttachment(code, file) {
+    if (!sb || !file) return;
+    if (file.size > 10 * 1024 * 1024) { showToast("File too large (max 10MB)"); return; }
+    const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const path = code + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+    showToast("Uploading…");
+    try {
+      const up = await sb.storage.from("circle-attachments").upload(path, file, { contentType: file.type || undefined, upsert: false });
+      if (up.error) throw up.error;
+      const ins = await sb.from("circle_messages").insert({ code: code, email: currentEmail(), name: getName(), body: "", attachment_path: path, attachment_type: file.type || "", attachment_name: file.name });
+      if (ins.error) throw ins.error;
+      renderCircles();
+    } catch (e) { alert("Couldn't send that file: " + ((e && e.message) || e)); }
+  }
+  async function hydrateAttachments() {
+    if (!sb) return;
+    const els = document.querySelectorAll("[data-attpath]");
+    for (let k = 0; k < els.length; k++) {
+      const el = els[k];
+      if (el.dataset.hydrated) continue;
+      el.dataset.hydrated = "1";
+      try {
+        const r = await sb.storage.from("circle-attachments").createSignedUrl(el.dataset.attpath, 3600);
+        const url = r.data && r.data.signedUrl;
+        if (!url) continue;
+        if (el.dataset.atttype === "img") { el.innerHTML = '<img class="pc-att-img" src="' + url + '" alt="photo">'; }
+        else { el.setAttribute("href", url); }
+      } catch (e) {}
+    }
+  }
   async function sendCircleMessage(code, body) {
     if (!sb) return;
     try { await sb.from("circle_messages").insert({ code: code, email: currentEmail(), name: getName(), body: body }); renderCircles(); }
@@ -2836,6 +2883,14 @@
       alert("Couldn't delete the circle: " + ((e && e.message) || "please try again."));
     }
   }
+  if (prayerCirclesEl) prayerCirclesEl.addEventListener("change", function (e) {
+    const inp = e.target;
+    if (inp && inp.matches && inp.matches('input[type="file"][data-attachcode]')) {
+      const f = inp.files && inp.files[0];
+      if (f) sendCircleAttachment(inp.dataset.attachcode, f);
+      inp.value = "";
+    }
+  });
   if (prayerCirclesEl) prayerCirclesEl.addEventListener("click", async function (e) {
     const t = e.target;
     if (t.id === "pcBack") { pcOpen = null; renderCircles(); window.scrollTo(0, 0); return; }
@@ -2864,6 +2919,7 @@
       if (!body) return;
       await sendCircleMessage(t.dataset.sendmsg, body);
     }
+    else if (t.dataset.attach) { const fi = document.getElementById("pcFile_" + t.dataset.attach); if (fi) fi.click(); }
     else if (t.dataset.delmsg) { if (confirm("Delete this message?")) await deleteCircleMessage(t.dataset.delmsg); }
     else if (t.dataset.leave) { if (confirm('Leave "' + t.dataset.leave + '"? You can rejoin anytime with the code.')) { await leaveCircle(t.dataset.leave); } }
     else if (t.dataset.removemember) { if (confirm("Remove this member from the circle?")) { await removeMember(t.dataset.code, t.dataset.removemember); } }
