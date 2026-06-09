@@ -683,6 +683,8 @@
   .paywall-status { min-height: 18px; font-size: 13px; margin: 16px 0 0; color: var(--gold-light); }
   .paywall-status.err { color: #f0768a; }
   .paywall-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.5; }
+  .paywall-note a { color: var(--gold-light); }
+  .pw-restore { background:none; border:none; color:var(--gold-light); font-family:inherit; font-size:13px; text-decoration:underline; cursor:pointer; padding:8px 0 0; }
   .paywall-signout { margin-top: 20px; background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   /* Devotional reflection card (women's build) */
   .reflection-card { background: linear-gradient(135deg, rgba(217,169,62,0.16), rgba(217,169,62,0.04)); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
@@ -1026,7 +1028,7 @@
     <div id="appView">
       <header>
         <button class="back-btn" id="homeBtn">&larr; Home</button>
-        <h1>Daily <span class="accent">Forge</span></h1>
+        <h1>LIVN <span class="accent">FORGE</span></h1>
         <span class="pts-chip" id="ptsChip">0 pts</span>
         <button class="hist-btn" id="historyToggle">History <span class="count" id="historyCount">0</span></button>
       </header>
@@ -1284,6 +1286,53 @@
   // BETA: while the app is TestFlight-only and in-app purchase isn't live yet, give every
   // signed-in tester full access. SET TO false before the public App Store launch (once IAP ships).
   const BETA_OPEN_ACCESS = true;
+
+  // ---- RevenueCat in-app purchases (native app only) ----
+  const RC_KEY = "appl_IbFcAiTSsLoSrjWZvZKMdolSVPz";
+  const RC_ENTITLEMENT = "The Daily Forge Pro";
+  const RC = (function () {
+    function plugin() { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases) || null; }
+    let configured = false, configuring = null;
+    async function configure() {
+      const P = plugin(); if (!P) return false;
+      if (configured) return true;
+      if (configuring) return configuring;
+      configuring = (async function () {
+        try {
+          await P.configure({ apiKey: RC_KEY, appUserID: (typeof __currentUser !== "undefined" && __currentUser && __currentUser.id) || null });
+          configured = true; return true;
+        } catch (e) { console.warn("RC configure failed", e); return false; }
+      })();
+      return configuring;
+    }
+    function entActive(ci) { return !!(ci && ci.entitlements && ci.entitlements.active && ci.entitlements.active[RC_ENTITLEMENT]); }
+    async function isEntitledIAP() {
+      const P = plugin(); if (!P) return false;
+      if (!(await configure())) return false;
+      try { const r = await P.getCustomerInfo(); return entActive(r.customerInfo || r); } catch (e) { return false; }
+    }
+    async function packages() {
+      const P = plugin(); if (!P) return [];
+      if (!(await configure())) return [];
+      try {
+        const offs = await P.getOfferings();
+        const cur = (offs && offs.current) || (offs && offs.all && offs.all["default"]) || null;
+        return (cur && cur.availablePackages) || [];
+      } catch (e) { return []; }
+    }
+    async function purchase(pkg) {
+      const P = plugin(); if (!P) throw new Error("Purchases unavailable");
+      const r = await P.purchasePackage({ aPackage: pkg });
+      return entActive(r.customerInfo || r);
+    }
+    async function restore() {
+      const P = plugin(); if (!P) return false;
+      if (!(await configure())) return false;
+      try { const r = await P.restorePurchases(); return entActive(r.customerInfo || r); } catch (e) { return false; }
+    }
+    function available() { return !!plugin(); }
+    return { configure, isEntitledIAP, packages, purchase, restore, available };
+  })();
   const BOOK_MAP = {
     "genesis":"GEN","gen":"GEN","ge":"GEN",
     "exodus":"EXO","exod":"EXO","exo":"EXO","ex":"EXO",
@@ -1962,7 +2011,9 @@
     if (!sb || !__currentUser) return false;
     if (OWNER_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // owner free pass
     if (IN_NATIVE_APP && BETA_OPEN_ACCESS) return true; // beta: all TestFlight testers get full access
+    if (IN_NATIVE_APP) { try { if (await RC.isEntitledIAP()) return true; } catch (e) {} } // in-app purchase buyers
     // Ask Stripe (via the edge function) for live status; it also syncs the DB row.
+    // (Web subscribers stay entitled inside the app too — no double charge.)
     try {
       const { data, error } = await sb.functions.invoke("check-subscription", { body: {} });
       if (!error && data && typeof data.entitled === "boolean") return data.entitled;
@@ -1987,10 +2038,11 @@
     const h2 = paywallView.querySelector(".paywall-body h2");
     const sub = paywallView.querySelector(".paywall-body p");
     if (IN_NATIVE_APP) {
-      if (cards) cards.style.display = "none";
-      if (note) note.style.display = "none";
-      if (h2) h2.textContent = "Welcome to LIVN FORGE";
-      if (sub) sub.textContent = "This account doesn't have an active membership yet. Sign in with your member account to continue.";
+      if (cards) cards.style.display = "";
+      if (note) note.style.display = "";
+      if (h2) h2.textContent = "Unlock LIVN FORGE";
+      if (sub) sub.textContent = "Choose your plan — Monthly and Annual start with a 7-day free trial. Already a member from the web? Just sign in; it unlocks automatically.";
+      renderNativePlans();
     } else {
       if (cards) cards.style.display = "";
       if (note) note.style.display = "";
@@ -2053,6 +2105,71 @@
     card.addEventListener("click", () => startCheckout(card.dataset.plan));
   });
   document.getElementById("paywallSignOut").addEventListener("click", () => document.getElementById("signOutBtn").click());
+
+  // ---- Native in-app-purchase paywall (RevenueCat) ----
+  let __rcPkgs = [];
+  async function renderNativePlans() {
+    const cards = paywallView.querySelector(".plan-cards");
+    const note = paywallView.querySelector(".paywall-note");
+    if (!cards) return;
+    cards.innerHTML = '<div class="paywall-status">Loading plans…</div>';
+    let pkgs = [];
+    try { pkgs = await RC.packages(); } catch (e) {}
+    if (!pkgs.length) {
+      cards.innerHTML = '<div class="paywall-status err">Couldn\'t load plans right now. Check your connection and try again.</div>';
+      if (note) note.textContent = "";
+      return;
+    }
+    const rank = { "$rc_annual": 1, "$rc_lifetime": 2, "$rc_monthly": 3 };
+    pkgs = pkgs.slice().sort(function (a, b) { return (rank[a.identifier] || 9) - (rank[b.identifier] || 9); });
+    __rcPkgs = pkgs;
+    cards.innerHTML = pkgs.map(function (p, i) {
+      const id = p.identifier, prod = p.product || {};
+      const isAnnual = id === "$rc_annual", isLife = id === "$rc_lifetime", isMonthly = id === "$rc_monthly";
+      const name = isLife ? "Lifetime" : isAnnual ? "Annual" : isMonthly ? "Monthly" : (prod.title || "Plan");
+      const per = isLife ? "one time" : isAnnual ? "/year" : isMonthly ? "/month" : "";
+      const subt = isLife ? "Pay once — yours forever" : isAnnual ? "Best value · ~2 months free" : isMonthly ? "Billed monthly" : "";
+      const badge = isAnnual ? '<span class="pc-badge">Best value</span>' : (isLife ? '<span class="pc-badge">Forever</span>' : '');
+      const price = prod.priceString || "";
+      return '<button type="button" class="plan-card" data-rcpkg="' + i + '">' + badge +
+        '<span class="plan-name">' + name + '</span>' +
+        '<span class="plan-price">' + price + (per ? '<span class="plan-per"> ' + per + '</span>' : '') + '</span>' +
+        '<span class="plan-sub">' + subt + '</span></button>';
+    }).join("");
+    if (note) {
+      note.innerHTML = 'Monthly &amp; Annual auto-renew until canceled — manage or cancel anytime in your Apple ID settings. Lifetime is a one-time purchase. ' +
+        'By continuing you agree to our <a href="https://www.thedailyforge.app/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="https://www.thedailyforge.app/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.<br>' +
+        '<button type="button" id="rcRestore" class="pw-restore">Restore purchases</button>';
+    }
+  }
+  async function buyPackage(pkg) {
+    const status = document.getElementById("paywallStatus");
+    if (status) { status.className = "paywall-status"; status.textContent = "Opening Apple checkout…"; }
+    try {
+      const ok = await RC.purchase(pkg);
+      if (ok) { if (status) status.textContent = "You're in! 🎉"; __entitled = true; await gateEntry(); }
+      else if (status) { status.className = "paywall-status err"; status.textContent = "That didn't unlock access. Try Restore purchases."; }
+    } catch (e) {
+      const msg = (e && (e.message || e.errorMessage)) || "";
+      const cancelled = (e && (e.userCancelled || e.code === "1" || e.code === 1)) || /cancel/i.test(msg);
+      if (status) {
+        if (cancelled) { status.className = "paywall-status"; status.textContent = ""; }
+        else { status.className = "paywall-status err"; status.textContent = "Purchase failed: " + (msg || "please try again."); }
+      }
+    }
+  }
+  async function restoreIAP() {
+    const status = document.getElementById("paywallStatus");
+    if (status) { status.className = "paywall-status"; status.textContent = "Restoring…"; }
+    const ok = await RC.restore();
+    if (ok) { if (status) status.textContent = "Restored! 🎉"; __entitled = true; await gateEntry(); }
+    else if (status) { status.className = "paywall-status err"; status.textContent = "No active purchase found to restore."; }
+  }
+  if (paywallView) paywallView.addEventListener("click", function (e) {
+    const card = e.target.closest ? e.target.closest("[data-rcpkg]") : null;
+    if (card) { const i = parseInt(card.getAttribute("data-rcpkg"), 10); if (__rcPkgs[i]) buyPackage(__rcPkgs[i]); return; }
+    if (e.target && e.target.id === "rcRestore") restoreIAP();
+  });
   // Show the Stripe billing link on the web only. Inside the native iOS/Android
   // app we must not surface external purchase/management links (App Store 3.1.1).
   if (PAYWALL_ENABLED && !IN_NATIVE_APP) {
