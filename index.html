@@ -254,6 +254,18 @@
   .pcc-type { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
   .pc-lb { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
   .pc-lb .lb-list { margin-top:6px; }
+  .tut-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:9999; display:none; align-items:center; justify-content:center; padding:24px; }
+  .tut-card { background:var(--bg); border:1px solid var(--field-border); border-radius:18px; max-width:380px; width:100%; padding:30px 24px 22px; position:relative; text-align:center; box-shadow:0 16px 50px rgba(0,0,0,0.5); }
+  .tut-skip { position:absolute; top:14px; right:16px; background:none; border:none; color:var(--muted); font-size:13px; font-family:inherit; cursor:pointer; }
+  .tut-icon { font-size:48px; margin:6px 0 14px; line-height:1; }
+  .tut-slide h2 { font-size:21px; margin:0 0 10px; }
+  .tut-slide p { font-size:15px; color:var(--muted); line-height:1.6; margin:0 0 18px; min-height:84px; }
+  .tut-dots { display:flex; gap:6px; justify-content:center; margin:4px 0 18px; }
+  .tut-dot { width:7px; height:7px; border-radius:50%; background:var(--field-border); }
+  .tut-dot.active { background:var(--gold); }
+  .tut-nav { display:flex; gap:10px; }
+  .tut-back { background:none; border:1px solid var(--field-border); color:var(--text); border-radius:99px; padding:11px 18px; font-family:inherit; font-size:15px; cursor:pointer; }
+  .tut-next { flex:1; background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#1c1402; border:none; border-radius:99px; padding:12px; font-weight:800; font-size:15px; font-family:inherit; cursor:pointer; }
   .prq-pray.done { background:rgba(240,180,80,0.15); }
   .pc-prayed-count { font-size:13px; color:var(--muted); }
   .pc-addreq { margin-top:12px; }
@@ -725,6 +737,7 @@
         <div class="profile-bar" data-tab="settings">
           <span>Signed in as <b id="profileEmail"></b></span>
           <span style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="showTutorial" title="Replay the welcome walkthrough">How to use</button>
             <button id="buildToggle" title="Switch between the men's and women's build">Men's build</button>
             <button id="manageBilling" title="Manage your subscription" style="display:none;">Manage billing</button>
             <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
@@ -1039,6 +1052,18 @@
     </div>
   </div>
   <div class="toast" id="toast">Saved to your history</div>
+
+  <div id="tutorialOverlay" class="tut-overlay">
+    <div class="tut-card">
+      <button class="tut-skip" id="tutSkip" type="button">Skip</button>
+      <div class="tut-slide" id="tutSlide"></div>
+      <div class="tut-dots" id="tutDots"></div>
+      <div class="tut-nav">
+        <button class="tut-back" id="tutBack" type="button">Back</button>
+        <button class="tut-next" id="tutNext" type="button">Next</button>
+      </div>
+    </div>
+  </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1856,7 +1881,7 @@
   const buildChooser = document.getElementById("buildChooser");
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderRewards(); showTab(__activeTab); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderRewards(); showTab(__activeTab); maybeShowTutorial(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
 
   // ----- Paywall / subscription gate -----
@@ -1983,6 +2008,40 @@
   });
   document.getElementById("chooserCancel").addEventListener("click", () => showLanding());
   document.getElementById("buildToggle").addEventListener("click", () => showChooser(true));
+
+  // ----- First-run welcome tutorial -----
+  const TUTORIAL_SLIDES = [
+    { icon: "🔨", title: "Welcome to LIVN FORGE", body: "A daily forge for your faith and discipline. Show up each day, write it down, and live it out." },
+    { icon: "✍️", title: "Journal your way", body: "Seven ways to journal — Free Flow, Guided, Re-Frame, Devotional, Prayer, Fitness, and Gratitude. Every entry earns points." },
+    { icon: "🔥", title: "Build your streak", body: "Stay consistent to grow your day streak, rack up points, and unlock real rewards along the way." },
+    { icon: "📖", title: "Dive into the Word", body: "In Devotionals, pick any passage — Old or New Testament — read it, then answer understanding and reflection questions." },
+    { icon: "✨", title: "Your weekly AI review", body: "Each week, get a faith-focused AI summary of how you showed up: your wins, your patterns, and a word to carry forward." },
+    { icon: "🤝", title: "Circles", body: "Create or join a Circle — Prayer, Team, Victory, Impact or Iron. Chat, encourage each other, and climb a leaderboard together." },
+    { icon: "👑", title: "Rise up", body: "That's it. Start your first entry today, and keep showing up.", last: true }
+  ];
+  let tutIdx = 0;
+  function tutKey() { return APP + ":tutseen:" + (currentEmail() || "").toLowerCase(); }
+  function renderTutorial() {
+    const s = TUTORIAL_SLIDES[tutIdx];
+    document.getElementById("tutSlide").innerHTML = '<div class="tut-icon">' + s.icon + '</div><h2>' + escapeHtml(s.title) + '</h2><p>' + escapeHtml(s.body) + '</p>';
+    document.getElementById("tutDots").innerHTML = TUTORIAL_SLIDES.map(function (_, i) { return '<span class="tut-dot ' + (i === tutIdx ? "active" : "") + '"></span>'; }).join("");
+    document.getElementById("tutBack").style.visibility = tutIdx === 0 ? "hidden" : "visible";
+    document.getElementById("tutNext").textContent = TUTORIAL_SLIDES[tutIdx].last ? "Get started" : "Next";
+  }
+  function openTutorial() { tutIdx = 0; renderTutorial(); document.getElementById("tutorialOverlay").style.display = "flex"; }
+  function closeTutorial() { document.getElementById("tutorialOverlay").style.display = "none"; try { localStorage.setItem(tutKey(), "1"); } catch (e) {} }
+  function maybeShowTutorial() {
+    if (!currentEmail()) return;
+    if (document.getElementById("tutorialOverlay").style.display === "flex") return;
+    try { if (!localStorage.getItem(tutKey())) openTutorial(); } catch (e) {}
+  }
+  document.getElementById("tutNext").addEventListener("click", function () {
+    if (TUTORIAL_SLIDES[tutIdx].last) { closeTutorial(); }
+    else { tutIdx = Math.min(tutIdx + 1, TUTORIAL_SLIDES.length - 1); renderTutorial(); }
+  });
+  document.getElementById("tutBack").addEventListener("click", function () { tutIdx = Math.max(0, tutIdx - 1); renderTutorial(); });
+  document.getElementById("tutSkip").addEventListener("click", closeTutorial);
+  document.getElementById("showTutorial").addEventListener("click", openTutorial);
   function showWrite() {
     writeView.style.display = "block"; historyView.style.display = "none"; summaryView.style.display = "none";
     historyToggle.firstChild.textContent = "History "; showingHistory = false;
