@@ -270,6 +270,17 @@
   .pc-prayed-count { font-size:13px; color:var(--muted); }
   .pc-addreq { margin-top:12px; }
   .pc-leave { background:none; border:none; color:var(--muted); font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; margin-top:10px; }
+  /* Circles list -> detail */
+  .pc-list-label { font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:18px 0 10px; }
+  .pc-list-btn { display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; text-align:left; background:var(--panel); border:1px solid var(--field-border); border-left:4px solid var(--tc, var(--gold)); border-radius:14px; padding:14px 14px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text); transition:border-color .15s ease, transform .1s ease; }
+  .pc-list-btn:hover { border-color:var(--gold); }
+  .pc-list-btn:active { transform:scale(0.99); }
+  .pc-list-btn .pcl-ico { font-size:24px; line-height:1; flex:0 0 auto; }
+  .pc-list-btn .pcl-text { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+  .pc-list-btn .pcl-name { font-weight:800; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pc-list-btn .pcl-meta { color:var(--muted); font-size:12px; }
+  .pc-list-btn .pcl-arrow { color:var(--muted); font-size:24px; flex:0 0 auto; line-height:1; }
+  .pc-back { background:none; border:none; color:var(--gold-light); font-family:inherit; font-size:15px; font-weight:600; cursor:pointer; padding:4px 0 12px; }
   /* Pillar done-today state + reorder mode */
   .pillar-card { position: relative; }
   .pillar-card.pc-done { opacity: 0.5; }
@@ -2562,9 +2573,21 @@
   };
   let pcNewType = "prayer";
 
+  let pcOpen = null; // currently-open circle code; null = list view
+
   function renderCircles() {
     if (!prayerCirclesEl) return;
     const codes = getCircles();
+    // ----- DETAIL view: one circle open -----
+    if (pcOpen && codes.indexOf(pcOpen) >= 0) {
+      prayerCirclesEl.innerHTML = '<div class="pc-wrap">' +
+        '<button class="pc-back" id="pcBack" type="button">‹ All circles</button>' +
+        '<div class="pc-card" id="pcCard_detail"><div class="pcc-focus">Loading…</div></div>' +
+        '</div>';
+      loadCircle(pcOpen, "detail");
+      return;
+    }
+    // ----- LIST view: join form + a button per circle -----
     const typeChips = Object.keys(CIRCLE_TYPES).map(function (k) {
       const t = CIRCLE_TYPES[k];
       return '<button type="button" class="pc-type-chip ' + (pcNewType === k ? "active" : "") + '" data-newtype="' + k + '" style="--tc:' + t.color + '">' + t.icon + ' ' + t.label.replace(" Circle", "") + '</button>';
@@ -2579,13 +2602,38 @@
       '<button class="pcc-btn" id="pcJoin" type="button">Join / Create circle</button>' +
       '</div>';
     if (codes.length) {
-      codes.forEach(function (code, i) { html += '<div class="pc-card" id="pcCard_' + i + '"><div class="pcc-name">' + escapeHtml(code) + '</div><div class="pcc-focus">Loading…</div></div>'; });
+      html += '<div class="pc-list-label">Your circles — tap to open</div>';
+      codes.forEach(function (code, i) {
+        html += '<button class="pc-list-btn" id="pcBtn_' + i + '" data-open="' + escapeHtml(code) + '">' +
+          '<span class="pcl-ico">⭕</span>' +
+          '<span class="pcl-text"><span class="pcl-name">' + escapeHtml(code) + '</span>' +
+          '<span class="pcl-meta" id="pclMeta_' + i + '">Loading…</span></span>' +
+          '<span class="pcl-arrow">›</span></button>';
+      });
     } else {
       html += '<div class="gp-empty-note">You haven\'t joined a circle yet. Enter a code above to create or join one — prayer, team, victory, impact or iron.</div>';
     }
     html += '</div>';
     prayerCirclesEl.innerHTML = html;
-    codes.forEach(function (code, i) { loadCircle(code, i); });
+    codes.forEach(function (code, i) { loadCircleSummary(code, i); });
+  }
+
+  async function loadCircleSummary(code, i) {
+    const btn = document.getElementById("pcBtn_" + i);
+    if (!btn || !sb) return;
+    try {
+      const res = await Promise.all([
+        sb.from("prayer_circles").select("name,type").eq("code", code).maybeSingle(),
+        sb.from("prayer_circle_members").select("email").eq("code", code)
+      ]);
+      const circle = res[0].data || {};
+      const tinfo = CIRCLE_TYPES[circle.type] || CIRCLE_TYPES.prayer;
+      const count = (res[1].data || []).length;
+      btn.style.setProperty("--tc", tinfo.color);
+      const ico = btn.querySelector(".pcl-ico"); if (ico) ico.textContent = tinfo.icon;
+      const nm = btn.querySelector(".pcl-name"); if (nm) nm.textContent = circle.name || code;
+      const meta = btn.querySelector(".pcl-meta"); if (meta) meta.textContent = tinfo.label.replace(" Circle", "") + " · " + count + (count === 1 ? " member" : " members");
+    } catch (e) {}
   }
 
   async function loadCircle(code, i) {
@@ -2733,10 +2781,14 @@
     try { await sb.from("prayer_circle_members").delete().eq("code", code).eq("email", currentEmail()); } catch (e) {}
     removeCircleCode(code);
     removeGroup(code);
+    pcOpen = null;
     renderCircles();
   }
   if (prayerCirclesEl) prayerCirclesEl.addEventListener("click", async function (e) {
     const t = e.target;
+    if (t.id === "pcBack") { pcOpen = null; renderCircles(); window.scrollTo(0, 0); return; }
+    const openBtn = t.closest ? t.closest("[data-open]") : null;
+    if (openBtn) { pcOpen = openBtn.getAttribute("data-open"); renderCircles(); window.scrollTo(0, 0); return; }
     if (t.id === "pcJoin") {
       const name = (document.getElementById("pcName").value || "").trim();
       const code = (document.getElementById("pcCode").value || "").trim().toUpperCase();
