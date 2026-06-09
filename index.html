@@ -254,6 +254,13 @@
   .pcc-type { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
   .pc-lb { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
   .pc-lb .lb-list { margin-top:6px; }
+  .pc-admin { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
+  .pc-member-list { display:flex; flex-direction:column; gap:6px; margin:8px 0 10px; }
+  .pc-member { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--field); border:1px solid var(--field-border); border-radius:9px; padding:8px 11px; }
+  .pcmem-name { font-size:14px; }
+  .pcmem-remove { background:none; border:1px solid var(--field-border); color:#f87171; border-radius:99px; padding:3px 12px; font-size:12px; font-family:inherit; cursor:pointer; }
+  .pcmem-remove:hover { border-color:#f87171; }
+  .pc-invite-btn { width:100%; }
   .tut-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:9999; display:none; align-items:center; justify-content:center; padding:24px; }
   .tut-card { background:var(--bg); border:1px solid var(--field-border); border-radius:18px; max-width:380px; width:100%; padding:30px 24px 22px; position:relative; text-align:center; box-shadow:0 16px 50px rgba(0,0,0,0.5); }
   .tut-skip { position:absolute; top:14px; right:16px; background:none; border:none; color:var(--muted); font-size:13px; font-family:inherit; cursor:pointer; }
@@ -2698,6 +2705,16 @@
          '<div class="pc-addreq"><textarea id="pcReqText_' + i + '" placeholder="Share a prayer request with this circle…"></textarea><button class="pcc-btn" data-addreq="' + escapeHtml(code) + '" data-i="' + i + '">Post request</button></div>' +
          '</div>') : "";
 
+      const adminBlock = iAmCreator ?
+        ('<div class="pc-admin"><div class="pc-chat-label">Members · admin</div>' +
+         '<div class="pc-member-list">' + members.map(function (mm) {
+           const mEmail = mm.email || ""; const mName = mm.name || mEmail.split("@")[0];
+           const self = mEmail.toLowerCase() === me;
+           return '<div class="pc-member"><span class="pcmem-name">' + escapeHtml(mName) + (self ? " (you)" : "") + '</span>' +
+             (self ? "" : '<button class="pcmem-remove" data-removemember="' + escapeHtml(mEmail) + '" data-code="' + escapeHtml(code) + '">Remove</button>') + '</div>';
+         }).join("") + '</div>' +
+         '<button class="pcc-btn pc-invite-btn" data-invite="' + escapeHtml(code) + '">Invite to circle</button></div>') : "";
+
       card.innerHTML =
         '<div class="pcc-type" style="color:' + tinfo.color + '">' + tinfo.icon + ' ' + tinfo.label + '</div>' +
         '<div class="pcc-name">' + escapeHtml(circle.name || code) + '</div>' +
@@ -2709,6 +2726,7 @@
         '<div class="pc-chat-list" id="pcChatList_' + i + '">' + msgHtml + '</div>' +
         '<div class="pc-chat-input"><textarea id="pcMsgText_' + i + '" placeholder="Message your circle…" rows="1"></textarea>' +
         '<button class="pcc-btn" data-sendmsg="' + escapeHtml(code) + '" data-i="' + i + '">Send</button></div></div>' +
+        adminBlock +
         '<div class="pc-foot"><button class="pc-leave" data-leave="' + escapeHtml(code) + '">Leave circle</button>' +
         (iAmCreator ? '<button class="pc-delete" data-deletecircle="' + escapeHtml(code) + '">Delete circle</button>' : '') + '</div>';
       const _cl = document.getElementById("pcChatList_" + i); if (_cl) _cl.scrollTop = _cl.scrollHeight;
@@ -2780,6 +2798,22 @@
     try { await sb.from("prayer_request_prayers").upsert({ request_id: reqId, email: currentEmail() }, { onConflict: "request_id,email" }); } catch (e) {}
     renderCircles();
   }
+  async function removeMember(code, email) {
+    if (!sb) return;
+    try {
+      const { error } = await sb.rpc("remove_member", { p_code: code, p_email: email });
+      if (error) throw error;
+      renderCircles();
+    } catch (e) { alert("Couldn't remove that member: " + ((e && e.message) || e)); }
+  }
+  async function shareInvite(code) {
+    const text = "Join my LIVN FORGE circle! Open the app, go to Circles, and enter code: " + code + "\nhttps://www.thedailyforge.app/";
+    if (navigator.share) {
+      try { await navigator.share({ title: "Join my LIVN FORGE circle", text: text }); } catch (e) {}
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      try { await navigator.clipboard.writeText(text); showToast("Invite copied — code " + code); } catch (e) { showToast("Share the circle code: " + code); }
+    } else { showToast("Share the circle code: " + code); }
+  }
   async function leaveCircle(code) {
     if (!sb) return;
     try { await sb.from("prayer_circle_members").delete().eq("code", code).eq("email", currentEmail()); } catch (e) {}
@@ -2832,6 +2866,8 @@
     }
     else if (t.dataset.delmsg) { if (confirm("Delete this message?")) await deleteCircleMessage(t.dataset.delmsg); }
     else if (t.dataset.leave) { if (confirm('Leave "' + t.dataset.leave + '"? You can rejoin anytime with the code.')) { await leaveCircle(t.dataset.leave); } }
+    else if (t.dataset.removemember) { if (confirm("Remove this member from the circle?")) { await removeMember(t.dataset.code, t.dataset.removemember); } }
+    else if (t.dataset.invite) { await shareInvite(t.dataset.invite); }
     else if (t.dataset.deletecircle) { if (confirm('Delete the entire "' + t.dataset.deletecircle + '" circle for everyone? This permanently removes its messages, prayer requests, members, and leaderboard. This cannot be undone.')) { await deleteCircle(t.dataset.deletecircle); } }
   });
 
