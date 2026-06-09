@@ -336,6 +336,13 @@
   .settings-card .sc-desc { font-size:12px; color:var(--muted); margin:0 0 10px; line-height:1.45; }
   .settings-card textarea { width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:48px; margin-bottom:10px; }
   .sc-saved { font-size:12px; color:#4ade80; margin-left:10px; }
+  .sc-toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid var(--field-border); font-size:14px; color:var(--text); cursor:pointer; }
+  .sc-toggle.first { border-top:none; padding-top:2px; }
+  .sc-toggle input { width:44px; height:26px; -webkit-appearance:none; appearance:none; background:var(--field-border); border-radius:999px; position:relative; cursor:pointer; transition:background .15s; flex:0 0 auto; margin:0; }
+  .sc-toggle input:checked { background:var(--gold); }
+  .sc-toggle input::after { content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .15s; }
+  .sc-toggle input:checked::after { transform:translateX(18px); }
+  .sc-perm { font-size:12px; color:var(--gold-light); margin-top:10px; line-height:1.45; }
   .settings-card .sc-field { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; cursor:pointer; }
   .settings-card .sc-field span { font-size:14px; color:var(--text); font-weight:600; }
   .settings-card input[type="time"] { padding:9px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; }
@@ -804,6 +811,16 @@
           <textarea id="reminderNote" rows="3" placeholder="e.g. Lead your family well today. Stay disciplined. 🔨"></textarea>
           <button class="pcc-btn" id="reminderSave" type="button">Save reminder</button>
           <span class="sc-saved" id="reminderNoteSaved"></span>
+        </div>
+
+        <div class="settings-card" id="notifSettings" data-tab="settings" style="display:none;">
+          <div class="sc-title">🔔 Circle notifications</div>
+          <p class="sc-desc">Get a push when something happens in your circles — even when the app is closed. Turn each on or off anytime.</p>
+          <label class="sc-toggle first"><span>New circle messages</span><input type="checkbox" id="notifMessages" checked></label>
+          <label class="sc-toggle"><span>New prayer requests</span><input type="checkbox" id="notifPrayer" checked></label>
+          <label class="sc-toggle"><span>Someone joins my circle</span><input type="checkbox" id="notifJoins" checked></label>
+          <span class="sc-saved" id="notifSaved"></span>
+          <div class="sc-perm" id="notifPermNote" style="display:none;">⚠️ Notifications are turned off for LIVN FORGE in iOS Settings. Open <b>Settings → Notifications → LIVN FORGE</b> and allow them.</div>
         </div>
 
         <div class="settings-card blocked-card" id="blockedSettings" data-tab="settings">
@@ -3948,6 +3965,68 @@
     return { getTime, setTime, getNote, setNote, schedule, fmt, wireUI };
   })();
 
+  // ---- Push notifications (native app only): register device + handle taps ----
+  function openCircleFromPush(code) {
+    try { showTab("circles"); } catch (e) {}
+    try { pcOpen = code; renderCircles(); } catch (e) {}
+  }
+  const Push = (function () {
+    function plugin() { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) || null; }
+    let started = false;
+    async function init() {
+      const P = plugin(); if (!P || started) return; started = true;
+      try {
+        let perm = await P.checkPermissions();
+        if (perm && perm.receive === "prompt") perm = await P.requestPermissions();
+        const granted = perm && perm.receive === "granted";
+        const note = document.getElementById("notifPermNote");
+        if (note) note.style.display = granted ? "none" : "";
+        if (!granted) return;
+        P.addListener("registration", async function (t) {
+          const token = t && (t.value || t.token); if (!token) return;
+          try {
+            if (sb && __currentUser) await sb.from("device_tokens").upsert({ token: token, user_id: __currentUser.id, email: (__currentUser.email || "").toLowerCase(), platform: "ios" }, { onConflict: "token" });
+          } catch (e) { console.warn("token save failed", e); }
+        });
+        P.addListener("registrationError", function (e) { console.warn("push reg error", e); });
+        P.addListener("pushNotificationActionPerformed", function (a) {
+          const data = (a && a.notification && a.notification.data) || {};
+          if (data.code) openCircleFromPush(data.code);
+        });
+        await P.register();
+      } catch (e) { console.warn("push init failed", e); }
+    }
+    return { init };
+  })();
+
+  // ---- Notification preferences (Settings toggles -> notification_prefs) ----
+  const NotifPrefs = (function () {
+    function els() { return { m: document.getElementById("notifMessages"), p: document.getElementById("notifPrayer"), j: document.getElementById("notifJoins"), saved: document.getElementById("notifSaved") }; }
+    async function load() {
+      const e = els(); if (!e.m || !sb || !__currentUser) return;
+      let prefs = { circle_messages: true, prayer_requests: true, member_joins: true };
+      try {
+        const { data } = await sb.from("notification_prefs").select("circle_messages,prayer_requests,member_joins").eq("email", (__currentUser.email || "").toLowerCase()).maybeSingle();
+        if (data) prefs = data;
+      } catch (err) {}
+      e.m.checked = prefs.circle_messages !== false; e.p.checked = prefs.prayer_requests !== false; e.j.checked = prefs.member_joins !== false;
+    }
+    async function save() {
+      const e = els(); if (!e.m || !sb || !__currentUser) return;
+      try {
+        await sb.from("notification_prefs").upsert({ email: (__currentUser.email || "").toLowerCase(), circle_messages: e.m.checked, prayer_requests: e.p.checked, member_joins: e.j.checked, updated_at: new Date().toISOString() }, { onConflict: "email" });
+        if (e.saved) { e.saved.textContent = "Saved ✓"; setTimeout(function () { e.saved.textContent = ""; }, 2500); }
+      } catch (err) { if (e.saved) e.saved.textContent = "Couldn't save — try again."; }
+    }
+    function wireUI() {
+      const card = document.getElementById("notifSettings");
+      if (card) card.style.display = "";
+      ["notifMessages", "notifPrayer", "notifJoins"].forEach(function (id) { const el = document.getElementById(id); if (el) el.addEventListener("change", save); });
+      load();
+    }
+    return { wireUI, load };
+  })();
+
   (async function boot() {
     if (!sb) { showSignIn(); return; }
     // Detect password-reset redirect (Supabase puts type=recovery in the URL hash)
@@ -3974,7 +4053,7 @@
           if (history.replaceState) history.replaceState(null, "", location.pathname);
         }
         await gateEntry();
-        if (IN_NATIVE_APP) { DailyReminder.wireUI(); DailyReminder.schedule(); }
+        if (IN_NATIVE_APP) { DailyReminder.wireUI(); DailyReminder.schedule(); NotifPrefs.wireUI(); Push.init(); }
       } else {
         showSignIn();
       }
