@@ -247,6 +247,13 @@
   .pcm-body { font-size:14px; line-height:1.4; white-space:pre-wrap; word-wrap:break-word; }
   .pc-chat-input { display:flex; gap:8px; align-items:flex-end; }
   .pc-chat-input textarea { flex:1; box-sizing:border-box; padding:9px 11px; border-radius:9px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:38px; }
+  .pc-type-label { font-size:11px; color:var(--muted); letter-spacing:0.5px; margin:2px 0 6px; }
+  .pc-type-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .pc-type-chip { background:rgba(255,255,255,0.05); border:1px solid var(--field-border); color:var(--text); border-radius:99px; padding:6px 12px; font-size:13px; font-family:inherit; cursor:pointer; }
+  .pc-type-chip.active { border-color:var(--tc); color:var(--tc); box-shadow:0 0 0 1px var(--tc); }
+  .pcc-type { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+  .pc-lb { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
+  .pc-lb .lb-list { margin-top:6px; }
   .prq-pray.done { background:rgba(240,180,80,0.15); }
   .pc-prayed-count { font-size:13px; color:var(--muted); }
   .pc-addreq { margin-top:12px; }
@@ -792,7 +799,6 @@
           </div>
         </div>
 
-        <div class="group-panel" id="groupPanel" data-tab="circles"></div>
         <div class="prayer-circles" id="prayerCircles" data-tab="circles"></div>
 
         <button class="reorder-btn" id="reorderToggle" data-tab="today" type="button">✎ Reorder</button>
@@ -2488,20 +2494,35 @@
   function removeCircleCode(c) { saveCircles(getCircles().filter(function (x) { return x !== c; })); }
   const prayerCirclesEl = document.getElementById("prayerCircles");
 
+  const CIRCLE_TYPES = {
+    prayer:  { label: "Prayer Circle",  icon: "🙏", color: "#f0768a", focus: "A circle praying together" },
+    team:    { label: "Team Circle",    icon: "🤝", color: "#60a5fa", focus: "A team growing together" },
+    victory: { label: "Victory Circle", icon: "🏆", color: "#f0c674", focus: "Celebrating wins together" },
+    impact:  { label: "Impact Circle",  icon: "✨", color: "#34d399", focus: "Making an impact together" },
+    iron:    { label: "Iron Circle",    icon: "⚔️", color: "#9aa0a6", focus: "Iron sharpening iron — Proverbs 27:17" }
+  };
+  let pcNewType = "prayer";
+
   function renderCircles() {
     if (!prayerCirclesEl) return;
     const codes = getCircles();
-    let html = '<div class="pc-wrap"><h3>Prayer Circles</h3>' +
+    const typeChips = Object.keys(CIRCLE_TYPES).map(function (k) {
+      const t = CIRCLE_TYPES[k];
+      return '<button type="button" class="pc-type-chip ' + (pcNewType === k ? "active" : "") + '" data-newtype="' + k + '" style="--tc:' + t.color + '">' + t.icon + ' ' + t.label.replace(" Circle", "") + '</button>';
+    }).join("");
+    let html = '<div class="pc-wrap"><h3>Circles</h3>' +
       '<div class="pc-join">' +
       '<input id="pcName" placeholder="Your name" value="' + escapeHtml(getName() || "") + '">' +
       '<input id="pcCode" placeholder="Circle code (e.g. MENS-GROUP)" autocapitalize="characters">' +
-      '<input id="pcFocus" placeholder="Prayer focus (only when creating a new circle)">' +
+      '<div class="pc-type-label">Type (when creating a new circle)</div>' +
+      '<div class="pc-type-row">' + typeChips + '</div>' +
+      '<input id="pcFocus" placeholder="Focus / description (optional)">' +
       '<button class="pcc-btn" id="pcJoin" type="button">Join / Create circle</button>' +
       '</div>';
     if (codes.length) {
       codes.forEach(function (code, i) { html += '<div class="pc-card" id="pcCard_' + i + '"><div class="pcc-name">' + escapeHtml(code) + '</div><div class="pcc-focus">Loading…</div></div>'; });
     } else {
-      html += '<div class="gp-empty-note">You haven\'t joined a prayer circle yet. Enter a code above to create or join one and pray together.</div>';
+      html += '<div class="gp-empty-note">You haven\'t joined a circle yet. Enter a code above to create or join one — prayer, team, victory, impact or iron.</div>';
     }
     html += '</div>';
     prayerCirclesEl.innerHTML = html;
@@ -2515,17 +2536,22 @@
     const today = dayKey(new Date());
     try {
       const results = await Promise.all([
-        sb.from("prayer_circles").select("name,focus").eq("code", code).maybeSingle(),
+        sb.from("prayer_circles").select("name,focus,type").eq("code", code).maybeSingle(),
         sb.from("prayer_circle_members").select("email,name").eq("code", code),
         sb.from("prayer_logs").select("email").eq("code", code).eq("day", today),
         sb.from("prayer_requests").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }),
         sb.from("circle_messages").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }).limit(50),
+        sb.from("scores").select("email,name,points").eq("group_code", code).order("points", { ascending: false }),
       ]);
       const circle = results[0].data || {};
       const members = results[1].data || [];
       const logs = results[2].data || [];
       const requests = results[3].data || [];
       const messages = (results[4].data || []).slice().reverse();
+      const lb = results[5].data || [];
+      const type = circle.type || "prayer";
+      const tinfo = CIRCLE_TYPES[type] || CIRCLE_TYPES.prayer;
+      const isPrayer = type === "prayer";
       const prayedToday = logs.length;
       const iPrayed = logs.some(function (r) { return (r.email || "").toLowerCase() === me; });
       const prayerCounts = {}, iPrayedReq = {};
@@ -2549,14 +2575,26 @@
           '</div><div class="pcm-body">' + escapeHtml(m.body) + '</div></div>';
       }).join("") : '<div class="pc-chat-empty">No messages yet. Say hello to your circle.</div>';
 
+      const lbHtml = lb.length ? lb.map(function (r, idx) {
+        const mine = (r.email || "").toLowerCase() === me;
+        return '<div class="lb-row ' + (mine ? "me" : "") + '"><div class="lb-rank">' + (idx + 1) + '</div>' +
+          '<div class="lb-name">' + escapeHtml(r.name || (r.email || "").split("@")[0]) + (mine ? " (you)" : "") + '</div>' +
+          '<div class="lb-pts">' + r.points + ' pts</div></div>';
+      }).join("") : '<div class="lb-empty">No scores yet — points show up as members journal.</div>';
+
+      const prayerBlock = isPrayer ?
+        ('<div class="pc-pray-row"><button class="pcc-btn ' + (iPrayed ? "secondary" : "") + '" data-pray="' + escapeHtml(code) + '">' + (iPrayed ? "✓ You prayed today" : "I prayed today 🙏") + '</button></div>' +
+         '<div class="pc-reqs">' + reqHtml +
+         '<div class="pc-addreq"><textarea id="pcReqText_' + i + '" placeholder="Share a prayer request with this circle…"></textarea><button class="pcc-btn" data-addreq="' + escapeHtml(code) + '" data-i="' + i + '">Post request</button></div>' +
+         '</div>') : "";
+
       card.innerHTML =
+        '<div class="pcc-type" style="color:' + tinfo.color + '">' + tinfo.icon + ' ' + tinfo.label + '</div>' +
         '<div class="pcc-name">' + escapeHtml(circle.name || code) + '</div>' +
-        '<div class="pcc-focus">🙏 ' + escapeHtml(circle.focus || "A circle praying together") + '</div>' +
-        '<div class="pc-meta"><span>' + members.length + ' member' + (members.length === 1 ? "" : "s") + '</span><span>' + prayedToday + ' prayed today</span></div>' +
-        '<div class="pc-pray-row"><button class="pcc-btn ' + (iPrayed ? "secondary" : "") + '" data-pray="' + escapeHtml(code) + '">' + (iPrayed ? "✓ You prayed today" : "I prayed today 🙏") + '</button></div>' +
-        '<div class="pc-reqs">' + reqHtml +
-        '<div class="pc-addreq"><textarea id="pcReqText_' + i + '" placeholder="Share a prayer request with this circle…"></textarea><button class="pcc-btn" data-addreq="' + escapeHtml(code) + '" data-i="' + i + '">Post request</button></div>' +
-        '</div>' +
+        '<div class="pcc-focus">' + tinfo.icon + ' ' + escapeHtml(circle.focus || tinfo.focus) + '</div>' +
+        '<div class="pc-meta"><span>' + members.length + ' member' + (members.length === 1 ? "" : "s") + '</span>' + (isPrayer ? '<span>' + prayedToday + ' prayed today</span>' : '') + '</div>' +
+        prayerBlock +
+        '<div class="pc-lb"><div class="pc-chat-label">Leaderboard</div><div class="lb-list">' + lbHtml + '</div></div>' +
         '<div class="pc-chat"><div class="pc-chat-label">Circle chat</div>' +
         '<div class="pc-chat-list" id="pcChatList_' + i + '">' + msgHtml + '</div>' +
         '<div class="pc-chat-input"><textarea id="pcMsgText_' + i + '" placeholder="Message your circle…" rows="1"></textarea>' +
@@ -2568,19 +2606,38 @@
     }
   }
 
-  async function joinCircle(code, focus, name) {
+  async function joinCircle(code, focus, name, type) {
     if (!sb) return;
+    const t = CIRCLE_TYPES[type] ? type : "prayer";
     try {
       const existing = (await sb.from("prayer_circles").select("code,focus").eq("code", code).maybeSingle()).data;
       if (!existing) {
-        await sb.from("prayer_circles").insert({ code: code, name: code, focus: focus || "A circle praying together", created_by: currentEmail() });
+        await sb.from("prayer_circles").insert({ code: code, name: code, focus: focus || CIRCLE_TYPES[t].focus, type: t, created_by: currentEmail() });
       } else if (focus && !existing.focus) {
         await sb.from("prayer_circles").update({ focus: focus }).eq("code", code);
       }
       await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: name || getName() }, { onConflict: "code,email" });
       addCircleCode(code);
+      addGroup(code);
+      syncToGroup(true);
       renderCircles();
     } catch (e) { alert("Couldn't join that circle right now. Check your connection and try again."); }
+  }
+  let __migratedGroups = false;
+  async function migrateGroupsToCircles() {
+    if (__migratedGroups || !sb || !currentEmail()) return;
+    __migratedGroups = true;
+    let changed = false;
+    for (const code of getGroups()) {
+      if (getCircles().includes(code)) continue;
+      try {
+        const existing = (await sb.from("prayer_circles").select("code").eq("code", code).maybeSingle()).data;
+        if (!existing) await sb.from("prayer_circles").insert({ code: code, name: code, focus: "", type: "team", created_by: currentEmail() });
+        await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: getName() }, { onConflict: "code,email" });
+        addCircleCode(code); changed = true;
+      } catch (e) {}
+    }
+    if (changed) renderCircles();
   }
   async function prayToday(code) {
     if (!sb) return;
@@ -2616,6 +2673,7 @@
     if (!sb) return;
     try { await sb.from("prayer_circle_members").delete().eq("code", code).eq("email", currentEmail()); } catch (e) {}
     removeCircleCode(code);
+    removeGroup(code);
     renderCircles();
   }
   if (prayerCirclesEl) prayerCirclesEl.addEventListener("click", async function (e) {
@@ -2626,7 +2684,10 @@
       const focus = (document.getElementById("pcFocus").value || "").trim();
       if (!code) { alert("Enter a circle code to create or join."); return; }
       if (name) setName(name);
-      await joinCircle(code, focus, name);
+      await joinCircle(code, focus, name, pcNewType);
+    } else if (t.dataset.newtype) {
+      pcNewType = t.dataset.newtype;
+      document.querySelectorAll(".pc-type-chip").forEach(function (c) { c.classList.toggle("active", c.dataset.newtype === pcNewType); });
     } else if (t.dataset.pray) { await prayToday(t.dataset.pray); }
     else if (t.dataset.addreq) {
       const ta = document.getElementById("pcReqText_" + t.dataset.i);
@@ -3108,7 +3169,7 @@
     });
     try {
       if (name === "rewards") renderRewards();
-      if (name === "circles") { renderGroup(); if (typeof renderCircles === "function") renderCircles(); }
+      if (name === "circles") { if (typeof renderCircles === "function") renderCircles(); if (typeof migrateGroupsToCircles === "function") migrateGroupsToCircles(); }
       if (name === "progress") renderScore();
       if (name === "today") { if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); }
     } catch (e) {}
