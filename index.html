@@ -272,7 +272,9 @@
   .pc-chat-input textarea { flex:1; min-width:0; box-sizing:border-box; padding:9px 11px; border-radius:9px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:38px; }
   .pc-attach-btn { background:none; border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:0 11px; height:38px; font-size:18px; cursor:pointer; line-height:1; flex:0 0 auto; }
   .pc-att { margin-top:6px; }
-  .pc-att-img { max-width:100%; border-radius:10px; display:block; }
+  .pc-att-img { max-height:110px; max-width:160px; width:auto; height:auto; object-fit:cover; border-radius:10px; display:block; cursor:zoom-in; }
+  .img-lightbox { position:fixed; inset:0; background:rgba(0,0,0,0.93); z-index:11000; display:none; align-items:center; justify-content:center; padding:18px; cursor:zoom-out; }
+  .img-lightbox img { max-width:100%; max-height:100%; border-radius:8px; }
   .pc-att-loading { color:var(--muted); font-size:12px; }
   .pc-att-file { display:inline-block; margin-top:6px; color:var(--gold-light); font-size:13px; text-decoration:none; border:1px solid var(--field-border); border-radius:8px; padding:6px 10px; max-width:100%; box-sizing:border-box; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .pc-type-label { font-size:11px; color:var(--muted); letter-spacing:0.5px; margin:2px 0 6px; }
@@ -1121,6 +1123,7 @@
     </div>
   </div>
 
+  <div id="imgLightbox" class="img-lightbox"><img id="imgLightboxImg" src="" alt="photo"></div>
   <div id="eulaOverlay" class="eula-overlay">
     <div class="eula-card">
       <h2>Community Guidelines</h2>
@@ -2069,6 +2072,18 @@
     if (!__currentUser.build) { showChooser(false); }
     else { showLanding(); }
   }
+  // Tap a chat photo thumbnail to view it full-size; tap the backdrop to close.
+  document.addEventListener("click", function (e) {
+    const img = e.target && e.target.closest ? e.target.closest(".pc-att-img") : null;
+    if (img && img.getAttribute("src")) {
+      const lb = document.getElementById("imgLightbox"), li = document.getElementById("imgLightboxImg");
+      if (lb && li) { li.src = img.getAttribute("src"); lb.style.display = "flex"; }
+    }
+  });
+  (function () {
+    const lb = document.getElementById("imgLightbox");
+    if (lb) lb.addEventListener("click", function () { lb.style.display = "none"; const li = document.getElementById("imgLightboxImg"); if (li) li.src = ""; });
+  })();
   document.getElementById("eulaAgree").addEventListener("click", acceptEula);
   document.getElementById("eulaDecline").addEventListener("click", function () { hideEula(); document.getElementById("signOutBtn").click(); });
 
