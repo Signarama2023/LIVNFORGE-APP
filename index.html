@@ -281,6 +281,8 @@
   .pc-list-btn .pcl-meta { color:var(--muted); font-size:12px; }
   .pc-list-btn .pcl-arrow { color:var(--muted); font-size:24px; flex:0 0 auto; line-height:1; }
   .pc-back { background:none; border:none; color:var(--gold-light); font-family:inherit; font-size:15px; font-weight:600; cursor:pointer; padding:4px 0 12px; }
+  .pc-foot { display:flex; gap:18px; align-items:center; margin-top:12px; }
+  .pc-delete { background:none; border:none; color:#f87171; font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; }
   /* Pillar done-today state + reorder mode */
   .pillar-card { position: relative; }
   .pillar-card.pc-done { opacity: 0.5; }
@@ -2643,7 +2645,7 @@
     const today = dayKey(new Date());
     try {
       const results = await Promise.all([
-        sb.from("prayer_circles").select("name,focus,type").eq("code", code).maybeSingle(),
+        sb.from("prayer_circles").select("name,focus,type,created_by").eq("code", code).maybeSingle(),
         sb.from("prayer_circle_members").select("email,name").eq("code", code),
         sb.from("prayer_logs").select("email").eq("code", code).eq("day", today),
         sb.from("prayer_requests").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }),
@@ -2658,6 +2660,7 @@
       const lb = results[5].data || [];
       const type = circle.type || "prayer";
       const tinfo = CIRCLE_TYPES[type] || CIRCLE_TYPES.prayer;
+      const iAmCreator = (circle.created_by || "").toLowerCase() === me;
       const isPrayer = type === "prayer";
       const prayedToday = logs.length;
       const iPrayed = logs.some(function (r) { return (r.email || "").toLowerCase() === me; });
@@ -2706,7 +2709,8 @@
         '<div class="pc-chat-list" id="pcChatList_' + i + '">' + msgHtml + '</div>' +
         '<div class="pc-chat-input"><textarea id="pcMsgText_' + i + '" placeholder="Message your circle…" rows="1"></textarea>' +
         '<button class="pcc-btn" data-sendmsg="' + escapeHtml(code) + '" data-i="' + i + '">Send</button></div></div>' +
-        '<button class="pc-leave" data-leave="' + escapeHtml(code) + '">Leave circle</button>';
+        '<div class="pc-foot"><button class="pc-leave" data-leave="' + escapeHtml(code) + '">Leave circle</button>' +
+        (iAmCreator ? '<button class="pc-delete" data-deletecircle="' + escapeHtml(code) + '">Delete circle</button>' : '') + '</div>';
       const _cl = document.getElementById("pcChatList_" + i); if (_cl) _cl.scrollTop = _cl.scrollHeight;
     } catch (e) {
       card.innerHTML = '<div class="pcc-name">' + escapeHtml(code) + '</div><div class="pcc-focus">Couldn\'t load this circle right now.</div>';
@@ -2784,6 +2788,20 @@
     pcOpen = null;
     renderCircles();
   }
+  async function deleteCircle(code) {
+    if (!sb) return;
+    try {
+      const { error } = await sb.rpc("delete_circle", { p_code: code });
+      if (error) throw error;
+      removeCircleCode(code);
+      removeGroup(code);
+      pcOpen = null;
+      renderCircles();
+      if (typeof showToast === "function") showToast("Circle deleted.");
+    } catch (e) {
+      alert("Couldn't delete the circle: " + ((e && e.message) || "please try again."));
+    }
+  }
   if (prayerCirclesEl) prayerCirclesEl.addEventListener("click", async function (e) {
     const t = e.target;
     if (t.id === "pcBack") { pcOpen = null; renderCircles(); window.scrollTo(0, 0); return; }
@@ -2814,6 +2832,7 @@
     }
     else if (t.dataset.delmsg) { if (confirm("Delete this message?")) await deleteCircleMessage(t.dataset.delmsg); }
     else if (t.dataset.leave) { if (confirm('Leave "' + t.dataset.leave + '"? You can rejoin anytime with the code.')) { await leaveCircle(t.dataset.leave); } }
+    else if (t.dataset.deletecircle) { if (confirm('Delete the entire "' + t.dataset.deletecircle + '" circle for everyone? This permanently removes its messages, prayer requests, members, and leaderboard. This cannot be undone.')) { await deleteCircle(t.dataset.deletecircle); } }
   });
 
   // ----- Weekly summary -----
