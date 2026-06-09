@@ -245,6 +245,29 @@
   .pcm-del { margin-left:auto; background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; line-height:1; padding:0 2px; }
   .pcm-del:hover { color:#f0768a; }
   .pcm-body { font-size:14px; line-height:1.4; white-space:pre-wrap; word-wrap:break-word; }
+  /* Moderation controls */
+  .pcm-mod { margin-left:auto; display:flex; gap:2px; }
+  .pcm-flag, .pcm-block { background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; line-height:1; padding:0 2px; opacity:0.7; }
+  .pcm-flag:hover { color:#f0c674; opacity:1; }
+  .pcm-block:hover { color:#f0768a; opacity:1; }
+  .prq-report { background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; line-height:1; padding:0 4px; opacity:0.7; }
+  .prq-report:hover { color:#f0c674; opacity:1; }
+  .blocked-card .bl-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--field-border); }
+  .blocked-card .bl-email { font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .blocked-card .bl-unblock { background:none; border:1px solid var(--field-border); color:var(--gold); border-radius:8px; font-size:13px; font-family:inherit; padding:5px 12px; cursor:pointer; }
+  .blocked-card .bl-empty { color:var(--muted); font-size:13px; padding:6px 0; }
+  /* EULA / community guidelines gate */
+  .eula-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:10000; display:none; align-items:center; justify-content:center; padding:24px; }
+  .eula-card { background:var(--bg); border:1px solid var(--field-border); border-radius:18px; max-width:420px; width:100%; padding:28px 24px 22px; position:relative; box-shadow:0 16px 50px rgba(0,0,0,0.5); max-height:88vh; overflow-y:auto; }
+  .eula-card h2 { font-size:21px; margin:0 0 6px; text-align:center; }
+  .eula-card .eula-sub { color:var(--muted); font-size:13px; text-align:center; margin:0 0 18px; }
+  .eula-card ul { padding-left:18px; margin:0 0 16px; }
+  .eula-card li { font-size:14px; line-height:1.5; color:var(--text); margin-bottom:7px; }
+  .eula-card .eula-note { font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 18px; }
+  .eula-card .eula-note a { color:var(--gold); }
+  .eula-actions { display:flex; flex-direction:column; gap:10px; }
+  .eula-agree { background:var(--gold); color:#15161a; border:none; border-radius:12px; font-size:16px; font-weight:700; font-family:inherit; padding:13px; cursor:pointer; }
+  .eula-decline { background:none; border:none; color:var(--muted); font-size:13px; font-family:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
   .pc-chat-input { display:flex; gap:8px; align-items:flex-end; }
   .pc-chat-input textarea { flex:1; min-width:0; box-sizing:border-box; padding:9px 11px; border-radius:9px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:38px; }
   .pc-attach-btn { background:none; border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:0 11px; height:38px; font-size:18px; cursor:pointer; line-height:1; flex:0 0 auto; }
@@ -779,6 +802,12 @@
           <span class="sc-saved" id="reminderNoteSaved"></span>
         </div>
 
+        <div class="settings-card blocked-card" id="blockedSettings" data-tab="settings">
+          <div class="sc-title">🛡️ Safety</div>
+          <p class="sc-desc">Block members to hide their messages and prayer requests. Report any content from the ⚑ on a message — our team reviews reports and removes violations within 24 hours.</p>
+          <div id="blockedList"><div class="bl-empty">You haven't blocked anyone.</div></div>
+        </div>
+
         <div class="weekly-banner" id="weeklyBanner" data-tab="today" style="display:none;"></div>
 
         <div class="scoreboard" data-tab="today">
@@ -1086,6 +1115,24 @@
       <div class="tut-nav">
         <button class="tut-back" id="tutBack" type="button">Back</button>
         <button class="tut-next" id="tutNext" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="eulaOverlay" class="eula-overlay">
+    <div class="eula-card">
+      <h2>Community Guidelines</h2>
+      <p class="eula-sub">LIVN FORGE has circles, chat, and shared photos. To keep this a safe space, you agree to the following.</p>
+      <ul>
+        <li>I will not post objectionable, hateful, harassing, sexual, violent, or otherwise abusive content.</li>
+        <li>I understand there is <b>zero tolerance</b> for objectionable content or abusive behavior toward others.</li>
+        <li>I can <b>report</b> any message or prayer request, and <b>block</b> any member, at any time.</li>
+        <li>Reported content and abusive users are reviewed and removed within 24 hours.</li>
+      </ul>
+      <p class="eula-note">By tapping Agree you accept our <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+      <div class="eula-actions">
+        <button class="eula-agree" id="eulaAgree" type="button">I Agree</button>
+        <button class="eula-decline" id="eulaDecline" type="button">Decline and sign out</button>
       </div>
     </div>
   </div>
@@ -1954,13 +2001,31 @@
     window.scrollTo(0, 0);
   }
   // Decide where an authenticated user lands: paywall -> build chooser -> landing.
+  // Community guidelines / EULA. Bump EULA_V to re-prompt everyone after a change.
+  const EULA_V = 1;
+  function hasAcceptedEula() { return __currentUser && (__currentUser.eula_v || 0) >= EULA_V; }
+  function showEula() { document.getElementById("eulaOverlay").style.display = "flex"; }
+  function hideEula() { document.getElementById("eulaOverlay").style.display = "none"; }
+  async function acceptEula() {
+    hideEula();
+    if (__currentUser) __currentUser.eula_v = EULA_V;
+    try { if (sb) await sb.auth.updateUser({ data: { eula_v: EULA_V } }); } catch (e) {}
+    await afterGate();
+  }
+  async function afterGate() {
+    await loadRedemptions();
+    if (!__currentUser.build) { showChooser(false); }
+    else { showLanding(); }
+  }
+  document.getElementById("eulaAgree").addEventListener("click", acceptEula);
+  document.getElementById("eulaDecline").addEventListener("click", function () { hideEula(); document.getElementById("signOutBtn").click(); });
+
   async function gateEntry() {
     const entitled = await isEntitled();
     __entitled = entitled;
     if (!entitled) { showPaywall(); return; }
-    await loadRedemptions();
-    if (!__currentUser.build) { showChooser(false); }
-    else { showLanding(); }
+    if (!hasAcceptedEula()) { showEula(); return; }
+    await afterGate();
   }
   async function startCheckout(plan) {
     const status = document.getElementById("paywallStatus");
@@ -1988,7 +2053,9 @@
     card.addEventListener("click", () => startCheckout(card.dataset.plan));
   });
   document.getElementById("paywallSignOut").addEventListener("click", () => document.getElementById("signOutBtn").click());
-  if (PAYWALL_ENABLED) {
+  // Show the Stripe billing link on the web only. Inside the native iOS/Android
+  // app we must not surface external purchase/management links (App Store 3.1.1).
+  if (PAYWALL_ENABLED && !IN_NATIVE_APP) {
     const mb = document.getElementById("manageBilling");
     if (mb) { mb.style.display = ""; mb.addEventListener("click", openBillingPortal); }
   }
@@ -2067,6 +2134,13 @@
   document.getElementById("tutBack").addEventListener("click", function () { tutIdx = Math.max(0, tutIdx - 1); renderTutorial(); });
   document.getElementById("tutSkip").addEventListener("click", closeTutorial);
   document.getElementById("showTutorial").addEventListener("click", openTutorial);
+  (function () {
+    const bs = document.getElementById("blockedSettings");
+    if (bs) bs.addEventListener("click", function (e) {
+      const b = e.target.closest ? e.target.closest("[data-unblock]") : null;
+      if (b) unblockUser(b.getAttribute("data-unblock"));
+    });
+  })();
   function showWrite() {
     writeView.style.display = "block"; historyView.style.display = "none"; summaryView.style.display = "none";
     historyToggle.firstChild.textContent = "History "; showingHistory = false;
@@ -2203,7 +2277,7 @@
   function setUserFromSession(session) {
     const meta = (session.user && session.user.user_metadata) || {};
     BUILD = (meta.build === "women" || meta.build === "men") ? meta.build : "men";
-    __currentUser = { id: session.user.id, email: session.user.email, build: meta.build || null };
+    __currentUser = { id: session.user.id, email: session.user.email, build: meta.build || null, eula_v: meta.eula_v || 0 };
   }
   async function finishAuth() {
     const { data: { session } } = await sb.auth.getSession();
@@ -2667,8 +2741,15 @@
       const circle = results[0].data || {};
       const members = results[1].data || [];
       const logs = results[2].data || [];
-      const requests = results[3].data || [];
-      const messages = (results[4].data || []).slice().reverse();
+      // Hide content from members this user has blocked.
+      let blockedSet = {};
+      try {
+        const bl = (await sb.from("user_blocks").select("blocked_email").eq("blocker_email", me)).data || [];
+        bl.forEach(function (b) { blockedSet[(b.blocked_email || "").toLowerCase()] = true; });
+      } catch (e) {}
+      const notBlocked = function (row) { return !blockedSet[(row.email || "").toLowerCase()]; };
+      const requests = (results[3].data || []).filter(notBlocked);
+      const messages = (results[4].data || []).filter(notBlocked).slice().reverse();
       const lb = results[5].data || [];
       const type = circle.type || "prayer";
       const tinfo = CIRCLE_TYPES[type] || CIRCLE_TYPES.prayer;
@@ -2683,8 +2764,10 @@
         pp.forEach(function (p) { prayerCounts[p.request_id] = (prayerCounts[p.request_id] || 0) + 1; if ((p.email || "").toLowerCase() === me) iPrayedReq[p.request_id] = true; });
       }
       const reqHtml = requests.length ? requests.map(function (r) {
+        const rMine = (r.email || "").toLowerCase() === me;
+        const reportBtn = rMine ? "" : '<button class="prq-report" data-reportreq="' + r.id + '" data-author="' + escapeHtml(r.email || "") + '" data-code="' + escapeHtml(code) + '" title="Report this request">⚑</button>';
         return '<div class="pc-req"><div class="prq-body">' + escapeHtml(r.body) + '</div>' +
-          '<div class="prq-meta"><span>' + escapeHtml(r.name || (r.email || "").split("@")[0]) + '</span>' +
+          '<div class="prq-meta"><span>' + escapeHtml(r.name || (r.email || "").split("@")[0]) + '</span>' + reportBtn +
           '<button class="prq-pray ' + (iPrayedReq[r.id] ? "done" : "") + '" data-req="' + r.id + '">🙏 ' + (prayerCounts[r.id] || 0) + ' praying</button></div></div>';
       }).join("") : '<div class="pc-prayed-count">No prayer requests yet — be the first to share one.</div>';
 
@@ -2699,10 +2782,14 @@
           }
         }
         const bodyHtml = m.body ? '<div class="pcm-body">' + escapeHtml(m.body) + '</div>' : "";
+        const modHtml = mine
+          ? '<button class="pcm-del" data-delmsg="' + m.id + '" title="Delete" style="margin-left:auto;">&times;</button>'
+          : '<span class="pcm-mod"><button class="pcm-flag" data-reportmsg="' + m.id + '" data-author="' + escapeHtml(m.email || "") + '" data-code="' + escapeHtml(code) + '" title="Report this message">⚑</button>' +
+            '<button class="pcm-block" data-blockuser="' + escapeHtml(m.email || "") + '" data-blockname="' + escapeHtml(m.name || (m.email || "").split("@")[0]) + '" title="Block this member">🚫</button></span>';
         return '<div class="pc-msg ' + (mine ? "mine" : "") + '">' +
           '<div class="pcm-head"><span class="pcm-name">' + escapeHtml(mine ? "You" : (m.name || (m.email || "").split("@")[0])) + '</span>' +
           '<span class="pcm-time">' + fmtMsgTime(m.created_at) + '</span>' +
-          (mine ? '<button class="pcm-del" data-delmsg="' + m.id + '" title="Delete">&times;</button>' : '') +
+          modHtml +
           '</div>' + bodyHtml + att + '</div>';
       }).join("") : '<div class="pc-chat-empty">No messages yet. Say hello to your circle.</div>';
 
@@ -2853,6 +2940,56 @@
       renderCircles();
     } catch (e) { alert("Couldn't remove that member: " + ((e && e.message) || e)); }
   }
+  async function reportContent(type, id, code, author) {
+    if (!sb) return;
+    const label = type === "message" ? "message" : "prayer request";
+    const reason = prompt("Report this " + label + "? Add a reason if you'd like (optional), then tap OK to send it to our team.", "");
+    if (reason === null) return; // user cancelled
+    try {
+      await sb.from("content_reports").insert({
+        reporter_email: (currentEmail() || "").toLowerCase(),
+        content_type: type, content_id: String(id),
+        circle_code: code || null, author_email: (author || "").toLowerCase() || null,
+        reason: (reason || "").trim() || null,
+      });
+      showToast("Reported — our team reviews within 24 hours.");
+    } catch (e) { showToast("Couldn't submit that report. Please try again."); }
+  }
+  async function blockUser(email, name) {
+    if (!sb || !email) return;
+    if (!confirm("Block " + (name || email) + "? You won't see their messages or prayer requests in any circle.")) return;
+    try {
+      await sb.from("user_blocks").upsert(
+        { blocker_email: (currentEmail() || "").toLowerCase(), blocked_email: email.toLowerCase() },
+        { onConflict: "blocker_email,blocked_email" });
+      showToast("Blocked. You won't see their content.");
+      renderCircles();
+    } catch (e) { showToast("Couldn't block right now. Please try again."); }
+  }
+  async function unblockUser(email) {
+    if (!sb || !email) return;
+    try {
+      await sb.from("user_blocks").delete()
+        .eq("blocker_email", (currentEmail() || "").toLowerCase())
+        .eq("blocked_email", email.toLowerCase());
+      showToast("Unblocked.");
+      renderBlockedList();
+      renderCircles();
+    } catch (e) { showToast("Couldn't unblock right now."); }
+  }
+  async function renderBlockedList() {
+    const el = document.getElementById("blockedList");
+    if (!el || !sb) return;
+    try {
+      const rows = (await sb.from("user_blocks").select("blocked_email")
+        .eq("blocker_email", (currentEmail() || "").toLowerCase())).data || [];
+      el.innerHTML = rows.length ? rows.map(function (r) {
+        const em = r.blocked_email || "";
+        return '<div class="bl-row"><span class="bl-email">' + escapeHtml(em) + '</span>' +
+          '<button class="bl-unblock" data-unblock="' + escapeHtml(em) + '">Unblock</button></div>';
+      }).join("") : '<div class="bl-empty">You haven\'t blocked anyone.</div>';
+    } catch (e) { el.innerHTML = '<div class="bl-empty">Couldn\'t load your blocked list.</div>'; }
+  }
   async function shareInvite(code) {
     const text = "Join my LIVN FORGE circle! Open the app, go to Circles, and enter code: " + code + "\nhttps://www.thedailyforge.app/";
     if (navigator.share) {
@@ -2921,6 +3058,9 @@
     }
     else if (t.dataset.attach) { const fi = document.getElementById("pcFile_" + t.dataset.attach); if (fi) fi.click(); }
     else if (t.dataset.delmsg) { if (confirm("Delete this message?")) await deleteCircleMessage(t.dataset.delmsg); }
+    else if (t.dataset.reportmsg) { await reportContent("message", t.dataset.reportmsg, t.dataset.code, t.dataset.author); }
+    else if (t.dataset.reportreq) { await reportContent("request", t.dataset.reportreq, t.dataset.code, t.dataset.author); }
+    else if (t.dataset.blockuser) { await blockUser(t.dataset.blockuser, t.dataset.blockname); }
     else if (t.dataset.leave) { if (confirm('Leave "' + t.dataset.leave + '"? You can rejoin anytime with the code.')) { await leaveCircle(t.dataset.leave); } }
     else if (t.dataset.removemember) { if (confirm("Remove this member from the circle?")) { await removeMember(t.dataset.code, t.dataset.removemember); } }
     else if (t.dataset.invite) { await shareInvite(t.dataset.invite); }
@@ -3462,6 +3602,7 @@
       if (name === "circles") { if (typeof renderCircles === "function") renderCircles(); if (typeof migrateGroupsToCircles === "function") migrateGroupsToCircles(); }
       if (name === "progress") renderScore();
       if (name === "today") { if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); }
+      if (name === "settings" && typeof renderBlockedList === "function") renderBlockedList();
     } catch (e) {}
     window.scrollTo(0, 0);
   }
