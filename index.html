@@ -281,7 +281,7 @@
   .pc-list-btn .pcl-meta { color:var(--muted); font-size:12px; }
   .pc-list-btn .pcl-arrow { color:var(--muted); font-size:24px; flex:0 0 auto; line-height:1; }
   .pc-back { background:none; border:none; color:var(--gold-light); font-family:inherit; font-size:15px; font-weight:600; cursor:pointer; padding:4px 0 12px; }
-  .pc-foot { display:flex; gap:18px; align-items:center; margin-top:12px; }
+  .pc-foot { display:flex; gap:18px; align-items:center; justify-content:space-between; margin-top:12px; }
   .pc-delete { background:none; border:none; color:#f87171; font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; }
   /* Pillar done-today state + reorder mode */
   .pillar-card { position: relative; }
@@ -3109,6 +3109,10 @@
   }
   function aiCacheKey(off) { var st = weekStats(off); return APP + ":aisum:" + (currentEmail() || "").toLowerCase() + ":" + dayKey(st.start); }
   let __aiGenerating = false;
+  function isWeekReviewable(off) {
+    // Unlocks on the Saturday (last day) of the week, and any time after.
+    return dayKey(new Date()) >= dayKey(weekStats(off).end);
+  }
   function renderAiSummary() {
     var box = document.getElementById("aiSummaryBody");
     var btn = document.getElementById("aiGenBtn");
@@ -3116,17 +3120,30 @@
     var cached = localStorage.getItem(aiCacheKey(sumOffset));
     if (cached) {
       box.innerHTML = '<div class="ai-box">' + escapeHtml(cached) + '</div>';
-      btn.textContent = "Regenerate AI summary";
-    } else {
-      box.innerHTML = "";
-      btn.textContent = "Generate AI summary";
-      // Auto-generate + save once per week (then it never regenerates on its own)
-      try { if (!__aiGenerating && sb && weekStats(sumOffset).list.length) generateAiSummary(); } catch (e) {}
+      btn.style.display = "none"; // generated once — locked
+      return;
     }
+    if (!isWeekReviewable(sumOffset)) {
+      box.innerHTML = '<div class="ai-box ai-loading">Your weekly AI review unlocks on Saturday. Keep showing up this week.</div>';
+      btn.style.display = "none";
+      return;
+    }
+    if (!weekStats(sumOffset).list.length) {
+      box.innerHTML = '<div class="ai-box">No entries this week to review.</div>';
+      btn.style.display = "none";
+      return;
+    }
+    box.innerHTML = "";
+    btn.style.display = "";
+    btn.textContent = "Generate AI review";
+    // Generate a single time, then it locks for good.
+    try { if (!__aiGenerating && sb) generateAiSummary(); } catch (e) {}
   }
   async function generateAiSummary() {
     if (__aiGenerating) return;
     __aiGenerating = true;
+    if (localStorage.getItem(aiCacheKey(sumOffset))) { __aiGenerating = false; renderAiSummary(); return; }
+    if (!isWeekReviewable(sumOffset)) { __aiGenerating = false; renderAiSummary(); return; }
     var box = document.getElementById("aiSummaryBody");
     var btn = document.getElementById("aiGenBtn");
     var st = weekStats(sumOffset);
@@ -3149,7 +3166,7 @@
       box.innerHTML = '<div class="ai-box">' + escapeHtml(summary) + '</div>';
       try { renderWeekCard(sumOffset); } catch (e) {}
       try { autoSaveWeek(sumOffset); } catch (e) {}
-      btn.textContent = "Regenerate AI summary";
+      btn.style.display = "none";
     } catch (e) {
       box.innerHTML = '<div class="ai-box ai-error">Couldn\'t generate the summary right now. ' + escapeHtml(String((e && e.message) || e)) + '</div>';
       btn.textContent = "Generate AI summary";
@@ -3230,6 +3247,7 @@
     let text;
     if (kind === "ai") {
       text = localStorage.getItem(aiCacheKey(sumOffset));
+      if (!text && !isWeekReviewable(sumOffset)) { showToast("Your AI review unlocks on Saturday"); return; }
       if (!text) { await generateAiSummary(); text = localStorage.getItem(aiCacheKey(sumOffset)); }
       if (!text) { showToast("No AI review to share yet"); return; }
       text = "My LIVN FORGE week (" + fmtRange(st.start, st.end) + ")\n\n" + text;
