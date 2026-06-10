@@ -234,10 +234,21 @@
   .prq-meta { font-size:11px; color:var(--muted); margin-top:5px; display:flex; gap:10px; align-items:center; }
   .prq-pray { background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:3px 10px; font-size:12px; cursor:pointer; font-family:inherit; }
   .pc-chat { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
-  .pc-chat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; }
-  .pc-chat-list { max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:10px; padding-right:2px; }
+  .pc-chat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; display:flex; align-items:center; }
+  .pc-chat-expand { background:none; border:none; color:var(--gold); font-size:16px; cursor:pointer; padding:0 4px; margin-left:auto; line-height:1; }
+  .pc-chat-list { max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:10px; padding-right:2px; }
   .pc-chat-empty { color:var(--muted); font-size:13px; padding:6px 0; }
-  .pc-msg { max-width:85%; padding:8px 11px; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid var(--field-border); align-self:flex-start; }
+  .pc-msg { max-width:80%; padding:10px 14px; border-radius:14px; background:rgba(255,255,255,0.06); border:1px solid var(--field-border); align-self:flex-start; }
+  /* Fix #3: full-screen chat view */
+  .pc-chat-fullbar { display:none; }
+  .pc-chat.chat-full { position:fixed; inset:0; z-index:9200; background:var(--bg); margin:0; padding:0; border-top:none; display:flex; flex-direction:column; }
+  .pc-chat.chat-full .pc-chat-fullbar { display:flex; align-items:center; gap:8px; padding:calc(env(safe-area-inset-top,0px) + 12px) 12px 12px; border-bottom:1px solid var(--field-border); }
+  .pc-chat.chat-full .pc-chat-back { background:none; border:none; color:var(--gold); font-size:16px; font-family:inherit; cursor:pointer; padding:4px 6px; }
+  .pc-chat.chat-full .pc-chat-fulltitle { font-size:16px; font-weight:700; color:var(--text); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pc-chat.chat-full .pc-chat-label { display:none; }
+  .pc-chat.chat-full .pc-chat-list { flex:1; max-height:none; padding:16px; margin:0; }
+  .pc-chat.chat-full .pc-chat-input { padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px); border-top:1px solid var(--field-border); }
+  body.chat-open #bottomNav { display:none; }
   .pc-msg.mine { align-self:flex-end; background:linear-gradient(135deg, rgba(217,169,62,0.22), rgba(217,169,62,0.10)); border-color:var(--gold); }
   .pcm-head { display:flex; gap:8px; align-items:center; margin-bottom:3px; }
   .pcm-name { font-size:11px; font-weight:700; color:var(--gold-light); }
@@ -322,7 +333,7 @@
   .pc-delete { background:none; border:none; color:#f87171; font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; }
   /* Pillar done-today state + reorder mode */
   .pillar-card { position: relative; }
-  .pillar-card.pc-done { opacity: 0.5; }
+  .pillar-card.pc-done { opacity: 0.86; }
   .pillar-card.pc-done::after { content: "✓ done today"; position: absolute; top: 8px; left: 10px; font-size: 10px; letter-spacing: .3px; color: #4ade80; font-weight: 700; }
   .reorder-btn { background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:6px 16px; font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; margin:0 0 12px; }
   .pillar-cards.reordering .pillar-card { cursor: default; opacity: 1; }
@@ -497,6 +508,7 @@
   .bs-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .bs-btn:hover:not(:disabled) { background: var(--gold-light); }
   .bs-status { font-size: 13px; color: var(--muted); min-height: 18px; }
+  .bs-hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
   .bs-passage { background: var(--field); border: 1px solid var(--field-border); border-radius: 10px; padding: 16px; margin-top: 14px; }
   .bs-passage-ref { font-size: 13px; color: var(--gold); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
   .bs-passage-text { font-size: 16px; line-height: 1.65; color: var(--text); white-space: pre-wrap; margin-bottom: 12px; }
@@ -1456,25 +1468,33 @@
   function onBookChange() {
     const bookSel = document.getElementById("bsBook");
     const chSel = document.getElementById("bsChapter");
+    const chEndSel = document.getElementById("bsChapterEnd");
     const book = BIBLE_BOOKS.find(function(b){ return b.n === bookSel.value; });
     chSel.innerHTML = '<option value="">Ch</option>';
-    if (!book) { chSel.disabled = true; updateRefFromPicker(); return; }
+    if (chEndSel) chEndSel.innerHTML = '<option value="">Ch</option>';
+    if (!book) { chSel.disabled = true; if (chEndSel) chEndSel.disabled = true; updateRefFromPicker(); return; }
     chSel.disabled = false;
+    if (chEndSel) chEndSel.disabled = false;
     for (let i = 1; i <= book.c; i++) {
       const o = document.createElement("option"); o.value = i; o.textContent = i; chSel.appendChild(o);
+      if (chEndSel) { const o2 = document.createElement("option"); o2.value = i; o2.textContent = i; chEndSel.appendChild(o2); }
     }
     updateRefFromPicker();
   }
   function updateRefFromPicker() {
     const b = (document.getElementById("bsBook")||{}).value || "";
     const c = (document.getElementById("bsChapter")||{}).value || "";
+    const cEnd = (document.getElementById("bsChapterEnd")||{}).value || "";
     const vs = (document.getElementById("bsVerseStart")||{}).value || "";
     const ve = (document.getElementById("bsVerseEnd")||{}).value || "";
     const refInput = document.getElementById("bsReference");
     if (!refInput) return;
     if (!b || !c) { return; }
     let ref = b + " " + c;
-    if (vs) {
+    // Fix #1: a chapter range (e.g. Genesis 1-3) takes precedence; verses apply to a single chapter only.
+    if (cEnd && +cEnd > +c) {
+      ref += "-" + cEnd;
+    } else if (vs) {
       ref += ":" + vs;
       if (ve && ve !== vs) ref += "-" + ve;
     }
@@ -1482,12 +1502,17 @@
   }
   function parseReference(ref) {
     ref = (ref || "").trim();
-    const m = ref.match(/^(\d?\s*[A-Za-z][A-Za-z ]*?)\s+(\d+)(?::(\d+)(?:\s*-\s*(\d+))?)?$/);
+    // book chapter[-endChapter][:vStart[-vEnd]]  — a chapter range has no colon.
+    const m = ref.match(/^(\d?\s*[A-Za-z][A-Za-z ]*?)\s+(\d+)(?:\s*-\s*(\d+))?(?::(\d+)(?:\s*-\s*(\d+))?)?$/);
     if (!m) return null;
     let book = m[1].toLowerCase().replace(/\s+/g, " ").trim();
-    const chapter = m[2], vStart = m[3], vEnd = m[4];
+    const chapter = m[2], chEnd = m[3], vStart = m[4], vEnd = m[5];
     const bookId = BOOK_MAP[book] || BOOK_MAP[book.replace(/\s+/g, "")];
     if (!bookId) return null;
+    // Fix #1: multi-chapter range, e.g. Genesis 1-3 -> GEN.1-GEN.3 (verses ignored for ranges).
+    if (chEnd && +chEnd > +chapter) {
+      return { id: bookId + "." + chapter + "-" + bookId + "." + chEnd, label: book + " " + chapter + "-" + chEnd };
+    }
     if (!vStart) return { id: bookId + "." + chapter, label: ref };
     if (vEnd) return { id: bookId + "." + chapter + "." + vStart + "-" + bookId + "." + chapter + "." + vEnd, label: ref };
     return { id: bookId + "." + chapter + "." + vStart, label: ref };
@@ -1907,18 +1932,21 @@
               </select>
             </div>
             <div class="bs-row">
-              <label>Passage — pick book, chapter, verses</label>
+              <label>Passage — pick book, chapter(s), verses</label>
               <div class="bs-picker">
                 <select id="bsBook"><option value="">— Book —</option></select>
                 <select id="bsChapter" disabled><option value="">Ch</option></select>
+                <span class="bs-dash">–</span>
+                <select id="bsChapterEnd" disabled><option value="">Ch</option></select>
                 <input id="bsVerseStart" type="number" min="1" placeholder="v" inputmode="numeric">
                 <span class="bs-dash">–</span>
                 <input id="bsVerseEnd" type="number" min="1" placeholder="v" inputmode="numeric">
               </div>
+              <div class="bs-hint">Read one chapter, or a range — e.g. set Ch 1 to 3 for Genesis 1–3. (Verses apply to a single chapter.)</div>
             </div>
             <div class="bs-or">or type a reference</div>
             <div class="bs-row">
-              <input id="bsReference" type="text" placeholder="e.g. John 3:16 · Romans 8:28-39 · Psalm 23" autocomplete="off">
+              <input id="bsReference" type="text" placeholder="e.g. John 3:16 · Genesis 1-3 · Psalm 23" autocomplete="off">
             </div>
             <button type="button" id="bsLoadBtn" class="bs-btn">Load passage</button>
             <div id="bsStatus" class="bs-status"></div>
@@ -1959,6 +1987,7 @@
       document.getElementById("bsTestament").addEventListener("change", function(){ fillPickerOptions(); onBookChange(); });
       document.getElementById("bsBook").addEventListener("change", onBookChange);
       document.getElementById("bsChapter").addEventListener("change", updateRefFromPicker);
+      document.getElementById("bsChapterEnd").addEventListener("change", updateRefFromPicker);
       document.getElementById("bsVerseStart").addEventListener("input", updateRefFromPicker);
       document.getElementById("bsVerseEnd").addEventListener("input", updateRefFromPicker);
       document.getElementById("bsQuestions").addEventListener("change", function (e) {
@@ -2365,11 +2394,8 @@
         else if (e.target.classList.contains("ro-down")) movePillar(c.dataset.type, 1);
         return;
       }
-      if (doneTodayTypes()[c.dataset.type]) {
-        const tt = QUESTIONS[c.dataset.type] ? QUESTIONS[c.dataset.type].title : "this";
-        if (typeof showToast === "function") showToast("You've already done " + tt + " today 🙌 Come back tomorrow.");
-        return;
-      }
+      // Fix #5: never block a repeat — points are simply capped at one per
+      // card type per day (handled on save). Let them keep going.
       setActiveType(c.dataset.type); showApp(); showWrite(); window.scrollTo(0, 0);
     });
   });
@@ -2529,21 +2555,19 @@
     const date = document.getElementById("entryDate").value;
     const typeTitle = QUESTIONS[currentType].title;
     const fields = [...questionsEl.querySelectorAll("textarea")];
-    // One entry per item per day
-    const alreadyToday = loadEntries().some(function (en) {
+    // Fix #5: unlimited completions per day, but points are awarded only for
+    // the FIRST completion of each card type that day. Repeats still save
+    // (logged for streaks/effort) but earn 0 points.
+    const cappedToday = loadEntries().some(function (en) {
       return en.type === currentType && (en.date || (en.savedAt || "").slice(0, 10)) === date;
     });
-    if (alreadyToday) {
-      if (typeof showToast === "function") showToast("You've already logged " + typeTitle + " for that day — one entry per item per day.");
-      else alert("You've already logged " + typeTitle + " for that day. One entry per item per day.");
-      return;
-    }
     // capture timer if still running for a fitness preset workout
     if (currentType === "fitness" && currentFitnessPreset && timerInterval) { stopTimer(); }
     let pts = pointsFor(currentType);
     if (currentType === "fitness" && currentFitnessPreset && presetDef(currentFitnessPreset)) {
       pts = presetDef(currentFitnessPreset).points;
     }
+    if (cappedToday) pts = 0; // already earned points for this card type today
 
     let answers;
     if (currentType === "devotional") {
@@ -2567,7 +2591,7 @@
     const entry = {
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
       type: currentType, typeTitle: typeTitle, name: name, date: date,
-      points: pts, savedAt: new Date().toISOString(),
+      points: pts, capped: cappedToday, savedAt: new Date().toISOString(),
       answers: answers
     };
     if (currentType === "fitness" && currentFitnessPreset && presetDef(currentFitnessPreset)) {
@@ -2596,7 +2620,7 @@
     document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
     renderQuestions(currentType);
 
-    showToast("Saved  ·  +" + pts + " points!");
+    showToast(cappedToday ? "Already earned points for this today — keep going! 💪" : ("Saved  ·  +" + pts + " points!"));
     showLanding();
     window.scrollTo(0, 0);
   });
@@ -2625,8 +2649,9 @@
     historyList.innerHTML = list.map(entry => {
       const preview = (entry.answers.find(x => x.a) || {}).a || "(left blank)";
       const pts = (typeof entry.points === "number" ? entry.points : pointsFor(entry.type));
+      const ptsText = entry.capped ? "logged · points already earned today" : ("+" + pts + " pts");
       const sub = (entry.name ? escapeHtml(entry.name) + " · " : "") +
-        (entry.date ? escapeHtml(entry.date) + " · " : "") + "+" + pts + " pts · saved " + fmtSaved(entry.savedAt);
+        (entry.date ? escapeHtml(entry.date) + " · " : "") + ptsText + " · saved " + fmtSaved(entry.savedAt);
       const qa = entry.answers.map(x => `
         <div class="qa">
           <div class="q">${escapeHtml(x.q)}</div>
@@ -2814,6 +2839,7 @@
 
   function renderCircles() {
     if (!prayerCirclesEl) return;
+    document.body.classList.remove("chat-open"); // never leave the nav hidden after a re-render
     const codes = getCircles();
     // ----- DETAIL view: one circle open -----
     if (pcOpen && codes.indexOf(pcOpen) >= 0) {
@@ -2972,7 +2998,9 @@
         '<div class="pc-meta"><span>' + members.length + ' member' + (members.length === 1 ? "" : "s") + '</span>' + (isPrayer ? '<span>' + prayedToday + ' prayed today</span>' : '') + '</div>' +
         prayerBlock +
         '<div class="pc-lb"><div class="pc-chat-label">Leaderboard</div><div class="lb-list">' + lbHtml + '</div></div>' +
-        '<div class="pc-chat"><div class="pc-chat-label">Circle chat</div>' +
+        '<div class="pc-chat" id="pcChat_' + i + '">' +
+        '<div class="pc-chat-fullbar"><button class="pc-chat-back" data-chatclose="' + i + '" type="button">‹ Back</button><span class="pc-chat-fulltitle">' + escapeHtml(circle.name || code) + '</span></div>' +
+        '<div class="pc-chat-label">Circle chat<button class="pc-chat-expand" data-chatopen="' + i + '" title="Full screen" type="button">⤢</button></div>' +
         '<div class="pc-chat-list" id="pcChatList_' + i + '">' + msgHtml + '</div>' +
         '<div class="pc-chat-input"><input type="file" id="pcFile_' + i + '" data-attachcode="' + escapeHtml(code) + '" accept="image/*,application/pdf,.doc,.docx,.txt" style="display:none">' +
         '<button class="pc-attach-btn" data-attach="' + i + '" title="Attach a photo or file" type="button">📎</button>' +
@@ -3067,10 +3095,34 @@
       } catch (e) {}
     }
   }
-  async function sendCircleMessage(code, body) {
+  async function sendCircleMessage(code, body, i) {
     if (!sb) return;
-    try { await sb.from("circle_messages").insert({ code: code, email: currentEmail(), name: getName(), body: body }); renderCircles(); }
-    catch (e) { alert("Couldn't send your message right now."); }
+    const idx = (i != null ? i : "detail");
+    const listEl = document.getElementById("pcChatList_" + idx);
+    try {
+      const { data, error } = await sb.from("circle_messages")
+        .insert({ code: code, email: currentEmail(), name: getName(), body: body })
+        .select("id,created_at").single();
+      if (error) throw error;
+      // Fix #4: append the new message in place — no full re-render / reload.
+      if (listEl) {
+        const empty = listEl.querySelector(".pc-chat-empty"); if (empty) empty.remove();
+        const id = data ? data.id : "";
+        const when = (data && data.created_at) ? data.created_at : new Date().toISOString();
+        const div = document.createElement("div");
+        div.className = "pc-msg mine";
+        div.innerHTML = '<div class="pcm-head"><span class="pcm-name">You</span>' +
+          '<span class="pcm-time">' + fmtMsgTime(when) + '</span>' +
+          '<button class="pcm-del" data-delmsg="' + id + '" title="Delete" style="margin-left:auto;">&times;</button></div>' +
+          '<div class="pcm-body">' + escapeHtml(body) + '</div>';
+        listEl.appendChild(div);
+        listEl.scrollTop = listEl.scrollHeight;
+      }
+    } catch (e) {
+      const ta = document.getElementById("pcMsgText_" + idx);
+      if (ta) ta.value = body; // restore so the message isn't lost
+      alert("Couldn't send your message right now.");
+    }
   }
   async function deleteCircleMessage(id) {
     if (!sb) return;
@@ -3177,6 +3229,18 @@
       inp.value = "";
     }
   });
+  // Fix #4: Enter sends a chat message (Shift+Enter = newline), no reload.
+  if (prayerCirclesEl) prayerCirclesEl.addEventListener("keydown", function (e) {
+    const ta = e.target;
+    if (ta && ta.tagName === "TEXTAREA" && /^pcMsgText_/.test(ta.id || "") && e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      const idx = ta.id.replace("pcMsgText_", "");
+      const btn = document.querySelector('[data-sendmsg][data-i="' + idx + '"]');
+      const code = btn ? btn.getAttribute("data-sendmsg") : null;
+      const body = (ta.value || "").trim();
+      if (code && body) { ta.value = ""; ta.style.height = ""; sendCircleMessage(code, body, idx); }
+    }
+  });
   if (prayerCirclesEl) prayerCirclesEl.addEventListener("click", async function (e) {
     const t = e.target;
     if (t.id === "pcBack") { pcOpen = null; renderCircles(); window.scrollTo(0, 0); return; }
@@ -3203,7 +3267,18 @@
       const ta = document.getElementById("pcMsgText_" + t.dataset.i);
       const body = (ta && ta.value || "").trim();
       if (!body) return;
-      await sendCircleMessage(t.dataset.sendmsg, body);
+      if (ta) { ta.value = ""; ta.style.height = ""; }
+      await sendCircleMessage(t.dataset.sendmsg, body, t.dataset.i);
+    }
+    else if (t.dataset.chatopen) {
+      const c = document.getElementById("pcChat_" + t.dataset.chatopen);
+      if (c) { c.classList.add("chat-full"); document.body.classList.add("chat-open");
+        const l = document.getElementById("pcChatList_" + t.dataset.chatopen); if (l) l.scrollTop = l.scrollHeight;
+        const ta = document.getElementById("pcMsgText_" + t.dataset.chatopen); if (ta) ta.focus(); }
+    }
+    else if (t.dataset.chatclose) {
+      const c = document.getElementById("pcChat_" + t.dataset.chatclose);
+      if (c) c.classList.remove("chat-full"); document.body.classList.remove("chat-open");
     }
     else if (t.dataset.attach) { const fi = document.getElementById("pcFile_" + t.dataset.attach); if (fi) fi.click(); }
     else if (t.dataset.delmsg) { if (confirm("Delete this message?")) await deleteCircleMessage(t.dataset.delmsg); }
