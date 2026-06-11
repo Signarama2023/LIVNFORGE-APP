@@ -235,7 +235,8 @@
   .prq-pray { background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:3px 10px; font-size:12px; cursor:pointer; font-family:inherit; }
   .pc-chat { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
   .pc-chat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; display:flex; align-items:center; }
-  .pc-chat-expand { background:none; border:none; color:var(--gold); font-size:16px; cursor:pointer; padding:0 4px; margin-left:auto; line-height:1; }
+  .pc-chat-expand { display:inline-flex; align-items:center; gap:5px; background:rgba(217,169,62,0.14); border:1px solid var(--gold); color:var(--gold-light); font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; padding:5px 11px; border-radius:99px; margin-left:auto; line-height:1; letter-spacing:0.3px; }
+  .pc-chat-expand:hover { background:rgba(217,169,62,0.26); }
   .pc-chat-list { max-height:260px; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; display:flex; flex-direction:column; gap:12px; margin-bottom:10px; padding-right:2px; }
   .pc-chat-empty { color:var(--muted); font-size:13px; padding:6px 0; }
   .pc-msg { max-width:80%; padding:10px 14px; border-radius:14px; background:rgba(255,255,255,0.06); border:1px solid var(--field-border); align-self:flex-start; }
@@ -2785,7 +2786,9 @@
   // ----- Group leaderboard (Supabase) -----
   const SB_URL = "https://ihhctwmgfleihlnfnfsv.supabase.co";
   const SB_KEY = "sb_publishable_CRtK7cSwNjDDgu31fulMIQ_rwptULXs";
-  const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+  const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: window.localStorage }
+  }) : null;
   const groupPanel = document.getElementById("groupPanel");
 
   function gKey(p) { return APP + ":" + p + ":" + (currentEmail() || ""); }
@@ -3074,7 +3077,7 @@
         '<div class="pc-lb" id="pcLb_' + i + '"><button class="pc-members-head" data-lbtoggle="' + i + '" type="button"><span>Leaderboard</span><span class="pc-mem-caret">›</span></button><div class="pc-members-body"><div class="lb-list">' + lbHtml + '</div></div></div>' +
         '<div class="pc-chat" id="pcChat_' + i + '">' +
         '<div class="pc-chat-fullbar"><button class="pc-chat-back" data-chatclose="' + i + '" type="button">‹ Back</button><span class="pc-chat-fulltitle">' + escapeHtml(circle.name || code) + '</span></div>' +
-        '<div class="pc-chat-label">Circle chat<button class="pc-chat-expand" data-chatopen="' + i + '" title="Full screen" type="button">⤢</button></div>' +
+        '<div class="pc-chat-label">Circle chat<button class="pc-chat-expand" data-chatopen="' + i + '" title="Open full-screen chat" type="button">⤢ Full screen</button></div>' +
         '<div class="pc-chat-list" id="pcChatList_' + i + '">' + msgHtml + '</div>' +
         '<div class="pc-chat-input"><input type="file" id="pcFile_' + i + '" data-attachcode="' + escapeHtml(code) + '" accept="image/*,application/pdf,.doc,.docx,.txt" style="display:none">' +
         '<button class="pc-attach-btn" data-attach="' + i + '" title="Attach a photo or file" type="button">📎</button>' +
