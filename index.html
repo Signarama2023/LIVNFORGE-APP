@@ -300,9 +300,9 @@
   .pc-members { border-top:1px solid var(--field-border); padding-top:6px; margin-top:12px; }
   .pc-members-head { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; background:none; border:none; color:var(--gold); font-family:inherit; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; cursor:pointer; padding:8px 0; }
   .pc-mem-caret { transition:transform .15s ease; font-size:13px; }
-  .pc-members.open .pc-mem-caret { transform:rotate(90deg); }
+  .pc-members.open .pc-mem-caret, .pc-lb.open .pc-mem-caret { transform:rotate(90deg); }
   .pc-members-body { display:none; }
-  .pc-members.open .pc-members-body { display:block; }
+  .pc-members.open .pc-members-body, .pc-lb.open .pc-members-body { display:block; }
   .pc-member-list { display:flex; flex-direction:column; gap:6px; margin:8px 0 10px; }
   .pc-member { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--field); border:1px solid var(--field-border); border-radius:9px; padding:8px 11px; }
   .pcmem-name { font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -417,6 +417,14 @@
   }
   .fit-preset-btn:hover { border-color: #34c2c2; transform: translateY(-1px); }
   .fit-preset-btn.active { border-color: #34c2c2; box-shadow: 0 0 0 2px rgba(52,194,194,0.25); }
+  /* Intensity + training-time selectors */
+  .fit-opts { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  .fit-opt-group { flex: 1; min-width: 150px; }
+  .fit-opt-label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .fit-opt-row { display: flex; gap: 8px; }
+  .fit-opt-btn { flex: 1; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 9px; padding: 11px 6px; font-family: inherit; font-size: 14px; cursor: pointer; transition: all .15s ease; }
+  .fit-opt-btn:hover { border-color: #34c2c2; }
+  .fit-opt-btn.active { border-color: #34c2c2; color: #34c2c2; box-shadow: 0 0 0 2px rgba(52,194,194,0.25); font-weight: 700; }
   .fpb-name { font-weight: 700; letter-spacing: 1px; color: #34c2c2; font-size: 14px; }
   .fpb-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
   .fpb-pts { font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; align-self: flex-start; margin-top: 2px; }
@@ -1225,7 +1233,7 @@
       title: "Fitness Routine",
       items: [
         "What did I do today — workout, movement or sport?",
-        "How long did I train, and how hard (light, moderate, intense)?",
+        "How long did I train today?",
         "How did my body feel before and after?",
         "How was my nutrition and hydration today?",
         "What is my plan or goal for the next session?"
@@ -1794,6 +1802,8 @@
 
   // ----- Fitness preset workouts (per build) + timer -----
   let currentFitnessPreset = null; // preset id within the active build, or null
+  let currentFitnessIntensity = "Medium"; // Low | Medium | High
+  let currentFitnessTime = "Morning"; // Morning | Afternoon (drives the nutrition prompt)
   function presetDef(id) { return build().presets[id] || null; }
   let timerInterval = null;
   let timerStartMs = 0;
@@ -1918,6 +1928,23 @@
           <button type="button" id="fitTimerToggle" class="idle">Start</button>
           <button type="button" id="fitTimerReset">Reset</button>
         </div>
+      </div>
+      <div class="fit-opts">
+        <div class="fit-opt-group">
+          <div class="fit-opt-label">Intensity</div>
+          <div class="fit-opt-row" id="fitIntensity">
+            <button type="button" class="fit-opt-btn" data-intensity="Low">Low</button>
+            <button type="button" class="fit-opt-btn active" data-intensity="Medium">Medium</button>
+            <button type="button" class="fit-opt-btn" data-intensity="High">High</button>
+          </div>
+        </div>
+        <div class="fit-opt-group">
+          <div class="fit-opt-label">Training time</div>
+          <div class="fit-opt-row" id="fitTime">
+            <button type="button" class="fit-opt-btn active" data-fittime="Morning">🌅 Morning</button>
+            <button type="button" class="fit-opt-btn" data-fittime="Afternoon">☀️ Afternoon</button>
+          </div>
+        </div>
       </div>`;
     }
     if (type === "devotional") {
@@ -1986,6 +2013,36 @@
       `).join("");
     }
     questionsEl.innerHTML = html;
+
+    if (type === "fitness") {
+      currentFitnessIntensity = "Medium"; currentFitnessTime = "Morning";
+      // The nutrition question (q3) reflects the day in the afternoon, but in the
+      // morning the day hasn't happened yet — so swap it for a forward-looking fuel plan.
+      const applyFitNutrition = function () {
+        const ta = document.getElementById("q3");
+        const lbl = document.querySelector('label[for="q3"]');
+        if (!ta) return;
+        const morning = currentFitnessTime === "Morning";
+        const q = morning ? "What's your fuel & hydration plan for today?" : "How was my nutrition and hydration today?";
+        ta.setAttribute("data-question", q);
+        ta.placeholder = morning ? "e.g. protein at every meal, a gallon of water, no sugar after 6pm…" : "Write your text here";
+        if (lbl) lbl.innerHTML = q + ' <span class="req">*</span>';
+      };
+      const intRow = document.getElementById("fitIntensity");
+      if (intRow) intRow.addEventListener("click", function (e) {
+        const b = e.target.closest("[data-intensity]"); if (!b) return;
+        currentFitnessIntensity = b.dataset.intensity;
+        intRow.querySelectorAll(".fit-opt-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
+      });
+      const timeRow = document.getElementById("fitTime");
+      if (timeRow) timeRow.addEventListener("click", function (e) {
+        const b = e.target.closest("[data-fittime]"); if (!b) return;
+        currentFitnessTime = b.dataset.fittime;
+        timeRow.querySelectorAll(".fit-opt-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
+        applyFitNutrition();
+      });
+      applyFitNutrition();
+    }
 
     if (type === "devotional") {
       __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", questions: [], understanding: [], reflection: [] };
@@ -2596,6 +2653,9 @@
     } else {
       answers = fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }));
     }
+    if (currentType === "fitness") {
+      answers.unshift({ q: "Training time", a: currentFitnessTime }, { q: "Intensity", a: currentFitnessIntensity });
+    }
 
     const entry = {
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
@@ -3011,7 +3071,7 @@
         '<div class="pcc-focus">' + tinfo.icon + ' ' + escapeHtml(circle.focus || tinfo.focus) + '</div>' +
         '<div class="pc-meta"><span>' + members.length + ' member' + (members.length === 1 ? "" : "s") + '</span>' + (isPrayer ? '<span>' + prayedToday + ' prayed today</span>' : '') + '</div>' +
         prayerBlock +
-        '<div class="pc-lb"><div class="pc-chat-label">Leaderboard</div><div class="lb-list">' + lbHtml + '</div></div>' +
+        '<div class="pc-lb" id="pcLb_' + i + '"><button class="pc-members-head" data-lbtoggle="' + i + '" type="button"><span>Leaderboard</span><span class="pc-mem-caret">›</span></button><div class="pc-members-body"><div class="lb-list">' + lbHtml + '</div></div></div>' +
         '<div class="pc-chat" id="pcChat_' + i + '">' +
         '<div class="pc-chat-fullbar"><button class="pc-chat-back" data-chatclose="' + i + '" type="button">‹ Back</button><span class="pc-chat-fulltitle">' + escapeHtml(circle.name || code) + '</span></div>' +
         '<div class="pc-chat-label">Circle chat<button class="pc-chat-expand" data-chatopen="' + i + '" title="Full screen" type="button">⤢</button></div>' +
@@ -3262,6 +3322,8 @@
     if (openBtn) { pcOpen = openBtn.getAttribute("data-open"); renderCircles(); window.scrollTo(0, 0); return; }
     const memBtn = t.closest ? t.closest("[data-memtoggle]") : null;
     if (memBtn) { const sec = memBtn.closest(".pc-members"); if (sec) sec.classList.toggle("open"); return; }
+    const lbBtn = t.closest ? t.closest("[data-lbtoggle]") : null;
+    if (lbBtn) { const sec = lbBtn.closest(".pc-lb"); if (sec) sec.classList.toggle("open"); return; }
     if (t.id === "pcJoin") {
       const name = (document.getElementById("pcName").value || "").trim();
       const code = (document.getElementById("pcCode").value || "").trim().toUpperCase();
