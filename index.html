@@ -236,7 +236,7 @@
   .pc-chat { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
   .pc-chat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; display:flex; align-items:center; }
   .pc-chat-expand { background:none; border:none; color:var(--gold); font-size:16px; cursor:pointer; padding:0 4px; margin-left:auto; line-height:1; }
-  .pc-chat-list { max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; margin-bottom:10px; padding-right:2px; }
+  .pc-chat-list { max-height:260px; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; display:flex; flex-direction:column; gap:12px; margin-bottom:10px; padding-right:2px; }
   .pc-chat-empty { color:var(--muted); font-size:13px; padding:6px 0; }
   .pc-msg { max-width:80%; padding:10px 14px; border-radius:14px; background:rgba(255,255,255,0.06); border:1px solid var(--field-border); align-self:flex-start; }
   /* Fix #3: full-screen chat view */
