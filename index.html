@@ -4231,7 +4231,10 @@
           if (history.replaceState) history.replaceState(null, "", location.pathname);
         }
         await gateEntry();
-        if (IN_NATIVE_APP) { DailyReminder.wireUI(); DailyReminder.schedule(); NotifPrefs.wireUI(); Push.init(); }
+        if (IN_NATIVE_APP) {
+          DailyReminder.wireUI(); DailyReminder.schedule(); NotifPrefs.wireUI(); Push.init();
+          try { const K = window.Capacitor.Plugins.Keyboard; if (K && K.setAccessoryBarVisible) K.setAccessoryBarVisible({ isVisible: false }); } catch (e) {}
+        }
       } else {
         showSignIn();
       }
