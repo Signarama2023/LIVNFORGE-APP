@@ -126,6 +126,8 @@
   .brand-sub::before, .brand-sub::after { content: ""; width: 26px; height: 1px; background: var(--gold); }
   .tagline { color: #fff; letter-spacing: 3px; font-size: 17px; font-weight: 700; margin: 6px 0 14px; }
   .hero-desc { color: var(--gold-light); font-size: 13.5px; letter-spacing: 1px; max-width: 420px; margin: 26px auto 0; text-transform: uppercase; }
+  .identity-line { text-align: center; color: var(--gold-light); font-size: 12.5px; letter-spacing: 1.5px; text-transform: uppercase; line-height: 1.5; max-width: 420px; margin: 4px auto 22px; }
+  body[data-build="women"] .identity-line { color: #b0795f; }
 
   /* ---------- SIGN IN ---------- */
   .signin-body { padding: 32px 24px 42px; max-width: 420px; margin: 0 auto; text-align: center; }
@@ -823,7 +825,6 @@
         </svg>
         <div class="hero-inner">
           <img class="logo" src="LIVNFORGE%20Logo.png" alt="LIVN FORGE">
-          <div class="hero-desc" id="heroDesc">For men who live on purpose as sons of the King.</div>
         </div>
       </div>
 
@@ -871,6 +872,7 @@
           <div class="score-tile"><div class="num" id="scoreEntries">0</div><div class="lbl">Entries</div></div>
           <div class="score-tile"><div class="num" id="scoreStreak">0</div><div class="lbl">Day Streak</div></div>
         </div>
+        <div class="identity-line" id="heroDesc" data-tab="today">For men who live on purpose as sons of the King.</div>
 
         <div class="rewards-card" id="rewardsCard" data-tab="rewards" style="display:none;"></div>
 
