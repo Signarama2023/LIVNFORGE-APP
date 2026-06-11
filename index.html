@@ -3318,6 +3318,10 @@
       if (code && body) { ta.value = ""; ta.style.height = ""; sendCircleMessage(code, body, idx); }
     }
   });
+  // Keep the keyboard up: tapping Send must not steal focus from the message box.
+  if (prayerCirclesEl) prayerCirclesEl.addEventListener("mousedown", function (e) {
+    if (e.target && e.target.closest && e.target.closest("[data-sendmsg]")) e.preventDefault();
+  });
   // Keep the full-screen chat sized to the space ABOVE the iOS keyboard, so the
   // input bar is never hidden behind it (WKWebView won't push fixed elements up).
   function adjustFullChat() {
@@ -3372,7 +3376,8 @@
       const ta = document.getElementById("pcMsgText_" + t.dataset.i);
       const body = (ta && ta.value || "").trim();
       if (!body) return;
-      if (ta) { ta.value = ""; ta.style.height = ""; }
+      // Clear + immediately re-focus the input (within the tap gesture) so the keyboard stays up.
+      if (ta) { ta.value = ""; ta.style.height = ""; try { ta.focus({ preventScroll: true }); } catch (e2) { ta.focus(); } }
       await sendCircleMessage(t.dataset.sendmsg, body, t.dataset.i);
     }
     else if (t.dataset.chatopen) {
