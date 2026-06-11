@@ -106,6 +106,11 @@
   .hero-inner { position: relative; z-index: 1; }
   .logo { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto 10px; mix-blend-mode: normal; }
   @media (max-width: 480px) { .logo { max-width: 260px; } }
+  /* On non-Today tabs, shrink the hero so the content/info is the focus. */
+  body[data-activetab]:not([data-activetab="today"]) #landingView .hero { padding: calc(14px + env(safe-area-inset-top, 0px)) 24px 12px; }
+  body[data-activetab]:not([data-activetab="today"]) #landingView .logo { max-width: 116px; margin-bottom: 0; }
+  body[data-activetab]:not([data-activetab="today"]) #landingView .hero-desc { display: none; }
+  body[data-activetab]:not([data-activetab="today"]) #landingView .hero .mountains { display: none; }
   .crown { color: var(--gold); margin-bottom: 6px; }
   .brand-title { font-weight: 800; letter-spacing: 2px; line-height: 0.95; margin: 4px 0 2px; }
   .brand-title .rise { display: block; font-size: 52px; color: #f7f7f9; text-shadow: 0 2px 14px rgba(0,0,0,0.5); }
@@ -3925,6 +3930,7 @@
   let __activeTab = "today";
   function showTab(name) {
     __activeTab = name;
+    document.body.setAttribute("data-activetab", name);
     document.querySelectorAll("#landingView [data-tab]").forEach(function (el) {
       const tabs = (el.getAttribute("data-tab") || "").split(/\s+/);
       el.classList.toggle("tab-off", tabs.indexOf(name) < 0);
