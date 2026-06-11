@@ -296,6 +296,13 @@
   .pc-lb { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
   .pc-lb .lb-list { margin-top:6px; }
   .pc-admin { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
+  /* Collapsible Members section (tap header to open/adjust) */
+  .pc-members { border-top:1px solid var(--field-border); padding-top:6px; margin-top:12px; }
+  .pc-members-head { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; background:none; border:none; color:var(--gold); font-family:inherit; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; cursor:pointer; padding:8px 0; }
+  .pc-mem-caret { transition:transform .15s ease; font-size:13px; }
+  .pc-members.open .pc-mem-caret { transform:rotate(90deg); }
+  .pc-members-body { display:none; }
+  .pc-members.open .pc-members-body { display:block; }
   .pc-member-list { display:flex; flex-direction:column; gap:6px; margin:8px 0 10px; }
   .pc-member { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--field); border:1px solid var(--field-border); border-radius:9px; padding:8px 11px; }
   .pcmem-name { font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2983,15 +2990,20 @@
          '<div class="pc-addreq"><textarea id="pcReqText_' + i + '" placeholder="Share a prayer request with this circle…"></textarea><button class="pcc-btn" data-addreq="' + escapeHtml(code) + '" data-i="' + i + '">Post request</button></div>' +
          '</div>') : "";
 
-      const adminBlock = iAmCreator ?
-        ('<div class="pc-admin"><div class="pc-chat-label">Members · admin</div>' +
-         '<div class="pc-member-list">' + members.map(function (mm) {
-           const mEmail = mm.email || ""; const mName = mm.name || mEmail.split("@")[0];
-           const self = mEmail.toLowerCase() === me;
-           return '<div class="pc-member"><span class="pcmem-name">' + escapeHtml(mName) + (self ? " (you)" : "") + '</span>' +
-             (self ? "" : '<button class="pcmem-remove" data-removemember="' + escapeHtml(mEmail) + '" data-code="' + escapeHtml(code) + '">Remove</button>') + '</div>';
-         }).join("") + '</div>' +
-         '<button class="pcc-btn pc-invite-btn" data-invite="' + escapeHtml(code) + '">Invite to circle</button></div>') : "";
+      // Collapsible Members section: everyone sees the roster; the creator gets remove + invite controls.
+      const memListHtml = members.map(function (mm) {
+        const mEmail = mm.email || ""; const mName = mm.name || mEmail.split("@")[0];
+        const self = mEmail.toLowerCase() === me;
+        return '<div class="pc-member"><span class="pcmem-name">' + escapeHtml(mName) + (self ? " (you)" : "") + '</span>' +
+          ((iAmCreator && !self) ? '<button class="pcmem-remove" data-removemember="' + escapeHtml(mEmail) + '" data-code="' + escapeHtml(code) + '">Remove</button>' : '') + '</div>';
+      }).join("");
+      const membersBlock =
+        '<div class="pc-members" id="pcMembers_' + i + '">' +
+        '<button class="pc-members-head" data-memtoggle="' + i + '" type="button"><span>Members · ' + members.length + '</span><span class="pc-mem-caret">›</span></button>' +
+        '<div class="pc-members-body">' +
+        '<div class="pc-member-list">' + memListHtml + '</div>' +
+        (iAmCreator ? '<button class="pcc-btn pc-invite-btn" data-invite="' + escapeHtml(code) + '">Invite to circle</button>' : '') +
+        '</div></div>';
 
       card.innerHTML =
         '<div class="pcc-type" style="color:' + tinfo.color + '">' + tinfo.icon + ' ' + tinfo.label + '</div>' +
@@ -3008,7 +3020,7 @@
         '<button class="pc-attach-btn" data-attach="' + i + '" title="Attach a photo or file" type="button">📎</button>' +
         '<textarea id="pcMsgText_' + i + '" placeholder="Message your circle…" rows="1"></textarea>' +
         '<button class="pcc-btn" data-sendmsg="' + escapeHtml(code) + '" data-i="' + i + '">Send</button></div></div>' +
-        adminBlock +
+        membersBlock +
         '<div class="pc-foot"><button class="pc-leave" data-leave="' + escapeHtml(code) + '">Leave circle</button>' +
         (iAmCreator ? '<button class="pc-delete" data-deletecircle="' + escapeHtml(code) + '">Delete circle</button>' : '') + '</div>';
       const _cl = document.getElementById("pcChatList_" + i); if (_cl) _cl.scrollTop = _cl.scrollHeight;
@@ -3248,6 +3260,8 @@
     if (t.id === "pcBack") { pcOpen = null; renderCircles(); window.scrollTo(0, 0); return; }
     const openBtn = t.closest ? t.closest("[data-open]") : null;
     if (openBtn) { pcOpen = openBtn.getAttribute("data-open"); renderCircles(); window.scrollTo(0, 0); return; }
+    const memBtn = t.closest ? t.closest("[data-memtoggle]") : null;
+    if (memBtn) { const sec = memBtn.closest(".pc-members"); if (sec) sec.classList.toggle("open"); return; }
     if (t.id === "pcJoin") {
       const name = (document.getElementById("pcName").value || "").trim();
       const code = (document.getElementById("pcCode").value || "").trim().toUpperCase();
