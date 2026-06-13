@@ -1338,6 +1338,11 @@
   const PAYWALL_ENABLED = PAYWALL_LIVE || /[?&]paywall=1/.test(location.search);
   // Accounts that always have free access (owners/comp). Lowercase emails.
   const OWNER_EMAILS = ["markbailey1@me.com"];
+  // Friends & Family — free full access (no charge). Add lowercase emails here.
+  const COMP_EMAILS = [
+    // "friend@example.com",
+    // "family@example.com",
+  ];
   // True only when running inside the native iOS/Android app (Capacitor). On the web this is false.
   const IN_NATIVE_APP = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
   // BETA: while the app is TestFlight-only and in-app purchase isn't live yet, give every
@@ -2133,6 +2138,7 @@
     if (!PAYWALL_ENABLED) return true;            // dormant: full access for everyone
     if (!sb || !__currentUser) return false;
     if (OWNER_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // owner free pass
+    if (COMP_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // friends & family free access
     if (IN_NATIVE_APP && BETA_OPEN_ACCESS) return true; // beta: all TestFlight testers get full access
     if (IN_NATIVE_APP) { try { if (await RC.isEntitledIAP()) return true; } catch (e) {} } // in-app purchase buyers
     // Ask Stripe (via the edge function) for live status; it also syncs the DB row.
