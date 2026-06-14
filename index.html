@@ -1781,7 +1781,7 @@
     // sum points by day-of-entry; return the highest day
     const byDay = {};
     loadEntries().forEach(e => {
-      const day = e.date || (e.savedAt || "").slice(0, 10);
+      const day = entryDay(e);
       if (!day) return;
       const pts = typeof e.points === "number" ? e.points : pointsFor(e.type);
       byDay[day] = (byDay[day] || 0) + pts;
@@ -1792,7 +1792,7 @@
   }
   function longestStreak() {
     // longest run of consecutive days with at least one entry
-    const dateList = Array.from(new Set(loadEntries().map(e => e.date || (e.savedAt || "").slice(0, 10)).filter(Boolean))).sort();
+    const dateList = Array.from(new Set(loadEntries().map(e => entryDay(e)).filter(Boolean))).sort();
     if (dateList.length === 0) return 0;
     let best = 1, run = 1;
     for (let i = 1; i < dateList.length; i++) {
@@ -1805,7 +1805,7 @@
     return best;
   }
   function currentStreak() {
-    const dates = new Set(loadEntries().map(e => e.date || (e.savedAt || "").slice(0, 10)).filter(Boolean));
+    const dates = new Set(loadEntries().map(e => entryDay(e)).filter(Boolean));
     if (dates.size === 0) return 0;
     let streak = 0;
     const d = new Date();
@@ -2457,7 +2457,7 @@
   }
   function doneTodayTypes() {
     const today = dayKey(new Date()); const s = {};
-    loadEntries().forEach(function (e) { const d = e.date || (e.savedAt || "").slice(0, 10); if (d === today) s[e.type] = true; });
+    loadEntries().forEach(function (e) { const d = entryDay(e); if (d === today) s[e.type] = true; });
     return s;
   }
   function markDonePillars() {
@@ -2642,7 +2642,7 @@
     // the FIRST completion of each card type that day. Repeats still save
     // (logged for streaks/effort) but earn 0 points.
     const cappedToday = loadEntries().some(function (en) {
-      return en.type === currentType && (en.date || (en.savedAt || "").slice(0, 10)) === date;
+      return en.type === currentType && entryDay(en) === date;
     });
     // capture timer if still running for a fitness preset workout
     if (currentType === "fitness" && currentFitnessPreset && timerInterval) { stopTimer(); }
@@ -2737,7 +2737,7 @@
       const pts = (typeof entry.points === "number" ? entry.points : pointsFor(entry.type));
       const ptsText = entry.capped ? "logged · points already earned today" : ("+" + pts + " pts");
       const sub = (entry.name ? escapeHtml(entry.name) + " · " : "") +
-        (entry.date ? escapeHtml(entry.date) + " · " : "") + ptsText + " · saved " + fmtSaved(entry.savedAt);
+        (entryDay(entry) ? escapeHtml(entryDay(entry)) + " · " : "") + ptsText + " · saved " + fmtSaved(entry.savedAt);
       const qa = entry.answers.map(x => `
         <div class="qa">
           <div class="q">${escapeHtml(x.q)}</div>
@@ -3437,7 +3437,12 @@
     const opt = { month: "short", day: "numeric" };
     return s.toLocaleDateString(undefined, opt) + " – " + e.toLocaleDateString(undefined, opt) + ", " + e.getFullYear();
   }
-  function entryDay(e) { return e.date || (e.savedAt || "").slice(0, 10); }
+  function entryDay(e) {
+    // The reliable calendar day of an entry = the LOCAL day of its savedAt timestamp.
+    // (e.date was historically stamped in UTC, which drifts a day in the evening.)
+    if (e && e.savedAt) { const d = new Date(e.savedAt); if (!isNaN(d.getTime())) return dayKey(d); }
+    return (e && e.date) || "";
+  }
   function entriesInRange(start, end) {
     const sk = dayKey(start), ek = dayKey(end);
     return loadEntries().filter(e => { const d = entryDay(e); return d && d >= sk && d <= ek; });
