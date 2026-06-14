@@ -2627,7 +2627,7 @@
   });
 
   // default date = today
-  document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
+  document.getElementById("entryDate").value = dayKey(new Date()); // local date, not UTC (fixes evening date drift)
   renderQuestions(currentType);
   updateCount();
 
@@ -2703,7 +2703,7 @@
     syncToGroup(true);
 
     document.getElementById("journalForm").reset();
-    document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
+    document.getElementById("entryDate").value = dayKey(new Date()); // local date, not UTC (fixes evening date drift)
     renderQuestions(currentType);
 
     showToast(cappedToday ? "Already earned points for this today — keep going! 💪" : ("Saved  ·  +" + pts + " points!"));
