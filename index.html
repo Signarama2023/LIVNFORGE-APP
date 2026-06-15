@@ -411,6 +411,9 @@
   .pc-gratitude { border-color: rgba(251,191,36,0.4); }
   .pc-gratitude:hover { border-color: #fbbf24; }
   .pc-gratitude .pc-icon { border-color: #fbbf24; color: #fbbf24; }
+  .pc-drift { border-color: rgba(122,170,114,0.4); }
+  .pc-drift:hover { border-color: #7faa72; }
+  .pc-drift .pc-icon { border-color: #7faa72; color: #7faa72; }
 
   /* Fitness preset workouts (KING300 / KING320) */
   .fit-presets { margin-bottom: 18px; }
@@ -786,6 +789,104 @@
     .submit-btn { font-size: 16px; padding: 16px; }
     .entry-head { padding: 14px; }
   }
+
+  /* ============ DRIFT FIX flow ============ */
+  .df-wrap { padding-bottom: 20px; }
+  .df-header { text-align: center; padding: 6px 4px 0; }
+  .df-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .df-title { font-size: clamp(28px, 6vw, 40px); font-weight: 800; line-height: 1.05; color: var(--text); margin-bottom: 6px; }
+  .df-title em { font-style: italic; color: var(--gold-light); }
+  .df-sub { font-size: 14px; font-style: italic; color: var(--muted); max-width: 360px; margin: 0 auto 18px; line-height: 1.5; }
+  .df-verse { max-width: 540px; margin: 0 auto 22px; background: rgba(217,169,62,0.10); border-left: 3px solid var(--gold); border-radius: 0 10px 10px 0; padding: 12px 16px; font-style: italic; font-size: 13px; color: var(--text); opacity: .9; line-height: 1.6; }
+  .df-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+  .df-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(242,242,244,0.18); transition: all .3s; }
+  .df-dot.active { background: var(--gold); transform: scale(1.35); }
+  .df-dot.done { background: #7faa72; }
+  .df-card { background: var(--panel); border: 1px solid var(--field-border); border-radius: 16px; padding: 22px 20px; animation: dfFade .35s ease; }
+  @keyframes dfFade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .df-card-eye { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .df-card-h { font-size: 23px; font-weight: 800; color: var(--text); margin-bottom: 6px; line-height: 1.2; }
+  .df-card-desc { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+
+  .df-dropdown { position: relative; margin-bottom: 18px; }
+  .df-dropdown select { width: 100%; appearance: none; -webkit-appearance: none; background: var(--bg); color: var(--text); border: 1.5px solid var(--field-border); border-radius: 10px; padding: 14px 44px 14px 16px; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer; outline: none; }
+  .df-dropdown select:focus { border-color: var(--gold); }
+  .df-dropdown-arrow { pointer-events: none; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 14px; }
+
+  .df-sel-card { background: var(--bg); border: 1.5px solid var(--gold); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
+  .df-sel-icon { font-size: 26px; flex-shrink: 0; }
+  .df-sel-label { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .df-sel-hint { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  .df-slider-wrap { margin-bottom: 4px; }
+  .df-slider-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .df-slider-q { font-size: 15px; font-weight: 600; color: var(--text); }
+  .df-slider-val { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+  .df-slider-sub { font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; margin-top: 6px; }
+  .df-slider-wrap input[type=range] { -webkit-appearance: none; width: 100%; height: 5px; border-radius: 3px; outline: none; background: linear-gradient(to right, #d2674a 0%, var(--gold) 50%, #7faa72 100%); cursor: pointer; }
+  .df-slider-wrap input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 3px solid var(--gold); box-shadow: 0 2px 6px rgba(0,0,0,.4); cursor: pointer; }
+
+  .df-refl { margin-bottom: 20px; }
+  .df-refl-num { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .df-refl-q { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 5px; line-height: 1.35; }
+  .df-refl-ph { font-size: 11.5px; color: var(--muted); font-style: italic; margin-bottom: 9px; line-height: 1.5; }
+  .df-wrap textarea { width: 100%; min-height: 88px; background: var(--bg); color: var(--text); border: 1px solid var(--field-border); border-radius: 8px; padding: 12px 14px; font-family: inherit; font-size: 14px; line-height: 1.7; resize: vertical; outline: none; }
+  .df-wrap textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(217,169,62,0.25); }
+  .df-wrap textarea.df-custom { min-height: 54px; }
+
+  .df-btn-row { display: flex; gap: 10px; margin-top: 10px; }
+  .df-btn { flex: 1; padding: 13px; border-radius: 9px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: opacity .2s, transform .12s; }
+  .df-btn:hover { opacity: .92; transform: translateY(-1px); }
+  .df-btn-primary { background: var(--gold); color: #1c1402; }
+  .df-btn-secondary { background: transparent; border: 1.5px solid var(--field-border); color: var(--text); }
+  .df-btn-sage { background: #7faa72; color: #0f1a0c; }
+  .df-btn-full { width: 100%; background: var(--gold); color: #1c1402; padding: 15px; border-radius: 9px; font-family: inherit; font-size: 14.5px; font-weight: 800; cursor: pointer; border: none; margin-top: 6px; transition: opacity .2s, transform .12s; }
+  .df-btn-full:hover { opacity: .92; transform: translateY(-1px); }
+  .df-btn-full:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+  .df-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px 0; }
+  .df-spinner { width: 38px; height: 38px; border: 3px solid rgba(217,169,62,0.25); border-top-color: var(--gold); border-radius: 50%; animation: dfSpin .8s linear infinite; }
+  @keyframes dfSpin { to { transform: rotate(360deg); } }
+  .df-loading-text { font-style: italic; font-size: 15px; color: var(--muted); text-align: center; max-width: 250px; line-height: 1.6; }
+
+  .df-ai-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(122,170,114,0.15); border: 1px solid #7faa72; border-radius: 20px; padding: 3px 10px; font-size: 10px; font-weight: 700; color: #9ec593; letter-spacing: .04em; margin-bottom: 12px; }
+  .df-insight { font-size: 14.5px; font-style: italic; color: var(--text); line-height: 1.6; margin-bottom: 16px; padding: 12px 14px; background: rgba(217,169,62,0.08); border-radius: 8px; border-left: 3px solid var(--gold); }
+
+  .df-scriptures { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .df-scripture { background: var(--bg); border: 1.5px solid transparent; border-left: 3px solid var(--gold); border-radius: 10px; padding: 15px 14px; cursor: pointer; transition: border-color .2s, background .2s; }
+  .df-scripture:hover { background: var(--field-border); }
+  .df-scripture.picked { border-color: #7faa72; background: rgba(122,170,114,0.12); }
+  .df-scripture-ref { font-size: 10px; font-weight: 700; letter-spacing: .1em; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; }
+  .df-scripture.picked .df-scripture-ref { color: #9ec593; }
+  .df-scripture-text { font-style: italic; font-size: 14.5px; color: var(--text); line-height: 1.6; margin-bottom: 6px; }
+  .df-scripture-why { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+
+  .df-actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .df-action { background: var(--bg); border: 1.5px solid transparent; border-radius: 9px; padding: 12px 13px; cursor: pointer; display: flex; align-items: flex-start; gap: 11px; transition: border-color .2s, background .2s; }
+  .df-action:hover { background: var(--field-border); }
+  .df-action.picked { border-color: #7faa72; background: rgba(122,170,114,0.12); }
+  .df-action-ico { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .df-action-text strong { display: block; font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .df-action-text span { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+  .df-or { text-align: center; font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin: 8px 0; }
+  .df-custom-lbl { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 7px; }
+
+  .df-commit { background: var(--bg); border: 1px solid var(--field-border); border-radius: 10px; padding: 17px 15px; margin-bottom: 14px; }
+  .df-commit h3 { font-size: 19px; font-weight: 800; color: var(--text); margin-bottom: 14px; }
+  .df-sum { display: flex; gap: 9px; margin-bottom: 12px; align-items: flex-start; }
+  .df-sum-ico { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .df-sum-lbl { font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
+  .df-sum-val { font-size: 13px; color: var(--text); opacity: .9; line-height: 1.5; }
+  .df-prayer { font-style: italic; font-size: 15px; color: var(--text); line-height: 1.7; padding: 14px; background: rgba(217,169,62,0.10); border-radius: 8px; border-left: 3px solid var(--gold); margin-bottom: 14px; }
+
+  .df-error { background: rgba(210,103,74,0.15); border: 1px solid #d2674a; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text); margin-bottom: 14px; line-height: 1.5; }
+
+  .df-done { text-align: center; padding: 44px 0 24px; animation: dfFade .5s ease; }
+  .df-done-glyph { font-size: 52px; margin-bottom: 14px; display: block; }
+  .df-done h2 { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+  .df-done p { font-size: 14px; color: var(--muted); max-width: 320px; margin: 0 auto 26px; line-height: 1.7; font-style: italic; }
+  .df-restart { display: inline-block; background: transparent; border: 1.5px solid var(--field-border); color: var(--text); padding: 12px 24px; border-radius: 9px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background .2s; }
+  .df-restart:hover { background: var(--field-border); }
 </style>
 </head>
 <body>
@@ -984,6 +1085,14 @@
             <div class="pc-desc">Count your blessings. Name the people, moments and gifts you're thankful for today.</div>
             <span class="pc-pts">+5 pts</span>
           </div>
+          <div class="pillar-card pc-drift" data-type="drift">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="16.2 7.8 13.4 13.4 7.8 16.2 10.6 10.6"/></svg>
+            </div>
+            <div class="pc-title">DRIFT FIX</div>
+            <div class="pc-desc">Feel off in an area of life? A guided, honest audit with personalized Scripture, a step and a prayer.</div>
+            <span class="pc-pts">+10 pts</span>
+          </div>
         </div>
 
         <div class="pillars-divider" data-tab="today">THREE PILLARS. ONE PURPOSE.</div>
@@ -1100,6 +1209,7 @@
             <div class="type-option" data-type="prayer"><span class="radio"></span> Prayer Requests</div>
             <div class="type-option" data-type="fitness"><span class="radio"></span> Fitness Routine</div>
             <div class="type-option" data-type="gratitude"><span class="radio"></span> Gratitude Journal</div>
+            <div class="type-option" data-type="drift"><span class="radio"></span> Drift Fix</div>
           </div>
 
           <div class="meta-row">
@@ -1257,11 +1367,117 @@
         "What do I have today that I once hoped, prayed, or worked for?",
         "How can I express gratitude tomorrow through my actions, words, or attitude?"
       ]
-    }
+    },
+    drift: { title: "Drift Fix", drift: true }
   };
 
-  const POINTS = { freeflow: 3, guided: 7, reframe: 10, devotional: 7, prayer: 7, fitness: 12, gratitude: 5 };
+  const POINTS = { freeflow: 3, guided: 7, reframe: 10, devotional: 7, prayer: 7, fitness: 12, gratitude: 5, drift: 10 };
   function pointsFor(type) { return POINTS[type] || 0; }
+
+  // ============================================================
+  // DRIFT FIX — guided "where am I drifting?" audit with AI Scripture + action + prayer.
+  // Men's and women's question sets; the AI tone/framing is chosen by BUILD server-side.
+  // ============================================================
+  const DRIFT_AREAS = [
+    { id: "marriage",      icon: "💍", label: "Marriage" },
+    { id: "relationships", icon: "🤝", label: "Relationships" },
+    { id: "jesus",         icon: "✝️", label: "Following Jesus" },
+    { id: "fitness",       icon: "💪", label: "Fitness" },
+    { id: "work",          icon: "🎯", label: "Work" },
+    { id: "finances",      icon: "💰", label: "Finances" },
+  ];
+  const DRIFT_AREA_HINTS = {
+    men: {
+      marriage: "Intimacy, connection, leading your spouse well",
+      relationships: "Friendships, brotherhood, family bonds",
+      jesus: "Prayer, Scripture, worship, obedience",
+      fitness: "Working out, sleep, food, energy, discipline",
+      work: "Focus, excellence, integrity, showing up fully",
+      finances: "Spending, saving, generosity, stewardship",
+    },
+    women: {
+      marriage: "Intimacy, connection, loving your spouse well",
+      relationships: "Friendships, sisterhood, family bonds",
+      jesus: "Prayer, Scripture, worship, obedience",
+      fitness: "Movement, sleep, food, energy, discipline",
+      work: "Focus, excellence, integrity, showing up fully",
+      finances: "Spending, saving, generosity, stewardship",
+    },
+  };
+  const DRIFT_SLIDER_LABELS = {
+    marriage:      ["Disconnected", "Getting by", "Thriving"],
+    relationships: ["Isolated",     "Present",    "Iron sharpens iron"],
+    jesus:         ["Cold",         "Lukewarm",   "On fire"],
+    fitness:       ["Neglected",    "Getting by", "Disciplined"],
+    work:          ["Scattered",    "Partial",    "Locked in"],
+    finances:      ["Out of control", "Watching it", "Stewarding well"],
+  };
+  const DRIFT_QUESTIONS_MEN = {
+    marriage: [
+      { q: "When did you last feel genuinely close to your wife — and what's been growing in the space between you since then?", ph: "Be honest about the distance. Is it resentment, rejection, busyness, or something you haven't named yet?" },
+      { q: "What have you stopped doing — pursuing her, initiating, being present — and what's the real reason you stopped?", ph: "Fear of rejection? Feeling unseen yourself? Anger you haven't expressed? Comfort that replaced intentionality?" },
+      { q: "If your wife described the husband she has right now versus the one she married, what would the gap look like — and are you okay with that?", ph: "Don't answer who you want to be. Answer who you actually are right now, today." },
+    ],
+    relationships: [
+      { q: "When did you last let another man actually know what's going on inside you — not the highlight reel, but the real version?", ph: "If the answer is 'never' or 'a long time ago,' sit with that. What is the isolation protecting you from?" },
+      { q: "Is there a friendship, a family relationship, or a brotherhood that you've let go cold — and what did it cost you to walk away from it?", ph: "Pride, a wound, a misunderstanding, or just the slow drift of life getting busy?" },
+      { q: "What would it mean for another man to truly know you right now — your failures, your fears, your actual state — and why does that feel threatening?", ph: "What are you most afraid a trusted man would see if you let him close enough?" },
+    ],
+    jesus: [
+      { q: "Is there something that happened — a prayer that went unanswered, a loss, a season that broke you — that you've never fully brought to God honestly?", ph: "Anger at God is still talking to God. What happened that you haven't said out loud yet?" },
+      { q: "Have you been going through the motions of faith — church, the right words, the right behavior — while something underneath has gone quiet?", ph: "What does your private life with God actually look like right now, stripped of performance?" },
+      { q: "What would it cost you — in comfort, in control, in identity — to fully surrender the area of your life you're holding back from God right now?", ph: "What are you afraid He'll ask of you if you get close again?" },
+    ],
+    fitness: [
+      { q: "When the discipline broke down, what was actually going on in your life — and did your body become a place where you acted out what you felt inside?", ph: "Depression, stress, loss of identity, a relationship falling apart? The body usually tells the truth before the mind admits it." },
+      { q: "Are you using food, alcohol, or inactivity to feel something — or to stop feeling something?", ph: "Be specific. What emotion are you managing, avoiding, or numbing through your physical habits right now?" },
+      { q: "What does being physically disciplined mean to you beyond the mirror — and what does letting it go say about how you see yourself?", ph: "This isn't about appearance. What does the neglect actually tell you about where you are spiritually and emotionally?" },
+    ],
+    work: [
+      { q: "Do you still know why you do what you do — and if the 'why' has gone hollow, when did that happen and what killed it?", ph: "Was it a failure, a comparison, a feeling of invisibility, the gap between where you are and where you thought you'd be by now?" },
+      { q: "Are you holding back at work out of fear — fear of failing at something that matters, fear of succeeding and still not feeling like enough?", ph: "What would it mean to give your full self to this work and still not get the outcome you want? Does that possibility paralyze you?" },
+      { q: "What's the story you tell yourself about your career right now — and is it true, or is it a narrative that's keeping you stuck and safe?", ph: "What are you settling for, and what would you do differently if you weren't afraid?" },
+    ],
+    finances: [
+      { q: "Are you avoiding looking at your finances honestly — and what emotion lives underneath that avoidance?", ph: "Shame about where you are at your age? Fear of what the numbers confirm? Feeling like a failure as a provider?" },
+      { q: "Is money going somewhere it shouldn't — spending to feel something, to escape, to keep up appearances — and what need is that actually trying to meet?", ph: "Control, comfort, status, relief? What are you buying that isn't really about the purchase?" },
+      { q: "If God looked at your finances right now — not just the numbers but the decisions, the priorities, the generosity — what would He say about what you actually trust?", ph: "Where does money reveal what you really believe about security, provision, and God's faithfulness in your life?" },
+    ],
+  };
+  const DRIFT_QUESTIONS_WOMEN = {
+    marriage: [
+      { q: "When did you last feel genuinely close to your husband — and what's been growing in the space between you since then?", ph: "Be honest about the distance. Is it resentment, feeling unseen, busyness, or something you haven't named yet?" },
+      { q: "What have you stopped doing — pursuing him, opening up, being present — and what's the real reason you stopped?", ph: "Hurt you haven't expressed? Feeling unappreciated? Exhaustion that replaced intentionality?" },
+      { q: "If your husband described the wife he has right now versus the one he married, what would the gap look like — and are you okay with that?", ph: "Don't answer who you want to be. Answer who you actually are right now, today." },
+    ],
+    relationships: [
+      { q: "When did you last let another woman actually know what's going on inside you — not the highlight reel, but the real version?", ph: "If the answer is 'never' or 'a long time ago,' sit with that. What is the isolation protecting you from?" },
+      { q: "Is there a friendship, a family relationship, or a sisterhood that you've let go cold — and what did it cost you to walk away from it?", ph: "Pride, a wound, a misunderstanding, or just the slow drift of life getting busy?" },
+      { q: "What would it mean for another woman to truly know you right now — your failures, your fears, your actual state — and why does that feel threatening?", ph: "What are you most afraid a trusted friend would see if you let her close enough?" },
+    ],
+    jesus: [
+      { q: "Is there something that happened — a prayer that went unanswered, a loss, a season that broke you — that you've never fully brought to God honestly?", ph: "Anger at God is still talking to God. What happened that you haven't said out loud yet?" },
+      { q: "Have you been going through the motions of faith — church, the right words, the right behavior — while something underneath has gone quiet?", ph: "What does your private life with God actually look like right now, stripped of performance?" },
+      { q: "What would it cost you — in comfort, in control, in identity — to fully surrender the area of your life you're holding back from God right now?", ph: "What are you afraid He'll ask of you if you get close again?" },
+    ],
+    fitness: [
+      { q: "When the discipline broke down, what was actually going on in your life — and did your body become a place where you acted out what you felt inside?", ph: "Stress, exhaustion, loss of identity, a relationship falling apart? The body usually tells the truth before the mind admits it." },
+      { q: "Are you using food, alcohol, or inactivity to feel something — or to stop feeling something?", ph: "Be specific. What emotion are you managing, avoiding, or numbing through your physical habits right now?" },
+      { q: "What does caring for your body mean to you beyond the mirror — and what does letting it go say about how you see yourself?", ph: "This isn't about appearance. What does the neglect actually tell you about where you are spiritually and emotionally?" },
+    ],
+    work: [
+      { q: "Do you still know why you do what you do — and if the 'why' has gone hollow, when did that happen and what killed it?", ph: "Was it a failure, a comparison, a feeling of invisibility, the gap between where you are and where you thought you'd be by now?" },
+      { q: "Are you holding back out of fear — fear of failing at something that matters, fear of succeeding and still not feeling like enough?", ph: "What would it mean to give your full self to this work and still not get the outcome you want? Does that possibility paralyze you?" },
+      { q: "What's the story you tell yourself about your work right now — and is it true, or is it a narrative that's keeping you stuck and safe?", ph: "What are you settling for, and what would you do differently if you weren't afraid?" },
+    ],
+    finances: [
+      { q: "Are you avoiding looking at your finances honestly — and what emotion lives underneath that avoidance?", ph: "Shame about where you are? Fear of what the numbers confirm? Feeling like you're failing your family?" },
+      { q: "Is money going somewhere it shouldn't — spending to feel something, to escape, to keep up appearances — and what need is that actually trying to meet?", ph: "Control, comfort, status, relief? What are you buying that isn't really about the purchase?" },
+      { q: "If God looked at your finances right now — not just the numbers but the decisions, the priorities, the generosity — what would He say about what you actually trust?", ph: "Where does money reveal what you really believe about security, provision, and God's faithfulness in your life?" },
+    ],
+  };
+  function driftQuestions() { return BUILD === "women" ? DRIFT_QUESTIONS_WOMEN : DRIFT_QUESTIONS_MEN; }
+  function driftHints() { return BUILD === "women" ? DRIFT_AREA_HINTS.women : DRIFT_AREA_HINTS.men; }
 
   // ============================================================
   // WHITE-LABEL BRAND  —  edit THIS block to rebrand for another group.
@@ -1909,6 +2125,16 @@
 
   function renderQuestions(type) {
     const data = QUESTIONS[type];
+    // Drift Fix is a self-contained multi-step flow with its own Save button —
+    // hide the standard name/date row + submit button while it's active, restore otherwise.
+    const isDrift = type === "drift";
+    const metaRow = document.querySelector("#writeView .meta-row");
+    const submitBtn = document.querySelector("#journalForm > .submit-btn");
+    const formHint = document.querySelector("#journalForm > .hint");
+    if (metaRow) metaRow.style.display = isDrift ? "none" : "";
+    if (submitBtn) submitBtn.style.display = isDrift ? "none" : "";
+    if (formHint) formHint.style.display = isDrift ? "none" : "";
+    if (isDrift) { renderDriftFlow(); return; }
     let html = "";
     if (type === "devotional" && BUILD === "women" && build().reflections.length) {
       const refs = build().reflections;
@@ -2117,10 +2343,336 @@
     }
   }
 
+  // ============================================================
+  // DRIFT FIX flow — vanilla port of the guided 5-step audit.
+  // ============================================================
+  let DF = null;
+  function driftInit() {
+    DF = {
+      step: 1, areaId: "", slider: 5, refl: { q1: "", q2: "", q3: "" },
+      guidance: null, actions: null, pickedScripture: null,
+      pickedAction: "", customAction: "", prayer: "",
+      loading: false, loadingMsg: "", error: "", done: false,
+    };
+  }
+  function driftSliderColor(v) { return v <= 3 ? "#d2674a" : v <= 6 ? "#d9a93e" : "#7faa72"; }
+  function driftSliderLabels(id) { return DRIFT_SLIDER_LABELS[id] || ["Low", "Mid", "High"]; }
+
+  function renderDriftFlow() {
+    if (!DF) driftInit();
+    questionsEl.innerHTML = '<div id="driftFlow" class="df-wrap"></div>';
+    const flow = document.getElementById("driftFlow");
+    flow.addEventListener("click", driftClick);
+    flow.addEventListener("change", driftChange);
+    flow.addEventListener("input", driftInput);
+    driftRenderStep();
+  }
+
+  function driftCaptureReflections() {
+    for (let i = 1; i <= 3; i++) {
+      const ta = document.getElementById("driftQ" + i);
+      if (ta) DF.refl["q" + i] = ta.value;
+    }
+  }
+
+  function driftRenderStep() {
+    const flow = document.getElementById("driftFlow");
+    if (!flow) return;
+    const area = DRIFT_AREAS.find(a => a.id === DF.areaId);
+    const qs = driftQuestions()[DF.areaId] || [];
+    const hints = driftHints();
+    const STEPS = ["Identify", "Reflect", "Truth", "Move", "Commit"];
+    let inner = "";
+
+    inner += `
+      <div class="df-header">
+        <p class="df-eyebrow">Journal Tool</p>
+        <h1 class="df-title">Are You <em>Drifting?</em></h1>
+        <p class="df-sub">A quiet audit for when life feels like you're moving but not arriving.</p>
+      </div>
+      <div class="df-verse">"Therefore we must pay much closer attention to what we have heard, lest we drift away from it." — Hebrews 2:1</div>`;
+
+    if (!DF.done) {
+      inner += '<div class="df-dots">' + STEPS.map((_, i) =>
+        `<span class="df-dot ${DF.step === i + 1 ? "active" : DF.step > i + 1 ? "done" : ""}"></span>`).join("") + '</div>';
+    }
+
+    if (DF.loading) {
+      inner += `
+        <div class="df-card">
+          <div class="df-loading">
+            <div class="df-spinner"></div>
+            <p class="df-loading-text">${escapeHtml(DF.loadingMsg || "Working…")}</p>
+          </div>
+        </div>`;
+    } else if (DF.done) {
+      inner += `
+        <div class="df-done">
+          <span class="df-done-glyph">🧭</span>
+          <h2>You're not lost.</h2>
+          <p>The fact that you did this means the compass is still working. One step back is all it takes to start finding your way home.</p>
+          <button type="button" class="df-restart" data-dfrestart>Start a New Drift Check</button>
+        </div>`;
+    } else if (DF.step === 1) {
+      inner += `
+        <div class="df-card">
+          <p class="df-card-eye">Step 1 of 5 — Identify</p>
+          <h2 class="df-card-h">Where is the drift?</h2>
+          <p class="df-card-desc">Choose the area of your life that feels most off right now. Be honest — this is just between you and God.</p>
+          <div class="df-dropdown">
+            <select id="driftArea">
+              <option value="" ${DF.areaId ? "" : "selected"} disabled>Select an area...</option>
+              ${DRIFT_AREAS.map(a => `<option value="${a.id}" ${a.id === DF.areaId ? "selected" : ""}>${a.icon}  ${a.label}</option>`).join("")}
+            </select>
+            <span class="df-dropdown-arrow">▾</span>
+          </div>`;
+      if (area) {
+        const lbls = driftSliderLabels(DF.areaId);
+        const col = driftSliderColor(DF.slider);
+        inner += `
+          <div class="df-sel-card">
+            <div class="df-sel-icon">${area.icon}</div>
+            <div>
+              <div class="df-sel-label">${area.label}</div>
+              <div class="df-sel-hint">${escapeHtml(hints[DF.areaId] || "")}</div>
+            </div>
+          </div>
+          <div class="df-slider-wrap">
+            <div class="df-slider-hd">
+              <span class="df-slider-q">How far off are you?</span>
+              <span class="df-slider-val" id="driftSliderVal" style="background:${col}33;color:${col}">${DF.slider}/10</span>
+            </div>
+            <input type="range" id="driftSlider" min="1" max="10" value="${DF.slider}">
+            <div class="df-slider-sub">${lbls.map(l => `<span>${escapeHtml(l)}</span>`).join("")}</div>
+          </div>`;
+      }
+      inner += `
+          <button type="button" class="df-btn-full" data-dfnext="2" ${DF.areaId ? "" : "disabled"}>${DF.areaId ? "Name It &amp; Move Forward →" : "Choose an area to continue"}</button>
+        </div>`;
+    } else if (DF.step === 2) {
+      inner += `
+        <div class="df-card">
+          <p class="df-card-eye">Step 2 of 5 — Reflect</p>
+          <h2 class="df-card-h">Go deeper.</h2>
+          <p class="df-card-desc">These questions are meant to be uncomfortable. The drift is rarely about what it looks like on the surface — it's about what's underneath. Take your time.</p>
+          ${qs.map((it, i) => `
+            <div class="df-refl">
+              <p class="df-refl-num">Question ${i + 1} of 3</p>
+              <p class="df-refl-q">${escapeHtml(it.q)}</p>
+              <p class="df-refl-ph">${escapeHtml(it.ph)}</p>
+              <textarea id="driftQ${i + 1}" placeholder="Write here...">${escapeHtml(DF.refl["q" + (i + 1)] || "")}</textarea>
+            </div>`).join("")}
+          ${DF.error ? `<div class="df-error">${escapeHtml(DF.error)}</div>` : ""}
+          <div class="df-btn-row">
+            <button type="button" class="df-btn df-btn-secondary" data-dfback="1">← Back</button>
+            <button type="button" class="df-btn df-btn-primary" data-dfnext="3">Get Personalized Guidance →</button>
+          </div>
+        </div>`;
+    } else if (DF.step === 3) {
+      const g = DF.guidance || {};
+      inner += `
+        <div class="df-card">
+          <p class="df-card-eye">Step 3 of 5 — Truth</p>
+          <div class="df-ai-badge">✦ Personalized by AI</div>
+          <h2 class="df-card-h">What does God say about this?</h2>
+          ${g.insight ? `<div class="df-insight">${escapeHtml(g.insight)}</div>` : ""}
+          <p class="df-card-desc">Tap the verse that hits closest to where you are right now.</p>
+          <div class="df-scriptures">
+            ${(g.scriptures || []).map((s, i) => `
+              <div class="df-scripture ${DF.pickedScripture && DF.pickedScripture.ref === s.ref ? "picked" : ""}" data-dfscripture="${i}">
+                <div class="df-scripture-ref">${escapeHtml(s.ref || "")}</div>
+                <div class="df-scripture-text">"${escapeHtml(s.text || "")}"</div>
+                <div class="df-scripture-why">${escapeHtml(s.why || "")}</div>
+              </div>`).join("")}
+          </div>
+          ${DF.error ? `<div class="df-error">${escapeHtml(DF.error)}</div>` : ""}
+          <div class="df-btn-row">
+            <button type="button" class="df-btn df-btn-secondary" data-dfback="2">← Back</button>
+            <button type="button" class="df-btn df-btn-primary" data-dfnext="4">My First Step →</button>
+          </div>
+        </div>`;
+    } else if (DF.step === 4) {
+      const a = DF.actions || {};
+      inner += `
+        <div class="df-card">
+          <p class="df-card-eye">Step 4 of 5 — Move</p>
+          <div class="df-ai-badge">✦ Personalized by AI</div>
+          <h2 class="df-card-h">One thing. Today.</h2>
+          <p class="df-card-desc">These steps were written for your specific situation. You don't need a 30-day plan — just one honest move.</p>
+          <div class="df-actions">
+            ${(a.actions || []).map((act, i) => `
+              <div class="df-action ${DF.pickedAction === act.action ? "picked" : ""}" data-dfaction="${i}">
+                <div class="df-action-ico">${escapeHtml(act.icon || "•")}</div>
+                <div class="df-action-text"><strong>${escapeHtml(act.action || "")}</strong><span>${escapeHtml(act.detail || "")}</span></div>
+              </div>`).join("")}
+          </div>
+          <div class="df-or">— or write your own —</div>
+          <p class="df-custom-lbl">My commitment:</p>
+          <textarea id="driftCustom" class="df-custom" placeholder="I will...">${escapeHtml(DF.customAction || "")}</textarea>
+          ${DF.error ? `<div class="df-error">${escapeHtml(DF.error)}</div>` : ""}
+          <div class="df-btn-row">
+            <button type="button" class="df-btn df-btn-secondary" data-dfback="3">← Back</button>
+            <button type="button" class="df-btn df-btn-sage" data-dfnext="5">Make the Commitment →</button>
+          </div>
+        </div>`;
+    } else if (DF.step === 5) {
+      const finalAction = (DF.customAction || "").trim() || DF.pickedAction || "—";
+      const q1 = DF.refl.q1 || "";
+      inner += `
+        <div class="df-card">
+          <p class="df-card-eye">Step 5 of 5 — Commit</p>
+          <h2 class="df-card-h">Your Drift Check</h2>
+          <p class="df-card-desc">This is your anchor for today. Read it aloud if you can.</p>
+          <div class="df-commit">
+            <h3>Here's what you said.</h3>
+            <div class="df-sum"><span class="df-sum-ico">${area ? area.icon : "🧭"}</span><div><div class="df-sum-lbl">Drift Area</div><div class="df-sum-val">${area ? area.label : ""} — ${DF.slider}/10</div></div></div>
+            ${q1 ? `<div class="df-sum"><span class="df-sum-ico">📝</span><div><div class="df-sum-lbl">When It Started</div><div class="df-sum-val">${escapeHtml(q1.length > 110 ? q1.slice(0, 110) + "…" : q1)}</div></div></div>` : ""}
+            ${DF.pickedScripture ? `<div class="df-sum"><span class="df-sum-ico">📖</span><div><div class="df-sum-lbl">My Anchor Verse</div><div class="df-sum-val">${escapeHtml(DF.pickedScripture.ref)} — "${escapeHtml(DF.pickedScripture.text)}"</div></div></div>` : ""}
+            <div class="df-sum"><span class="df-sum-ico">🎯</span><div><div class="df-sum-lbl">My First Step Today</div><div class="df-sum-val">${escapeHtml(finalAction)}</div></div></div>
+          </div>
+          ${DF.prayer ? `<div class="df-prayer">${escapeHtml(DF.prayer)}</div>` : ""}
+          <div class="df-btn-row">
+            <button type="button" class="df-btn df-btn-secondary" data-dfback="4">← Revise</button>
+            <button type="button" class="df-btn df-btn-primary" data-dfsave>Save to Journal ✓</button>
+          </div>
+        </div>`;
+    }
+    flow.innerHTML = inner;
+  }
+
+  async function driftFetch(phase) {
+    DF.loading = true;
+    DF.loadingMsg = phase === "guidance"
+      ? "Reading your words and finding what God has to say…"
+      : "Building your first steps…";
+    DF.error = "";
+    driftRenderStep();
+    try {
+      const area = DRIFT_AREAS.find(a => a.id === DF.areaId);
+      const qs = (driftQuestions()[DF.areaId] || []).map(x => x.q);
+      const { data, error } = await sb.functions.invoke("drift-coach", {
+        body: {
+          phase: phase, area: DF.areaId, areaLabel: area ? area.label : DF.areaId,
+          slider: DF.slider, questions: qs, reflections: DF.refl,
+          pickedScripture: DF.pickedScripture, build: BUILD,
+        },
+      });
+      if (error || !data || data.error) throw new Error((data && data.error) || "AI error");
+      if (phase === "guidance") { DF.guidance = data; DF.pickedScripture = null; }
+      else { DF.actions = data; DF.prayer = data.prayer || ""; DF.pickedAction = ""; }
+    } catch (e) {
+      DF.error = phase === "guidance"
+        ? "Something went wrong getting your guidance. Check your connection and try again."
+        : "Something went wrong generating your action steps. Try again.";
+    } finally {
+      DF.loading = false;
+    }
+  }
+
+  async function driftGoTo(target) {
+    DF.error = "";
+    driftCaptureReflections();
+    if (target === 3 && !DF.guidance) {
+      await driftFetch("guidance");
+      if (DF.error) { DF.step = 2; driftRenderStep(); return; }
+    }
+    if (target === 4 && !DF.actions) {
+      await driftFetch("actions");
+      if (DF.error) { DF.step = 3; driftRenderStep(); return; }
+    }
+    DF.step = target;
+    driftRenderStep();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function driftSave() {
+    const area = DRIFT_AREAS.find(a => a.id === DF.areaId);
+    const qs = driftQuestions()[DF.areaId] || [];
+    const finalAction = (DF.customAction || "").trim() || DF.pickedAction || "";
+    const date = dayKey(new Date());
+    const nameEl = document.getElementById("entryName");
+    const name = nameEl ? nameEl.value.trim() : "";
+    const cappedToday = loadEntries().some(en => en.type === "drift" && entryDay(en) === date);
+    let pts = pointsFor("drift");
+    if (cappedToday) pts = 0;
+    const answers = [];
+    answers.push({ q: "Drift area", a: (area ? area.label : DF.areaId) + " — " + DF.slider + "/10" });
+    qs.forEach((qq, i) => { answers.push({ q: qq.q, a: DF.refl["q" + (i + 1)] || "" }); });
+    if (DF.pickedScripture) answers.push({ q: "Anchor verse", a: DF.pickedScripture.ref + ' — "' + DF.pickedScripture.text + '"' });
+    if (DF.guidance && DF.guidance.insight) answers.push({ q: "Insight", a: DF.guidance.insight });
+    if (finalAction) answers.push({ q: "My first step today", a: finalAction });
+    if (DF.prayer) answers.push({ q: "Prayer", a: DF.prayer });
+    const entry = {
+      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      type: "drift", typeTitle: "Drift Fix", name: name, date: date,
+      points: pts, capped: cappedToday, savedAt: new Date().toISOString(),
+      driftArea: DF.areaId, driftSlider: DF.slider, answers: answers,
+    };
+    try {
+      await insertEntryToCloud(entry);
+    } catch (err) {
+      alert("Couldn't save your entry to the cloud. Check your internet and try again.");
+      return;
+    }
+    updateCount();
+    renderScore();
+    syncToGroup(true);
+    DF.done = true;
+    driftRenderStep();
+    showToast(cappedToday ? "Already earned points for this today — keep going! 💪" : ("Saved  ·  +" + pts + " points!"));
+  }
+
+  function driftClick(e) {
+    const next = e.target.closest("[data-dfnext]");
+    if (next) { if (next.hasAttribute("disabled")) return; driftGoTo(parseInt(next.dataset.dfnext, 10)); return; }
+    const back = e.target.closest("[data-dfback]");
+    if (back) { driftCaptureReflections(); DF.step = parseInt(back.dataset.dfback, 10); DF.error = ""; driftRenderStep(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    const sc = e.target.closest("[data-dfscripture]");
+    if (sc) {
+      const arr = (DF.guidance && DF.guidance.scriptures) || [];
+      DF.pickedScripture = arr[parseInt(sc.dataset.dfscripture, 10)] || null;
+      driftRenderStep();
+      return;
+    }
+    const ac = e.target.closest("[data-dfaction]");
+    if (ac) {
+      const arr = (DF.actions && DF.actions.actions) || [];
+      const chosen = arr[parseInt(ac.dataset.dfaction, 10)];
+      DF.pickedAction = chosen ? chosen.action : "";
+      DF.customAction = "";
+      driftRenderStep();
+      return;
+    }
+    if (e.target.closest("[data-dfsave]")) { driftSave(); return; }
+    if (e.target.closest("[data-dfrestart]")) { driftInit(); driftRenderStep(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+  }
+
+  function driftChange(e) {
+    const sel = e.target.closest("#driftArea");
+    if (sel) { DF.areaId = sel.value; DF.slider = 5; driftRenderStep(); }
+  }
+
+  function driftInput(e) {
+    if (e.target.id === "driftSlider") {
+      DF.slider = parseInt(e.target.value, 10);
+      const badge = document.getElementById("driftSliderVal");
+      if (badge) {
+        const col = driftSliderColor(DF.slider);
+        badge.textContent = DF.slider + "/10";
+        badge.style.background = col + "33";
+        badge.style.color = col;
+      }
+      return;
+    }
+    if (e.target.id === "driftCustom") { DF.customAction = e.target.value; if (e.target.value.trim()) DF.pickedAction = ""; return; }
+  }
+
   function setActiveType(type) {
     currentType = type;
     selector.querySelectorAll(".type-option").forEach(o => o.classList.toggle("active", o.dataset.type === type));
     if (type !== "fitness") { currentFitnessPreset = null; resetTimerState(); }
+    // Start the Drift Fix flow fresh when there's no in-progress audit (or the last one finished).
+    if (type === "drift" && (!DF || DF.done)) driftInit();
     renderQuestions(type);
   }
   selector.addEventListener("click", (e) => {
@@ -2417,7 +2969,7 @@
   }
 
   // ----- Customizable pillar order + 1-per-day done state -----
-  const DEFAULT_PILLAR_ORDER = ["freeflow", "guided", "reframe", "devotional", "prayer", "fitness", "gratitude"];
+  const DEFAULT_PILLAR_ORDER = ["freeflow", "guided", "reframe", "devotional", "prayer", "fitness", "gratitude", "drift"];
   function pillarOrderKey() { return APP + ":pillarorder:" + (currentEmail() || ""); }
   function getPillarOrder() {
     let a; try { a = JSON.parse(localStorage.getItem(pillarOrderKey())); } catch (e) { a = null; }
