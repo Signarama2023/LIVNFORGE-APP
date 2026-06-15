@@ -791,7 +791,13 @@
   }
 
   /* ============ DRIFT FIX flow ============ */
-  .df-wrap { padding-bottom: 20px; }
+  .df-wrap { padding-bottom: 20px; overflow-x: clip; max-width: 100%; }
+  /* AI text can contain long unbroken tokens (refs/URLs) that WebKit won't break by
+     default — force wrapping so the page never scrolls side to side on iOS. */
+  .df-wrap, .df-wrap * { min-width: 0; }
+  .df-card-desc, .df-refl-q, .df-refl-ph, .df-insight, .df-scripture-ref, .df-scripture-text,
+  .df-scripture-why, .df-action-text strong, .df-action-text span, .df-sum-val, .df-prayer,
+  .df-title, .df-sub, .df-verse, .df-sel-label, .df-sel-hint { overflow-wrap: anywhere; word-break: break-word; }
   .df-header { text-align: center; padding: 6px 4px 0; }
   .df-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
   .df-title { font-size: clamp(28px, 6vw, 40px); font-weight: 800; line-height: 1.05; color: var(--text); margin-bottom: 6px; }
