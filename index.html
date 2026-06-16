@@ -790,6 +790,10 @@
     .entry-head { padding: 14px; }
   }
 
+  /* The writing view should never scroll horizontally — hard guard against any
+     stray overflow (drift flow or otherwise) regardless of WebKit quirks. */
+  #writeView { overflow-x: hidden; max-width: 100%; }
+
   /* ============ DRIFT FIX flow ============ */
   .df-wrap { padding-bottom: 20px; overflow-x: clip; max-width: 100%; }
   /* AI text can contain long unbroken tokens (refs/URLs) that WebKit won't break by
