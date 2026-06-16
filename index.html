@@ -2395,14 +2395,15 @@
       loading: false, loadingMsg: "", error: "", done: false, whyOpen: false,
     };
   }
-  // Research-grounded "why drift happens" content (condensed for the in-app panel).
+  // Research-grounded "why drift happens" content shown in the in-app panel.
   const DRIFT_WHY = [
-    { t: "Success quietly relaxes discipline", d: "The fundamentals don't stop working — they stop feeling necessary, so they slip without you noticing." },
-    { t: "Comfort breeds overconfidence", d: "“I've figured it out” leads to less effort and less honest self-assessment." },
-    { t: "Your identity shifted", d: "Habits fall away when they no longer match who you're becoming — not because you got lazy." },
-    { t: "It's lost clarity, not lost effort", d: "You can be working hard, even over-working, and still be treading water." },
-    { t: "Your tank ran low", d: "Decision fatigue and depletion quietly drain the will to push — it's energy, not character." },
-    { t: "Drifting is a normal cycle", d: "Lapses are expected, not a moral failure. Meet the drift with curiosity, not shame." },
+    { t: "Success quietly relaxes discipline", d: "Early on you track everything and welcome coaching. Then success arrives — and the fundamentals start to feel optional. They slip not because they stopped working, but because they stopped feeling necessary." },
+    { t: "Complacency & overconfidence", d: "Once you believe you've figured it out, effort drops and honest self-assessment fades. The formula feels infallible — right up until it isn't." },
+    { t: "Your identity shifted", d: "Discipline is fueled by who you believe you are. When the identity that drove it — proving, surviving, achieving — changes, the habits attached to it quietly dissolve, even while you're still succeeding on the outside." },
+    { t: "Lost clarity, not lost effort", d: "Drift often comes from over-effort without a clear path, not laziness. From the outside everything looks fine; inside you're treading water — sometimes for months." },
+    { t: "A drained tank (decision fatigue)", d: "An endless stream of choices depletes focus and willpower. After spending self-control in one area, you don't feel like pushing in another — it's lost motivation, not lost ability." },
+    { t: "High-functioning burnout", d: "You can keep performing at a high level while feeling emotionally muted and disconnected from meaning. Under chronic load the brain runs on autopilot — output stays up, purpose goes quiet." },
+    { t: "Drifting is a normal cycle", d: "Lapses aren't moral failures — they're expected in any long effort (the lapse-recovery cycle). Meet the drift with curiosity: Am I fatigued or overloaded? Did my environment change? Are my goals still aligned with my values?" },
   ];
   function driftSliderColor(v) { return v <= 3 ? "#d2674a" : v <= 6 ? "#d9a93e" : "#7faa72"; }
   function driftSliderLabels(id) { return DRIFT_SLIDER_LABELS[id] || ["Low", "Mid", "High"]; }
