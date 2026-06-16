@@ -849,6 +849,16 @@
   .df-btn-full:hover { opacity: .92; transform: translateY(-1px); }
   .df-btn-full:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
+  .df-why-toggle { width: 100%; margin-top: 12px; background: transparent; border: none; color: var(--gold); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; }
+  .df-why-toggle:hover { color: var(--gold-light); }
+  .df-why-caret { font-size: 11px; }
+  .df-why { margin-top: 6px; border-top: 1px solid var(--field-border); padding-top: 14px; display: flex; flex-direction: column; gap: 12px; animation: dfFade .3s ease; }
+  .df-why-item { }
+  .df-why-t { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .df-why-d { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .df-why-good { font-size: 13px; color: var(--text); line-height: 1.6; padding: 12px 14px; background: rgba(217,169,62,0.10); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; }
+  .df-why-good em { color: var(--gold-light); font-style: italic; }
+
   .df-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px 0; }
   .df-spinner { width: 38px; height: 38px; border: 3px solid rgba(217,169,62,0.25); border-top-color: var(--gold); border-radius: 50%; animation: dfSpin .8s linear infinite; }
   @keyframes dfSpin { to { transform: rotate(360deg); } }
@@ -2382,9 +2392,18 @@
       step: 1, areaId: "", slider: 5, refl: { q1: "", q2: "", q3: "" },
       guidance: null, actions: null, pickedScripture: null,
       pickedAction: "", customAction: "", prayer: "",
-      loading: false, loadingMsg: "", error: "", done: false,
+      loading: false, loadingMsg: "", error: "", done: false, whyOpen: false,
     };
   }
+  // Research-grounded "why drift happens" content (condensed for the in-app panel).
+  const DRIFT_WHY = [
+    { t: "Success quietly relaxes discipline", d: "The fundamentals don't stop working — they stop feeling necessary, so they slip without you noticing." },
+    { t: "Comfort breeds overconfidence", d: "“I've figured it out” leads to less effort and less honest self-assessment." },
+    { t: "Your identity shifted", d: "Habits fall away when they no longer match who you're becoming — not because you got lazy." },
+    { t: "It's lost clarity, not lost effort", d: "You can be working hard, even over-working, and still be treading water." },
+    { t: "Your tank ran low", d: "Decision fatigue and depletion quietly drain the will to push — it's energy, not character." },
+    { t: "Drifting is a normal cycle", d: "Lapses are expected, not a moral failure. Meet the drift with curiosity, not shame." },
+  ];
   function driftSliderColor(v) { return v <= 3 ? "#d2674a" : v <= 6 ? "#d9a93e" : "#7faa72"; }
   function driftSliderLabels(id) { return DRIFT_SLIDER_LABELS[id] || ["Low", "Mid", "High"]; }
 
@@ -2471,6 +2490,11 @@
       }
       inner += `
           <button type="button" class="df-btn-full" data-dfnext="2" ${DF.areaId ? "" : "disabled"}>${DF.areaId ? "Name It &amp; Move Forward →" : "Choose an area to continue"}</button>
+          <button type="button" class="df-why-toggle" data-dfwhy>Why does drift happen?<span class="df-why-caret">${DF.whyOpen ? "▴" : "▾"}</span></button>
+          ${DF.whyOpen ? `<div class="df-why">
+            ${DRIFT_WHY.map(w => `<div class="df-why-item"><div class="df-why-t">${w.t}</div><div class="df-why-d">${w.d}</div></div>`).join("")}
+            <div class="df-why-good">The good news: awareness is the turnaround. Drift is recoverable — it just takes reconnecting with <em>why</em> this mattered in the first place.</div>
+          </div>` : ""}
         </div>`;
     } else if (DF.step === 2) {
       inner += `
@@ -2666,6 +2690,7 @@
       driftRenderStep();
       return;
     }
+    if (e.target.closest("[data-dfwhy]")) { DF.whyOpen = !DF.whyOpen; driftRenderStep(); return; }
     const areaBtn = e.target.closest("[data-area]");
     if (areaBtn) { DF.areaId = areaBtn.dataset.area; DF.slider = 5; driftRenderStep(); return; }
     if (e.target.closest("[data-dfsave]")) { driftSave(); return; }

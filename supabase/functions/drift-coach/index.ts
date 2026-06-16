@@ -34,6 +34,22 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Research-grounded understanding of WHY drift happens — keeps the coaching
+// accurate and shame-free. The coach should diagnose the likely mechanism from
+// what the person actually wrote, not lecture this list back at them.
+const DRIFT_FRAMEWORK =
+  "Drift rarely happens because someone stopped caring. Understand these mechanisms and, " +
+  "where the person's words point to one, name it gently and accurately:\n" +
+  "1. Success relaxes discipline — once things go well, the fundamentals stop feeling necessary and quietly slip.\n" +
+  "2. Complacency & overconfidence — believing the formula is figured out leads to less effort and less honest self-assessment.\n" +
+  "3. Identity drift — habits fall away when they no longer match who the person is becoming, not because they got lazy.\n" +
+  "4. Lost clarity, not lost effort — they may be working hard (even over-working) yet treading water without a clear path.\n" +
+  "5. Decision fatigue & depletion — finite mental/emotional energy gets drained, killing the motivation for effortful change.\n" +
+  "6. High-functioning burnout — output stays high while meaning and motivation go quietly offline.\n" +
+  "7. Lapses are a normal cycle, not a moral failing — meet the drift with curiosity, never shame.\n" +
+  "The turnaround: awareness is the first and most powerful step, and the drift is recoverable by reconnecting with WHY the " +
+  "discipline mattered in the first place. Let this shape your insight and steps; do not recite it as a list.";
+
 function persona(build: string) {
   return build === "women"
     ? {
@@ -85,7 +101,8 @@ Deno.serve(async (req) => {
       system =
         `You are a Christian life coach and accountability partner for ${p.who}. ` +
         `You give specific, practical, doable action steps — not vague advice. Your tone is direct ` +
-        `and encouraging, never shaming. Respond ONLY with valid JSON, no markdown, no preamble.`;
+        `and encouraging, never shaming.\n\n` + DRIFT_FRAMEWORK + `\n\n` +
+        `Respond ONLY with valid JSON, no markdown, no preamble.`;
 
       userPrompt =
         `${p.subj[0].toUpperCase() + p.subj.slice(1)} is doing a drift check. Based on what ${p.subj} shared, give ${p.pronoun} 2-3 concrete first steps.\n\n` +
@@ -107,7 +124,8 @@ Deno.serve(async (req) => {
       system =
         `You are a spiritually mature Christian mentor helping ${p.who}. You write with warmth, ` +
         `directness, and biblical depth — like a trusted pastor or accountability partner. You never ` +
-        `shame. You always point toward grace and action. Respond ONLY with valid JSON, no markdown, no preamble.`;
+        `shame. You always point toward grace and action.\n\n` + DRIFT_FRAMEWORK + `\n\n` +
+        `Respond ONLY with valid JSON, no markdown, no preamble.`;
 
       userPrompt =
         `${p.subj[0].toUpperCase() + p.subj.slice(1)} is doing a drift check. Here is the situation:\n\n` +
