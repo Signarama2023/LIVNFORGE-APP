@@ -2434,13 +2434,17 @@
     const STEPS = ["Identify", "Reflect", "Truth", "Move", "Commit"];
     let inner = "";
 
-    inner += `
-      <div class="df-header">
-        <p class="df-eyebrow">Journal Tool</p>
-        <h1 class="df-title">Are You <em>Drifting?</em></h1>
-        <p class="df-sub">A quiet audit for when life feels like you're moving but not arriving.</p>
-      </div>
-      <div class="df-verse">"Therefore we must pay much closer attention to what we have heard, lest we drift away from it." — Hebrews 2:1</div>`;
+    // The big intro hero + verse belong on the opening step only — otherwise it
+    // stacks above the result on later/final pages and makes them feel oversized.
+    if (DF.step === 1 && !DF.done && !DF.loading) {
+      inner += `
+        <div class="df-header">
+          <p class="df-eyebrow">Journal Tool</p>
+          <h1 class="df-title">Are You <em>Drifting?</em></h1>
+          <p class="df-sub">A quiet audit for when life feels like you're moving but not arriving.</p>
+        </div>
+        <div class="df-verse">"Therefore we must pay much closer attention to what we have heard, lest we drift away from it." — Hebrews 2:1</div>`;
+    }
 
     if (!DF.done) {
       inner += '<div class="df-dots">' + STEPS.map((_, i) =>
