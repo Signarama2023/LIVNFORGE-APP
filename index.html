@@ -909,6 +909,25 @@
   .df-done p { font-size: 14px; color: var(--muted); max-width: 320px; margin: 0 auto 26px; line-height: 1.7; font-style: italic; }
   .df-restart { display: inline-block; background: transparent; border: 1.5px solid var(--field-border); color: var(--text); padding: 12px 24px; border-radius: 9px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background .2s; }
   .df-restart:hover { background: var(--field-border); }
+
+  /* ============ Delete account ============ */
+  .danger-btn { background: transparent; border: 1.5px solid #c0392b; color: #e05a47; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 18px; border-radius: 10px; cursor: pointer; transition: background .15s, color .15s; }
+  .danger-btn:hover { background: #c0392b; color: #fff; }
+  .da-overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.72); align-items: center; justify-content: center; padding: 22px; }
+  .da-modal { background: var(--panel); border: 1px solid var(--field-border); border-radius: 16px; padding: 24px 22px; max-width: 380px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+  .da-modal h3 { font-size: 20px; font-weight: 800; color: var(--text); margin: 0 0 10px; }
+  .da-modal p { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0 0 12px; }
+  .da-sub { color: var(--text) !important; }
+  .da-modal input { width: 100%; box-sizing: border-box; background: var(--bg); border: 1.5px solid var(--field-border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 16px; letter-spacing: 2px; text-align: center; padding: 12px 14px; outline: none; }
+  .da-modal input:focus { border-color: #c0392b; }
+  .da-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .da-cancel { flex: 1; background: transparent; border: 1.5px solid var(--field-border); color: var(--text); font-family: inherit; font-size: 14px; font-weight: 700; padding: 12px; border-radius: 10px; cursor: pointer; }
+  .da-cancel:hover { background: var(--field-border); }
+  .da-confirm { flex: 1; background: #c0392b; border: none; color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; padding: 12px; border-radius: 10px; cursor: pointer; transition: opacity .15s; }
+  .da-confirm:disabled { opacity: .45; cursor: not-allowed; }
+  .da-confirm:not(:disabled):hover { opacity: .9; }
+  .da-status { font-size: 13px; line-height: 1.5; margin-top: 12px; color: var(--muted); min-height: 1px; }
+  .da-status.err { color: #e05a47; }
 </style>
 </head>
 <body>
@@ -986,6 +1005,12 @@
           <div class="sc-title">🛡️ Safety</div>
           <p class="sc-desc">Block members to hide their messages and prayer requests. Report any content from the ⚑ on a message — our team reviews reports and removes violations within 24 hours.</p>
           <div id="blockedList"><div class="bl-empty">You haven't blocked anyone.</div></div>
+        </div>
+
+        <div class="settings-card" id="deleteAccountSettings" data-tab="settings">
+          <div class="sc-title">⚠️ Delete account</div>
+          <p class="sc-desc">Permanently delete your LIVN FORGE account and all of your data — journal entries, points, streaks, circles, and prayer requests. This can't be undone. If you have an active subscription, cancel it separately in your Apple ID settings; deleting your account here doesn't stop Apple billing.</p>
+          <button class="danger-btn" id="deleteAccountBtn" type="button">Delete my account</button>
         </div>
 
         <div class="weekly-banner" id="weeklyBanner" data-tab="today" style="display:none;"></div>
@@ -1310,6 +1335,20 @@
   </div>
 
   <div id="imgLightbox" class="img-lightbox"><img id="imgLightboxImg" src="" alt="photo"></div>
+
+  <div class="da-overlay" id="deleteAccountModal">
+    <div class="da-modal">
+      <h3>Delete your account?</h3>
+      <p>This permanently erases your account and everything in it — entries, points, streaks, circles, and prayer requests. It cannot be undone.</p>
+      <p class="da-sub">Type <b>DELETE</b> to confirm:</p>
+      <input id="deleteConfirmInput" type="text" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="DELETE">
+      <div class="da-actions">
+        <button id="deleteCancelBtn" type="button" class="da-cancel">Cancel</button>
+        <button id="deleteConfirmBtn" type="button" class="da-confirm" disabled>Delete forever</button>
+      </div>
+      <div class="da-status" id="deleteModalStatus"></div>
+    </div>
+  </div>
   <div id="eulaOverlay" class="eula-overlay">
     <div class="eula-card">
       <h2>Community Guidelines</h2>
@@ -3233,6 +3272,64 @@
     showSignIn();
     window.scrollTo(0, 0);
   });
+
+  // ----- Delete account (App Store Guideline 5.1.1(v)) -----
+  (function () {
+    const modal = document.getElementById("deleteAccountModal");
+    const openBtn = document.getElementById("deleteAccountBtn");
+    const cancelBtn = document.getElementById("deleteCancelBtn");
+    const confirmBtn = document.getElementById("deleteConfirmBtn");
+    const input = document.getElementById("deleteConfirmInput");
+    const status = document.getElementById("deleteModalStatus");
+    if (!modal || !openBtn) return;
+
+    function closeModal() {
+      modal.style.display = "none";
+      input.value = "";
+      confirmBtn.disabled = true;
+      status.className = "da-status";
+      status.textContent = "";
+    }
+    openBtn.addEventListener("click", function () {
+      status.className = "da-status"; status.textContent = "";
+      input.value = ""; confirmBtn.disabled = true;
+      modal.style.display = "flex";
+      setTimeout(function () { input.focus(); }, 50);
+    });
+    cancelBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+    input.addEventListener("input", function () {
+      confirmBtn.disabled = input.value.trim().toUpperCase() !== "DELETE";
+    });
+
+    confirmBtn.addEventListener("click", async function () {
+      if (!sb || !__currentUser) { status.className = "da-status err"; status.textContent = "You're not signed in."; return; }
+      confirmBtn.disabled = true; cancelBtn.disabled = true;
+      status.className = "da-status"; status.textContent = "Deleting your account…";
+      try {
+        const { data, error } = await sb.functions.invoke("delete-account", { body: {} });
+        if (error || (data && data.error)) throw new Error((data && data.error) || (error && error.message) || "Delete failed");
+      } catch (e) {
+        status.className = "da-status err";
+        status.textContent = "Couldn't delete your account: " + ((e && e.message) || e) + ". Please try again.";
+        confirmBtn.disabled = false; cancelBtn.disabled = false;
+        return;
+      }
+      // Success — sign out, clear local state, return to sign-in.
+      try { await sb.auth.signOut(); } catch (e) { /* ignore */ }
+      try {
+        Object.keys(localStorage).forEach(function (k) { if (k.indexOf(APP + ":") === 0) localStorage.removeItem(k); });
+      } catch (e) { /* ignore */ }
+      __currentUser = null; __entries = [];
+      cancelBtn.disabled = false;
+      closeModal();
+      try { updateCount(); } catch (e) {}
+      authMode = "login"; try { applyAuthMode(); } catch (e) {}
+      showSignIn();
+      window.scrollTo(0, 0);
+      alert("Your account and all of your data have been permanently deleted.");
+    });
+  })();
 
   // default date = today
   document.getElementById("entryDate").value = dayKey(new Date()); // local date, not UTC (fixes evening date drift)
