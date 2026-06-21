@@ -29,15 +29,19 @@ const SYSTEM_PROMPT =
   '- "key_verse_reference": the reference for that verse (e.g. "John 3:16").\n' +
   '- "understanding": an array of EXACTLY 3 multiple-choice comprehension questions. Each item is an object with ' +
   'keys: "q" (the question), "choices" (an array of EXACTLY 4 short answer options), "answer" (the 0-based index ' +
-  'of the correct option), and "explanation" (one sentence, grounded only in the passage text, saying why that ' +
-  "answer is correct).\n" +
+  'of the correct option), and "explanation" (one or two sentences: confirm the answer from the passage, then ' +
+  "share a brief, meaningful insight rooted in that same text — informative and edifying, never adding doctrine " +
+  "the passage does not teach).\n" +
   '- "reflection": an array of EXACTLY 3 open-ended devotional prompts (plain strings).\n\n' +
-  "UNDERSTANDING QUESTIONS: keep them strictly factual and answerable ONLY from the provided passage text (never " +
-  "outside facts, never contested or doctrinal interpretation), but write warm, engaging, specific stems. Use " +
-  "THREE DIFFERENT angles (for example: the pivotal moment; cause and effect; a contrast the passage draws; an " +
-  "easy-to-miss detail; who said or did something and to whom; the plain main point). Make wrong options plausible " +
-  "but clearly not what the text says; keep choices short; never fabricate text that is not in the passage. VARY " +
-  "which option is correct across the three questions; do not always make the first option the answer.\n\n" +
+  "UNDERSTANDING QUESTIONS: anchor each one on a KEY moment or central line of the passage — the parts worth " +
+  "teaching on, not minor trivia — so the question itself shows you have read THIS text closely and the " +
+  "explanation can carry a little message. Keep them strictly factual and answerable ONLY from the provided " +
+  "passage text (never outside facts, never contested doctrine). Use THREE DIFFERENT angles (for example: the " +
+  "pivotal turning point; cause and effect; a contrast the passage draws; what someone said or did and to whom; " +
+  "the central claim or main point). Write specific, substantive stems that reward close reading, not shallow " +
+  "recall. Make wrong options plausible but clearly not what the text says; keep choices short; never fabricate " +
+  "text that is not in the passage. VARY which option is correct across the three questions; do not always make " +
+  "the first option the answer.\n\n" +
   "REFLECTION QUESTIONS are the heart of the devotional. Ask them the way a faithful, grace-filled pastor would: " +
   "questions that move the reader toward Jesus, toward who God is, and toward honest surrender and trust. Draw out " +
   "the gospel from the passage — God's character, His grace, the finished work of Christ, the reader's identity in " +
@@ -80,7 +84,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 1400,
+        max_tokens: 1800,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: userContent }],
       }),
