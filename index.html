@@ -350,6 +350,9 @@
   .pillar-card { position: relative; }
   .pillar-card.pc-done { opacity: 0.86; }
   .pillar-card.pc-done::after { content: "✓ done today"; position: absolute; top: 8px; left: 10px; font-size: 10px; letter-spacing: .3px; color: #4ade80; font-weight: 700; }
+  .pillar-card.pc-doneweek { opacity: 0.86; }
+  .pillar-card.pc-doneweek::after { content: "✓ done this week"; position: absolute; top: 8px; left: 10px; font-size: 10px; letter-spacing: .3px; color: #4ade80; font-weight: 700; }
+  .pillar-cards.reordering .pillar-card.pc-doneweek::after { display:none; }
   .reorder-btn { background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:6px 16px; font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; margin:0 0 12px; }
   .pillar-cards.reordering .pillar-card { cursor: default; opacity: 1; }
   .pillar-cards.reordering .pillar-card.pc-done::after { display:none; }
@@ -1151,8 +1154,8 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
             <div class="pc-title">FINANCES</div>
-            <div class="pc-desc">Steward what God's entrusted to you. Reflect on your spending, giving, saving — and where money has your heart.</div>
-            <span class="pc-pts">+5 pts</span>
+            <div class="pc-desc">Your weekly money check-in. Once a week, reflect on how you stewarded what God's entrusted to you — spending, giving, saving — and where money has your heart.</div>
+            <span class="pc-pts">Weekly · +5 pts</span>
           </div>
           <div class="pillar-card pc-gratitude" data-type="gratitude">
             <div class="pc-icon">
@@ -1452,12 +1455,14 @@
     },
     finances: {
       title: "Finances",
+      weekly: true,
       items: [
-        "How did I steward my money today — spending, saving, or giving?",
-        "Where am I anxious or tempted about money, and what does that reveal about where I'm trusting?",
-        "Did I give generously today? Where could I be more generous?",
-        "What is one financial step — a budget, a debt, a gift — I can take this week?",
-        "Am I treating money as a tool for God's purposes, or is it starting to rule me?"
+        "Looking back on this week, how did I steward my money — spending, saving, and giving?",
+        "Where did money cause stress, temptation, or conflict this week, and what does that reveal about where I'm trusting?",
+        "Was I generous this week? Where could I have given more freely?",
+        "Did my spending this week reflect my values and priorities, or drift from them?",
+        "Where did I see God provide for me or my family this week?",
+        "What is one financial step — a budget, a debt, a gift, a conversation — to take in the week ahead?"
       ]
     },
     fitness: {
@@ -3203,14 +3208,20 @@
     savePillarOrder(order); applyPillarOrder();
     if (__reorderMode) setReorderMode(true);
   }
-  function doneTodayTypes() {
-    const today = dayKey(new Date()); const s = {};
-    loadEntries().forEach(function (e) { const d = entryDay(e); if (d === today) s[e.type] = true; });
-    return s;
-  }
   function markDonePillars() {
-    const done = doneTodayTypes();
-    document.querySelectorAll(".pillar-card").forEach(function (c) { c.classList.toggle("pc-done", !!done[c.dataset.type]); });
+    const today = dayKey(new Date());
+    const weekKey = dayKey(startOfWeek(new Date()));
+    const daily = {}, weekly = {};
+    loadEntries().forEach(function (e) {
+      if (entryDay(e) === today) daily[e.type] = true;
+      if (e.savedAt && dayKey(startOfWeek(new Date(e.savedAt))) === weekKey) weekly[e.type] = true;
+    });
+    document.querySelectorAll(".pillar-card").forEach(function (c) {
+      const t = c.dataset.type;
+      const isWeekly = !!(QUESTIONS[t] && QUESTIONS[t].weekly);
+      c.classList.toggle("pc-doneweek", isWeekly && !!weekly[t]);
+      c.classList.toggle("pc-done", !isWeekly && !!daily[t]);
+    });
   }
   (function initReorder() {
     const btn = document.getElementById("reorderToggle");
@@ -3448,8 +3459,13 @@
     // Fix #5: unlimited completions per day, but points are awarded only for
     // the FIRST completion of each card type that day. Repeats still save
     // (logged for streaks/effort) but earn 0 points.
+    // Weekly types (e.g. Finances) cap points once per WEEK; all others once per day.
+    const isWeeklyType = !!(QUESTIONS[currentType] && QUESTIONS[currentType].weekly);
+    const curWeekKey = dayKey(startOfWeek(new Date()));
     const cappedToday = loadEntries().some(function (en) {
-      return en.type === currentType && entryDay(en) === date;
+      if (en.type !== currentType) return false;
+      if (isWeeklyType) return en.savedAt && dayKey(startOfWeek(new Date(en.savedAt))) === curWeekKey;
+      return entryDay(en) === date;
     });
     // capture timer if still running for a fitness preset workout
     if (currentType === "fitness" && currentFitnessPreset && timerInterval) { stopTimer(); }
@@ -3521,7 +3537,9 @@
     document.getElementById("entryDate").value = dayKey(new Date()); // local date, not UTC (fixes evening date drift)
     renderQuestions(currentType);
 
-    showToast(cappedToday ? "Already earned points for this today — keep going! 💪" : ("Saved  ·  +" + pts + " points!"));
+    showToast(cappedToday
+      ? (isWeeklyType ? "Already logged this week — see you next week! 🙌" : "Already earned points for this today — keep going! 💪")
+      : ("Saved  ·  +" + pts + " points!"));
     showLanding();
     window.scrollTo(0, 0);
   });
