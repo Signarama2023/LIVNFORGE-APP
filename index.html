@@ -459,6 +459,14 @@
   #fitTimerToggle.running { background: rgba(240,118,138,0.15); border-color: #f0768a; color: #f0768a; font-weight: 700; }
   #fitTimerToggle.idle { background: #34c2c2; color: #0c2929; border-color: #34c2c2; font-weight: 700; }
   #fitTimerToggle.idle:hover { background: #4adfdf; }
+  .fit-select {
+    width: 100%; background: var(--field); border: 1px solid var(--field-border); color: var(--text);
+    border-radius: 9px; padding: 11px 10px; font-family: inherit; font-size: 14px; cursor: pointer;
+    transition: border-color .15s ease;
+  }
+  .fit-select:hover { border-color: #34c2c2; }
+  .fit-select:focus { outline: none; border-color: #34c2c2; box-shadow: 0 0 0 2px rgba(52,194,194,0.25); }
+  .fit-select:disabled { opacity: .55; cursor: not-allowed; }
 
   .pillars-divider { text-align: center; color: var(--gold); letter-spacing: 4px; font-size: 13px; font-weight: 600; margin: 34px 0 18px; position: relative; }
   .pillars-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
@@ -1592,10 +1600,12 @@
       heroDesc: "For men who live on purpose as sons of the King.",
       verseText: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.",
       verseRef: "COLOSSIANS 3:23",
-      presetOrder: ["king300", "king320"],
+      presetOrder: ["king300", "king320", "king400", "king360"],
       presets: {
-        king300: { name: "KING300", points: 15, short: "4 sets · 25 pushups · 25 situps · 25 squats", desc: "4 sets of 25 pushups, 25 situps, 25 squats (100 / 100 / 100 total)" },
-        king320: { name: "KING320", points: 18, short: "4 sets · 25 pushups · 25 situps · 25 squats · 5 pullups", desc: "4 sets of 25 pushups, 25 situps, 25 squats, 5 pullups (100 / 100 / 100 / 20 total)" }
+        king300: { name: "KING300", points: 15, short: "4 sets · 25 pushups · 25 situps · 25 squats", desc: "4 sets of 25 pushups, 25 situps, 25 squats (100 / 100 / 100 total)", variations: ["As prescribed", "Add weight to squats", "Slower tempo (3-sec negatives)", "Decline push-ups", "Extra set (5 total)"] },
+        king320: { name: "KING320", points: 18, short: "4 sets · 25 pushups · 25 situps · 25 squats · 5 pullups", desc: "4 sets of 25 pushups, 25 situps, 25 squats, 5 pullups (100 / 100 / 100 / 20 total)", variations: ["As prescribed", "Add weight to squats", "Extra pull-ups (+5 per set)", "Weighted pull-ups", "Decline push-ups", "Extra set (5 total)"] },
+        king400: { name: "KING400", points: 20, short: "4 rounds · 25 squats · 25 pushups · 25 situps · 25 jumping jacks", desc: "The Gauntlet — 4 rounds of 25 squats, 25 push-ups, 25 sit-ups, 25 jumping jacks (400 total). ~20 min, full-body + conditioning.", variations: ["As prescribed", "Add weight to squats", "Slower tempo (3-sec negatives)", "Decline push-ups", "Extra round (5 total)"] },
+        king360: { name: "KING360", points: 20, short: "6 rounds · 15 squats · 15 pushups · 15 situps · 15 mountain climbers", desc: "Forge Engine — 6 rounds of 15 squats, 15 push-ups, 15 sit-ups, 15 mountain climbers (360 total). ~20 min, faster rounds for engine.", variations: ["As prescribed", "Add weight to squats", "Decline push-ups", "Faster pace (less rest)", "Extra round (7 total)"] }
       },
       reflectionCredit: "",
       reflections: []
@@ -2119,6 +2129,9 @@
   let currentFitnessPreset = null; // preset id within the active build, or null
   let currentFitnessIntensity = "Medium"; // Low | Medium | High
   let currentFitnessTime = "Morning"; // Morning | Afternoon (drives the nutrition prompt)
+  let currentFitnessVariation = "As prescribed"; // tracked "minimal change" to the selected workout
+  let currentFitnessCardio = "No cardio"; // optional run/walk add-on, tracked with the entry
+  const FIT_CARDIO_OPTIONS = ["No cardio", "Walk 5 min", "Walk 10 min", "Walk 15 min", "Run 5 min", "Run 10 min", "Run 1 mile", "Run 2 miles"];
   function presetDef(id) { return build().presets[id] || null; }
   let timerInterval = null;
   let timerStartMs = 0;
@@ -2270,6 +2283,14 @@
             <button type="button" class="fit-opt-btn" data-fittime="Afternoon">☀️ Afternoon</button>
           </div>
         </div>
+        <div class="fit-opt-group">
+          <div class="fit-opt-label">Modify workout</div>
+          <select class="fit-select" id="fitVariation" disabled><option value="">Pick a workout first</option></select>
+        </div>
+        <div class="fit-opt-group">
+          <div class="fit-opt-label">Add cardio</div>
+          <select class="fit-select" id="fitCardio">${FIT_CARDIO_OPTIONS.map(function (c) { return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>'; }).join("")}</select>
+        </div>
       </div>`;
     }
     if (type === "devotional") {
@@ -2341,6 +2362,7 @@
 
     if (type === "fitness") {
       currentFitnessIntensity = "Medium"; currentFitnessTime = "Morning";
+      currentFitnessVariation = "As prescribed"; currentFitnessCardio = "No cardio";
       // The nutrition question (q3) reflects the day in the afternoon, but in the
       // morning the day hasn't happened yet — so swap it for a forward-looking fuel plan.
       const applyFitNutrition = function () {
@@ -2366,6 +2388,10 @@
         timeRow.querySelectorAll(".fit-opt-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
         applyFitNutrition();
       });
+      const varSel = document.getElementById("fitVariation");
+      if (varSel) varSel.addEventListener("change", function () { currentFitnessVariation = varSel.value || "As prescribed"; });
+      const cardioSel = document.getElementById("fitCardio");
+      if (cardioSel) cardioSel.addEventListener("change", function () { currentFitnessCardio = cardioSel.value || "No cardio"; });
       applyFitNutrition();
     }
 
@@ -2397,6 +2423,16 @@
     }
 
     if (type === "fitness") {
+      // Fill the "Modify workout" dropdown with the chosen preset's variations.
+      const populateVariationSelect = function (info) {
+        const sel = document.getElementById("fitVariation");
+        if (!sel) return;
+        const vars = (info && info.variations && info.variations.length) ? info.variations : ["As prescribed"];
+        sel.innerHTML = vars.map(function (v) { return '<option value="' + escapeHtml(v) + '">' + escapeHtml(v) + '</option>'; }).join("");
+        sel.disabled = false;
+        if (vars.indexOf(currentFitnessVariation) >= 0) { sel.value = currentFitnessVariation; }
+        else { currentFitnessVariation = vars[0]; sel.value = vars[0]; }
+      };
       // restore selected preset visual + timer panel state
       if (currentFitnessPreset) {
         const sel = document.querySelector('.fit-preset-btn[data-preset="' + currentFitnessPreset + '"]');
@@ -2405,7 +2441,10 @@
         if (timer) timer.style.display = "flex";
         setTimerToggleState(!!timerInterval);
         updateTimerDisplay();
+        populateVariationSelect(presetDef(currentFitnessPreset));
       }
+      const cardioSelRestore = document.getElementById("fitCardio");
+      if (cardioSelRestore) cardioSelRestore.value = currentFitnessCardio;
       document.getElementById("fitPresets").addEventListener("click", (ev) => {
         const btn = ev.target.closest(".fit-preset-btn");
         if (!btn) return;
@@ -2417,6 +2456,8 @@
         if (q0) q0.value = info.name + " — " + info.desc;
         const timer = document.getElementById("fitTimer");
         if (timer) timer.style.display = "flex";
+        currentFitnessVariation = "As prescribed";
+        populateVariationSelect(info);
         resetTimerState();
       });
       document.getElementById("fitTimerToggle").addEventListener("click", () => {
@@ -3389,6 +3430,12 @@
       answers = fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }));
     }
     if (currentType === "fitness") {
+      if (currentFitnessCardio && currentFitnessCardio !== "No cardio") {
+        answers.unshift({ q: "Cardio added", a: currentFitnessCardio });
+      }
+      if (currentFitnessPreset && currentFitnessVariation && currentFitnessVariation !== "As prescribed") {
+        answers.unshift({ q: "Workout variation", a: currentFitnessVariation });
+      }
       answers.unshift({ q: "Training time", a: currentFitnessTime }, { q: "Intensity", a: currentFitnessIntensity });
     }
 
@@ -3408,6 +3455,8 @@
     }
     // reset preset + timer after capturing the entry
     currentFitnessPreset = null;
+    currentFitnessVariation = "As prescribed";
+    currentFitnessCardio = "No cardio";
     resetTimerState();
 
     try {
