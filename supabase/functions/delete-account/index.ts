@@ -29,15 +29,23 @@ Deno.serve(async (req) => {
     const uid = user.id;
     const email = (user.email || "").toLowerCase();
 
-    // Best-effort row cleanup. Each delete is wrapped so a missing table/column
-    // can never block the actual account deletion below.
+    // Delete the auth account FIRST — this is the authoritative "account is gone"
+    // action. If it fails, nothing has been destroyed yet, so the user can safely
+    // retry. (Doing the row cleanup first risked a half-deleted state: data gone
+    // but login still working if this call then failed.)
+    const { error: delErr } = await admin.auth.admin.deleteUser(uid);
+    if (delErr) return json({ error: "Could not delete the account: " + delErr.message }, 500);
+
+    // Account is now deleted (and any ON DELETE CASCADE tables — subscriptions,
+    // redemptions, device_tokens — went with it). Best-effort cleanup of the
+    // remaining rows; each delete is wrapped so one failure can't abort the rest.
+    // We already captured uid + email above, so these still work post-deletion.
     const del = async (table: string, col: string, val: string) => {
       try { await admin.from(table).delete().eq(col, val); } catch (_e) { /* ignore */ }
     };
 
-    // Tables keyed by user_id (some cascade on auth-user delete; delete anyway to be safe).
+    // Tables keyed by user_id (deleted explicitly in case they lack a cascade FK).
     await del("entries", "user_id", uid);
-    await del("scores", "user_id", uid);
     await del("redemptions", "user_id", uid);
     await del("subscriptions", "user_id", uid);
     await del("device_tokens", "user_id", uid);
@@ -56,11 +64,6 @@ Deno.serve(async (req) => {
       await del("user_blocks", "blocker_email", email);
       await del("user_blocks", "blocked_email", email);
     }
-
-    // Finally, delete the auth account itself. This also cascades any tables
-    // with an ON DELETE CASCADE foreign key to auth.users.
-    const { error: delErr } = await admin.auth.admin.deleteUser(uid);
-    if (delErr) return json({ error: "Could not delete the account: " + delErr.message }, 500);
 
     return json({ ok: true });
   } catch (err) {

@@ -2653,6 +2653,10 @@
         },
       });
       if (error || !data || data.error) throw new Error((data && data.error) || "AI error");
+      // Guard against a 200 with a malformed/empty payload (model occasionally
+      // returns JSON missing the expected arrays) — treat as an error, not success.
+      if (phase === "guidance" && !(data.scriptures && data.scriptures.length)) throw new Error("No guidance returned");
+      if (phase === "actions" && !(data.actions && data.actions.length)) throw new Error("No steps returned");
       if (phase === "guidance") { DF.guidance = data; DF.pickedScripture = null; }
       else { DF.actions = data; DF.prayer = data.prayer || ""; DF.pickedAction = ""; }
     } catch (e) {
@@ -2680,7 +2684,12 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  let __driftSaving = false;
   async function driftSave() {
+    if (__driftSaving) return; // guard against double-tap → duplicate entry + double points
+    __driftSaving = true;
+    const saveBtn = document.querySelector("[data-dfsave]");
+    if (saveBtn) saveBtn.disabled = true;
     const area = DRIFT_AREAS.find(a => a.id === DF.areaId);
     const qs = driftQuestions()[DF.areaId] || [];
     const finalAction = (DF.customAction || "").trim() || DF.pickedAction || "";
@@ -2706,6 +2715,8 @@
     try {
       await insertEntryToCloud(entry);
     } catch (err) {
+      __driftSaving = false;
+      if (saveBtn) saveBtn.disabled = false;
       alert("Couldn't save your entry to the cloud. Check your internet and try again.");
       return;
     }
@@ -2713,6 +2724,7 @@
     renderScore();
     syncToGroup(true);
     DF.done = true;
+    __driftSaving = false;
     driftRenderStep();
     showToast(cappedToday ? "Already earned points for this today — keep going! 💪" : ("Saved  ·  +" + pts + " points!"));
   }
@@ -3287,6 +3299,7 @@
       modal.style.display = "none";
       input.value = "";
       confirmBtn.disabled = true;
+      cancelBtn.disabled = false; // never leave Cancel stuck disabled after an in-flight delete
       status.className = "da-status";
       status.textContent = "";
     }
