@@ -3937,7 +3937,18 @@
   }
   async function deleteCircleMessage(id) {
     if (!sb) return;
-    try { await sb.from("circle_messages").delete().eq("id", id); renderCircles(); } catch (e) {}
+    try {
+      // Grab the attachment path (if any) before deleting the row, so we can
+      // purge the file from storage too instead of orphaning it.
+      let path = "";
+      try {
+        const r = await sb.from("circle_messages").select("attachment_path").eq("id", id).maybeSingle();
+        path = (r.data && r.data.attachment_path) || "";
+      } catch (e) {}
+      await sb.from("circle_messages").delete().eq("id", id);
+      if (path) { try { await sb.storage.from("circle-attachments").remove([path]); } catch (e) {} }
+      renderCircles();
+    } catch (e) {}
   }
   async function prayForRequest(reqId) {
     if (!sb) return;
@@ -4021,6 +4032,14 @@
   async function deleteCircle(code) {
     if (!sb) return;
     try {
+      // Best-effort: delete this circle's uploaded files from storage first.
+      // (delete_circle also clears any remaining attachment rows server-side, so
+      // nothing is left orphaned even if some files belong to other members.)
+      try {
+        const ls = await sb.storage.from("circle-attachments").list(code, { limit: 1000 });
+        const files = (ls.data || []).map(function (f) { return code + "/" + f.name; });
+        if (files.length) await sb.storage.from("circle-attachments").remove(files);
+      } catch (e) {}
       const { error } = await sb.rpc("delete_circle", { p_code: code });
       if (error) throw error;
       removeCircleCode(code);

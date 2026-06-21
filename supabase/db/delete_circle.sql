@@ -12,11 +12,11 @@ security definer
 set search_path = public
 as $$
 begin
-  -- Only the circle's creator may delete it.
+  -- Only the circle's creator may delete it (case-insensitive email match).
   if (auth.jwt() ->> 'email') is null
      or not exists (
        select 1 from public.prayer_circles
-       where code = p_code and created_by = (auth.jwt() ->> 'email')
+       where code = p_code and lower(created_by) = lower(auth.jwt() ->> 'email')
      ) then
     raise exception 'Only the circle creator can delete this circle';
   end if;
@@ -29,6 +29,14 @@ begin
   delete from public.prayer_circle_members  where code = p_code;
   delete from public.scores                 where group_code = p_code;
   delete from public.prayer_circles         where code = p_code;
+
+  -- Remove the circle's chat attachments so deleting a circle doesn't orphan
+  -- files in storage. Attachments live at circle-attachments/<code>/<file>, so
+  -- the first path segment is the circle code. Definer rights let us clear every
+  -- member's uploads here (client-side delete is limited to the uploader's own).
+  delete from storage.objects
+    where bucket_id = 'circle-attachments'
+      and (storage.foldername(name))[1] = p_code;
 end;
 $$;
 

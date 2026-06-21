@@ -24,3 +24,5 @@ begin
     where group_code = p_code and lower(email) = lower(p_email);
 end;
 $$;
+
+grant execute on function public.remove_member(text, text) to authenticated;
