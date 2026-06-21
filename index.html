@@ -399,6 +399,11 @@
   .pillar-tab .pt-ico { width: 20px; height: 20px; }
   .pillar-tab:hover { border-color: var(--gold); color: var(--text); }
   .pillar-tab.active { border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 0 2px rgba(217,169,62,0.22); }
+  /* Quick journal — Free Flow + Guided, the always-available go-to */
+  .quick-journal { margin-bottom: 20px; }
+  .qj-label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+  .quick-journal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .quick-journal-row { grid-template-columns: 1fr; } }
   .pc-freeflow { border-color: rgba(96,165,250,0.4); }
   .pc-freeflow:hover { border-color: #60a5fa; }
   .pc-freeflow .pc-icon { border-color: #60a5fa; color: #60a5fa; }
@@ -709,6 +714,10 @@
   .weekly-banner .wb-text b { color: var(--gold-light); }
   .weekly-banner button { border: none; border-radius: 9px; background: var(--gold); color: #1c1402; font-weight: 700; font-size: 13px; font-family: inherit; padding: 9px 14px; cursor: pointer; }
   .weekly-banner button.wb-dismiss { background: none; border: 1px solid var(--field-border); color: var(--muted); font-weight: 600; }
+  .finances-banner { background: linear-gradient(135deg, rgba(22,163,74,0.20), rgba(22,163,74,0.06)); border-color: #16a34a; }
+  .finances-banner .wb-text b { color: #34d399; }
+  .finances-banner button { background: #16a34a; color: #04210f; }
+  .finances-banner button.wb-dismiss { background: none; color: var(--muted); }
   .landing-summary { display: block; margin: 22px auto 0; background: none; border: none; color: var(--gold); font-size: 14px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   .ai-box { background: var(--panel); border: 1px solid var(--field-border); border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.6; color: #e7e7ea; white-space: pre-wrap; word-wrap: break-word; margin-bottom: 12px; }
   .ai-box.ai-loading { color: var(--muted); }
@@ -1036,6 +1045,7 @@
           <button class="danger-btn" id="deleteAccountBtn" type="button">Delete my account</button>
         </div>
 
+        <div class="weekly-banner finances-banner" id="financesBanner" data-tab="today" style="display:none;"></div>
         <div class="weekly-banner" id="weeklyBanner" data-tab="today" style="display:none;"></div>
 
         <div class="scoreboard" data-tab="today">
@@ -1097,6 +1107,27 @@
 
         <div class="prayer-circles" id="prayerCircles" data-tab="circles"></div>
 
+        <div class="quick-journal" data-tab="today">
+          <div class="qj-label">Quick journal — just write</div>
+          <div class="quick-journal-row">
+            <div class="pillar-card pc-freeflow" data-type="freeflow">
+              <div class="pc-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </div>
+              <div class="pc-title">FREE FLOW</div>
+              <div class="pc-desc">Just write whatever is on your mind. No structure. No limits. Just you and the page.</div>
+              <span class="pc-pts">+10 pts</span>
+            </div>
+            <div class="pillar-card pc-guided" data-type="guided">
+              <div class="pc-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
+              </div>
+              <div class="pc-title">GUIDED JOURNAL</div>
+              <div class="pc-desc">Answer intentional questions to reflect on your day, your choices, and your growth.</div>
+              <span class="pc-pts">+12 pts</span>
+            </div>
+          </div>
+        </div>
         <button class="reorder-btn" id="reorderToggle" data-tab="today" type="button">✎ Reorder</button>
         <div class="pillar-tabs" data-tab="today">
           <button type="button" class="pillar-tab active" data-pillar="faith"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M7 8h10"/></svg>Faith</button>
@@ -1104,22 +1135,6 @@
           <button type="button" class="pillar-tab" data-pillar="fitness"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5M4 9l2-2M18 20l2-2M3 13l3 3M18 5l3 3"/></svg>Fitness</button>
         </div>
         <div class="pillar-cards" data-tab="today">
-          <div class="pillar-card pc-freeflow" data-type="freeflow" data-pillars="faith family">
-            <div class="pc-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-            </div>
-            <div class="pc-title">FREE FLOW</div>
-            <div class="pc-desc">Just write whatever is on your mind. No structure. No limits. Just you and the page.</div>
-            <span class="pc-pts">+10 pts</span>
-          </div>
-          <div class="pillar-card pc-guided" data-type="guided" data-pillars="family">
-            <div class="pc-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
-            </div>
-            <div class="pc-title">GUIDED JOURNAL</div>
-            <div class="pc-desc">Answer intentional questions to reflect on your day, your choices, and your growth.</div>
-            <span class="pc-pts">+12 pts</span>
-          </div>
           <div class="pillar-card pc-reframe" data-type="reframe" data-pillars="faith family">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 20 6-10 4 6 3-4 5 8Z"/></svg>
@@ -1159,14 +1174,6 @@
             <div class="pc-title">FITNESS ROUTINE</div>
             <div class="pc-desc">Track your training, energy and goals. Steward your body and stay disciplined.</div>
             <span class="pc-pts">+7 pts</span>
-          </div>
-          <div class="pillar-card pc-finances" data-type="finances" data-pillars="fitness">
-            <div class="pc-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div class="pc-title">FINANCES</div>
-            <div class="pc-desc">Your weekly money check-in. Once a week, reflect on how you stewarded what God's entrusted to you — spending, giving, saving — and where money has your heart.</div>
-            <span class="pc-pts">Weekly · +5 pts</span>
           </div>
           <div class="pillar-card pc-gratitude" data-type="gratitude" data-pillars="faith">
             <div class="pc-icon">
@@ -1284,7 +1291,6 @@
             <div class="type-option" data-type="prayer"><span class="radio"></span> Prayer Requests</div>
             <div class="type-option" data-type="family"><span class="radio"></span> Family</div>
             <div class="type-option" data-type="fitness"><span class="radio"></span> Fitness Routine</div>
-            <div class="type-option" data-type="finances"><span class="radio"></span> Finances</div>
             <div class="type-option" data-type="gratitude"><span class="radio"></span> Gratitude Journal</div>
             <div class="type-option" data-type="drift"><span class="radio"></span> Drift Fix</div>
           </div>
@@ -2881,7 +2887,7 @@
   const buildChooser = document.getElementById("buildChooser");
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderRewards(); showTab(__activeTab); maybeShowTutorial(); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderRewards(); showTab(__activeTab); maybeShowTutorial(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
 
   // ----- Paywall / subscription gate -----
@@ -3165,10 +3171,11 @@
   }
 
   // ----- Customizable pillar order + 1-per-day done state -----
-  // Order chosen so each pillar tab reads well after filtering by data-pillars:
-  // Faith → devotional, prayer, gratitude, reframe, drift, freeflow
-  // Family → family, guided, reframe, drift, freeflow   ·   Fitness → fitness, finances
-  const DEFAULT_PILLAR_ORDER = ["devotional", "prayer", "gratitude", "family", "guided", "fitness", "finances", "reframe", "drift", "freeflow"];
+  // Order chosen so each pillar tab reads well after filtering by data-pillars.
+  // (Free Flow + Guided live in the always-on Quick Journal; Finances only surfaces
+  // via the Friday banner — neither appears as a pillar-grid card.)
+  // Faith → devotional, prayer, gratitude, reframe, drift   ·   Family → family, reframe, drift   ·   Fitness → fitness
+  const DEFAULT_PILLAR_ORDER = ["devotional", "prayer", "gratitude", "family", "fitness", "reframe", "drift"];
   function pillarOrderKey() { return APP + ":pillarorder:" + (currentEmail() || ""); }
   function getPillarOrder() {
     let a; try { a = JSON.parse(localStorage.getItem(pillarOrderKey())); } catch (e) { a = null; }
@@ -3238,7 +3245,7 @@
     });
     // While reordering, show every card so any card can be moved; otherwise filter by pillar.
     const showAll = __reorderMode;
-    document.querySelectorAll(".pillar-card").forEach(function (c) {
+    document.querySelectorAll(".pillar-cards .pillar-card").forEach(function (c) {
       const pillars = (c.getAttribute("data-pillars") || "").split(/\s+/);
       c.style.display = (showAll || pillars.indexOf(name) >= 0) ? "" : "none";
     });
@@ -4819,6 +4826,33 @@
   document.getElementById("weeklyBanner").addEventListener("click", (e) => {
     if (e.target.id === "wbOpen") { showApp(); showSummary(); window.scrollTo(0, 0); }
     else if (e.target.id === "wbDismiss") { localStorage.setItem(weeklyBannerDismissedKey(), dayKey(new Date())); renderWeeklyBanner(); }
+  });
+
+  // ----- Friday Finances nudge — evaluate the week before the weekend -----
+  function financesBannerDismissedKey() { return APP + ":fbDismiss:" + (currentEmail() || "").toLowerCase(); }
+  function financesDoneThisWeek() {
+    const wk = dayKey(startOfWeek(new Date()));
+    return loadEntries().some(function (e) {
+      return e.type === "finances" && e.savedAt && dayKey(startOfWeek(new Date(e.savedAt))) === wk;
+    });
+  }
+  function renderFinancesBanner() {
+    const el = document.getElementById("financesBanner");
+    if (!el) return;
+    const today = new Date();
+    const isFriday = today.getDay() === 5; // Friday — right before the weekend
+    const todayKey = dayKey(today);
+    if (!isFriday || financesDoneThisWeek() || localStorage.getItem(financesBannerDismissedKey()) === todayKey) {
+      el.style.display = "none"; return;
+    }
+    el.style.display = "flex";
+    el.innerHTML = '<div class="wb-text">💵 <b>It\'s Friday</b> — before the weekend, take a few minutes to evaluate this week\'s finances.</div>' +
+      '<button id="fbOpen">Reflect now</button>' +
+      '<button class="wb-dismiss" id="fbDismiss">Later</button>';
+  }
+  document.getElementById("financesBanner").addEventListener("click", (e) => {
+    if (e.target.id === "fbOpen") { setActiveType("finances"); showApp(); showWrite(); window.scrollTo(0, 0); }
+    else if (e.target.id === "fbDismiss") { localStorage.setItem(financesBannerDismissedKey(), dayKey(new Date())); renderFinancesBanner(); }
   });
 
   // ----- Boot -----
