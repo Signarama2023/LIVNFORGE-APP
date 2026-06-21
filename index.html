@@ -414,6 +414,12 @@
   .pc-drift { border-color: rgba(122,170,114,0.4); }
   .pc-drift:hover { border-color: #7faa72; }
   .pc-drift .pc-icon { border-color: #7faa72; color: #7faa72; }
+  .pc-family { border-color: rgba(251,146,60,0.4); }
+  .pc-family:hover { border-color: #fb923c; }
+  .pc-family .pc-icon { border-color: #fb923c; color: #fb923c; }
+  .pc-finances { border-color: rgba(22,163,74,0.4); }
+  .pc-finances:hover { border-color: #16a34a; }
+  .pc-finances .pc-icon { border-color: #16a34a; color: #16a34a; }
 
   /* Fitness preset workouts (KING300 / KING320) */
   .fit-presets { margin-bottom: 18px; }
@@ -1090,7 +1096,7 @@
             </div>
             <div class="pc-title">FREE FLOW</div>
             <div class="pc-desc">Just write whatever is on your mind. No structure. No limits. Just you and the page.</div>
-            <span class="pc-pts">+3 pts</span>
+            <span class="pc-pts">+10 pts</span>
           </div>
           <div class="pillar-card pc-guided" data-type="guided">
             <div class="pc-icon">
@@ -1098,7 +1104,7 @@
             </div>
             <div class="pc-title">GUIDED JOURNAL</div>
             <div class="pc-desc">Answer intentional questions to reflect on your day, your choices, and your growth.</div>
-            <span class="pc-pts">+7 pts</span>
+            <span class="pc-pts">+12 pts</span>
           </div>
           <div class="pillar-card pc-reframe" data-type="reframe">
             <div class="pc-icon">
@@ -1106,7 +1112,7 @@
             </div>
             <div class="pc-title">RE-FRAME</div>
             <div class="pc-desc">Challenge the view you have toward something and replace it with truth.</div>
-            <span class="pc-pts">+10 pts</span>
+            <span class="pc-pts">+13 pts</span>
           </div>
           <div class="pillar-card pc-devotional" data-type="devotional">
             <div class="pc-icon">
@@ -1114,7 +1120,7 @@
             </div>
             <div class="pc-title">DEVOTIONAL</div>
             <div class="pc-desc">Spend time in God's Word and prayer. Draw closer to the One who leads and strengthens you.</div>
-            <span class="pc-pts">+7 pts</span>
+            <span class="pc-pts">+15 pts</span>
           </div>
           <div class="pillar-card pc-prayer" data-type="prayer">
             <div class="pc-icon">
@@ -1122,7 +1128,15 @@
             </div>
             <div class="pc-title">PRAYER REQUESTS</div>
             <div class="pc-desc">Lift up the people and needs on your heart. Write your prayers and bring them before God.</div>
-            <span class="pc-pts">+7 pts</span>
+            <span class="pc-pts">+13 pts</span>
+          </div>
+          <div class="pillar-card pc-family" data-type="family">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></svg>
+            </div>
+            <div class="pc-title">FAMILY</div>
+            <div class="pc-desc">Invest in the people God gave you. Reflect on how you led, served and showed up for your family today.</div>
+            <span class="pc-pts">+9 pts</span>
           </div>
           <div class="pillar-card pc-fitness" data-type="fitness">
             <div class="pc-icon">
@@ -1130,7 +1144,15 @@
             </div>
             <div class="pc-title">FITNESS ROUTINE</div>
             <div class="pc-desc">Track your training, energy and goals. Steward your body and stay disciplined.</div>
-            <span class="pc-pts">+12 pts</span>
+            <span class="pc-pts">+7 pts</span>
+          </div>
+          <div class="pillar-card pc-finances" data-type="finances">
+            <div class="pc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="pc-title">FINANCES</div>
+            <div class="pc-desc">Steward what God's entrusted to you. Reflect on your spending, giving, saving — and where money has your heart.</div>
+            <span class="pc-pts">+5 pts</span>
           </div>
           <div class="pillar-card pc-gratitude" data-type="gratitude">
             <div class="pc-icon">
@@ -1138,7 +1160,7 @@
             </div>
             <div class="pc-title">GRATITUDE JOURNAL</div>
             <div class="pc-desc">Count your blessings. Name the people, moments and gifts you're thankful for today.</div>
-            <span class="pc-pts">+5 pts</span>
+            <span class="pc-pts">+11 pts</span>
           </div>
           <div class="pillar-card pc-drift" data-type="drift">
             <div class="pc-icon">
@@ -1146,7 +1168,7 @@
             </div>
             <div class="pc-title">DRIFT FIX</div>
             <div class="pc-desc">Feel off in an area of life? A guided, honest audit with personalized Scripture, a step and a prayer.</div>
-            <span class="pc-pts">+10 pts</span>
+            <span class="pc-pts">+12 pts</span>
           </div>
         </div>
 
@@ -1262,7 +1284,9 @@
             <div class="type-option active" data-type="reframe"><span class="radio"></span> Re-Frame</div>
             <div class="type-option" data-type="devotional"><span class="radio"></span> Devotional</div>
             <div class="type-option" data-type="prayer"><span class="radio"></span> Prayer Requests</div>
+            <div class="type-option" data-type="family"><span class="radio"></span> Family</div>
             <div class="type-option" data-type="fitness"><span class="radio"></span> Fitness Routine</div>
+            <div class="type-option" data-type="finances"><span class="radio"></span> Finances</div>
             <div class="type-option" data-type="gratitude"><span class="radio"></span> Gratitude Journal</div>
             <div class="type-option" data-type="drift"><span class="radio"></span> Drift Fix</div>
           </div>
@@ -1416,6 +1440,26 @@
       ]
     },
     prayer: { title: "Prayer Requests", freeform: true, placeholder: "Write your prayer requests here… who and what are you lifting up to God?" },
+    family: {
+      title: "Family",
+      items: [
+        "Who in my family did I pour into today, and how?",
+        "Where did I fall short with my spouse, kids, or family — and how can I make it right?",
+        "What is one way I can lead or serve my family better tomorrow?",
+        "What did I appreciate about someone in my family today?",
+        "How am I modeling Christ to the people closest to me?"
+      ]
+    },
+    finances: {
+      title: "Finances",
+      items: [
+        "How did I steward my money today — spending, saving, or giving?",
+        "Where am I anxious or tempted about money, and what does that reveal about where I'm trusting?",
+        "Did I give generously today? Where could I be more generous?",
+        "What is one financial step — a budget, a debt, a gift — I can take this week?",
+        "Am I treating money as a tool for God's purposes, or is it starting to rule me?"
+      ]
+    },
     fitness: {
       title: "Fitness Routine",
       items: [
@@ -1440,7 +1484,9 @@
     drift: { title: "Drift Fix", drift: true }
   };
 
-  const POINTS = { freeflow: 3, guided: 7, reframe: 10, devotional: 7, prayer: 7, fitness: 12, gratitude: 5, drift: 10 };
+  // Points reflect pillar priority — Faith (Bible + journaling) highest, then Family,
+  // then Fitness, then Finances. Fitness presets (below) are capped under the Faith tier.
+  const POINTS = { devotional: 15, prayer: 13, reframe: 13, guided: 12, drift: 12, gratitude: 11, freeflow: 10, family: 9, fitness: 7, finances: 5 };
   function pointsFor(type) { return POINTS[type] || 0; }
 
   // ============================================================
@@ -1602,10 +1648,10 @@
       verseRef: "COLOSSIANS 3:23",
       presetOrder: ["king300", "king320", "king400", "king360"],
       presets: {
-        king300: { name: "KING300", points: 15, short: "4 sets · 25 pushups · 25 situps · 25 squats", desc: "4 sets of 25 pushups, 25 situps, 25 squats (100 / 100 / 100 total)", variations: ["As prescribed", "Add weight to squats", "Slower tempo (3-sec negatives)", "Decline push-ups", "Extra set (5 total)"] },
-        king320: { name: "KING320", points: 18, short: "4 sets · 25 pushups · 25 situps · 25 squats · 5 pullups", desc: "4 sets of 25 pushups, 25 situps, 25 squats, 5 pullups (100 / 100 / 100 / 20 total)", variations: ["As prescribed", "Add weight to squats", "Extra pull-ups (+5 per set)", "Weighted pull-ups", "Decline push-ups", "Extra set (5 total)"] },
-        king400: { name: "KING400", points: 20, short: "4 rounds · 25 squats · 25 pushups · 25 situps · 25 jumping jacks", desc: "The Gauntlet — 4 rounds of 25 squats, 25 push-ups, 25 sit-ups, 25 jumping jacks (400 total). ~20 min, full-body + conditioning.", variations: ["As prescribed", "Add weight to squats", "Slower tempo (3-sec negatives)", "Decline push-ups", "Extra round (5 total)"] },
-        king360: { name: "KING360", points: 20, short: "6 rounds · 15 squats · 15 pushups · 15 situps · 15 mountain climbers", desc: "Forge Engine — 6 rounds of 15 squats, 15 push-ups, 15 sit-ups, 15 mountain climbers (360 total). ~20 min, faster rounds for engine.", variations: ["As prescribed", "Add weight to squats", "Decline push-ups", "Faster pace (less rest)", "Extra round (7 total)"] }
+        king300: { name: "KING300", points: 7, short: "4 sets · 25 pushups · 25 situps · 25 squats", desc: "4 sets of 25 pushups, 25 situps, 25 squats (100 / 100 / 100 total)", variations: ["As prescribed", "Add weight to squats", "Slower tempo (3-sec negatives)", "Decline push-ups", "Extra set (5 total)"] },
+        king320: { name: "KING320", points: 8, short: "4 sets · 25 pushups · 25 situps · 25 squats · 5 pullups", desc: "4 sets of 25 pushups, 25 situps, 25 squats, 5 pullups (100 / 100 / 100 / 20 total)", variations: ["As prescribed", "Add weight to squats", "Extra pull-ups (+5 per set)", "Weighted pull-ups", "Decline push-ups", "Extra set (5 total)"] },
+        king400: { name: "KING400", points: 8, short: "4 rounds · 25 squats · 25 pushups · 25 situps · 25 jumping jacks", desc: "The Gauntlet — 4 rounds of 25 squats, 25 push-ups, 25 sit-ups, 25 jumping jacks (400 total). ~20 min, full-body + conditioning.", variations: ["As prescribed", "Add weight to squats", "Slower tempo (3-sec negatives)", "Decline push-ups", "Extra round (5 total)"] },
+        king360: { name: "KING360", points: 8, short: "6 rounds · 15 squats · 15 pushups · 15 situps · 15 mountain climbers", desc: "Forge Engine — 6 rounds of 15 squats, 15 push-ups, 15 sit-ups, 15 mountain climbers (360 total). ~20 min, faster rounds for engine.", variations: ["As prescribed", "Add weight to squats", "Decline push-ups", "Faster pace (less rest)", "Extra round (7 total)"] }
       },
       reflectionCredit: "",
       reflections: []
@@ -1615,10 +1661,12 @@
       heroDesc: "For women who live on purpose as daughters of the King.",
       verseText: "Strength and dignity are her clothing. She laughs at the time to come.",
       verseRef: "PROVERBS 31:25",
-      presetOrder: ["reign240", "reign260"],
+      presetOrder: ["reign240", "reign260", "reign300", "reign280"],
       presets: {
-        reign240: { name: "REIGN240", points: 15, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 sit-ups", desc: "4 rounds of 15 squats, 15 glute bridges, 20 walking lunges, 10 sit-ups (240 total)" },
-        reign260: { name: "REIGN260", points: 18, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 push-ups · 5 sit-to-stands", desc: "4 rounds of 15 squats, 15 glute bridges, 20 lunges, 10 push-ups, 5 sit-to-stands (260 total)" }
+        reign240: { name: "REIGN240", points: 7, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 sit-ups", desc: "4 rounds of 15 squats, 15 glute bridges, 20 walking lunges, 10 sit-ups (240 total)", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Single-leg glute bridges", "Slower tempo (3-sec lower)", "Extra round (5 total)"] },
+        reign260: { name: "REIGN260", points: 8, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 push-ups · 5 sit-to-stands", desc: "4 rounds of 15 squats, 15 glute bridges, 20 lunges, 10 push-ups, 5 sit-to-stands (260 total)", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Knee push-ups → full push-ups", "Slower tempo (3-sec lower)", "Extra round (5 total)"] },
+        reign300: { name: "REIGN300", points: 8, short: "5 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 sit-ups", desc: "Glow Engine — 5 rounds of 15 squats, 15 glute bridges, 20 walking lunges, 10 sit-ups (300 total). ~20 min, lower-body + conditioning.", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Single-leg glute bridges", "Slower tempo (3-sec lower)", "Extra round (6 total)"] },
+        reign280: { name: "REIGN280", points: 8, short: "4 rounds · 15 squats · 15 glute bridges · 10 push-ups · 15 sit-ups · 15 mountain climbers", desc: "Core & Tone — 4 rounds of 15 squats, 15 glute bridges, 10 push-ups, 15 sit-ups, 15 mountain climbers (280 total). ~20 min, full-body core + tone.", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Knee push-ups → full push-ups", "Faster pace (less rest)", "Extra round (5 total)"] }
       },
       // Inspired-by, no verbatim: original prompts; named voices credited as general inspiration only.
       reflectionCredit: "Reflections inspired by women of faith like Lysa TerKeurst, Rebecca Maxwell, and Ali Parsons.",
@@ -3117,7 +3165,7 @@
   }
 
   // ----- Customizable pillar order + 1-per-day done state -----
-  const DEFAULT_PILLAR_ORDER = ["freeflow", "guided", "reframe", "devotional", "prayer", "fitness", "gratitude", "drift"];
+  const DEFAULT_PILLAR_ORDER = ["freeflow", "guided", "reframe", "devotional", "prayer", "family", "fitness", "finances", "gratitude", "drift"];
   function pillarOrderKey() { return APP + ":pillarorder:" + (currentEmail() || ""); }
   function getPillarOrder() {
     let a; try { a = JSON.parse(localStorage.getItem(pillarOrderKey())); } catch (e) { a = null; }
