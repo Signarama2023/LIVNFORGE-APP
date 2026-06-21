@@ -531,6 +531,9 @@
   .hist-btn .count { background: var(--gold); color: #1c1402; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 7px; min-width: 18px; text-align: center; }
   .body { padding: 22px 26px max(44px, calc(26px + env(safe-area-inset-bottom,0px))); }
   .type-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 26px; }
+  /* The activity is chosen on the Today page now — hide the in-entry type switcher. */
+  #typeSelector { display: none; }
+  .write-title { font-size: 20px; font-weight: 700; letter-spacing: .3px; color: var(--text); margin: 2px 0 20px; }
   .type-option {
     display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 12px;
     background: var(--field); border: 1px solid var(--field-border); cursor: pointer;
@@ -1294,6 +1297,7 @@
             <div class="type-option" data-type="gratitude"><span class="radio"></span> Gratitude Journal</div>
             <div class="type-option" data-type="drift"><span class="radio"></span> Drift Fix</div>
           </div>
+          <div class="write-title" id="writeTitle"></div>
 
           <div class="meta-row">
             <div class="field-group">
@@ -2872,6 +2876,7 @@
   function setActiveType(type) {
     currentType = type;
     selector.querySelectorAll(".type-option").forEach(o => o.classList.toggle("active", o.dataset.type === type));
+    const wt = document.getElementById("writeTitle"); if (wt) wt.textContent = (QUESTIONS[type] && QUESTIONS[type].title) || "";
     if (type !== "fitness") { currentFitnessPreset = null; resetTimerState(); }
     // Start the Drift Fix flow fresh when there's no in-progress audit (or the last one finished).
     if (type === "drift" && (!DF || DF.done)) driftInit();
