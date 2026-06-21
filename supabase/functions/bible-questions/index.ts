@@ -28,12 +28,22 @@ const SYSTEM_PROMPT =
   '0-based index of the correct option), and "explanation" (one sentence, grounded only in the passage text, ' +
   "saying why that answer is correct).\n" +
   '- "reflection": an array of EXACTLY 3 open-ended prompts (plain strings) that help the reader reflect on ' +
-  "the passage and apply it to their own life — personal, practical, and encouraging.\n\n" +
-  "Rules for the understanding questions: test plain reading comprehension of what the passage actually says " +
-  "(who is speaking or acting, what happens, the immediate context, the plain main point). Base every question " +
-  "and its correct answer STRICTLY on the provided passage text — never on outside facts, and never on " +
-  "contested or doctrinal interpretation. Make the wrong options plausible but clearly not what the text says. " +
-  "Keep choices short. Never fabricate text that is not in the passage. Output JSON only.";
+  "the passage and apply it to their own life.\n\n" +
+  "MAKE THE QUESTIONS CREATIVE AND VARIED — not three flat 'What did X do?' questions.\n" +
+  "For the 3 understanding questions, use THREE DIFFERENT angles (pick from): the turning point or pivotal " +
+  "moment; cause and effect ('what led to…' / 'what was the result of…'); a contrast or comparison the passage " +
+  "draws; an easy-to-miss detail; who said or did something and to whom; the immediate context or what comes " +
+  "right before/after; the plain main point. Write engaging, specific question stems (not generic). Every " +
+  "question and its correct answer must be answerable STRICTLY from the provided passage text — never outside " +
+  "facts, never contested or doctrinal interpretation. Make the wrong options plausible but clearly not what " +
+  "the text says. Keep choices short. Never fabricate text that is not in the passage.\n" +
+  "VARY WHICH OPTION IS CORRECT across the three questions — do NOT always make the first option the answer; " +
+  "spread the correct answer across different positions.\n" +
+  "For the 3 reflection prompts, be creative and evocative — vary the framing (e.g. imagine yourself in the " +
+  "scene; a specific challenge for this week; what this reveals about God; a habit or relationship to examine; " +
+  "an honest question to sit with). Make them personal, practical, and encouraging — avoid clichés like " +
+  "'How can you apply this to your life?'. Each of the three should feel distinct.\n\n" +
+  "Output JSON only.";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -86,14 +96,30 @@ Deno.serve(async (req) => {
       parsed = JSON.parse(raw.slice(s, e + 1));
     }
 
-    // light validation / normalization
+    // Shuffle a question's choices so the correct answer's POSITION is randomized,
+    // independent of any model bias toward putting it first. Recomputes the answer index.
+    const shuffleMcq = (q: string, choices: string[], answer: number, explanation: string) => {
+      const n = choices.length;
+      if (n < 2) return { q, choices, answer: 0, explanation };
+      const order = Array.from({ length: n }, (_, i) => i);
+      for (let i = n - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      const shuffled = order.map((i) => choices[i]);
+      const newAnswer = order.indexOf(answer); // where the original correct choice now sits
+      return { q, choices: shuffled, answer: newAnswer < 0 ? 0 : newAnswer, explanation };
+    };
+
+    // light validation / normalization (+ shuffle correct-answer position)
     const understanding = Array.isArray(parsed.understanding)
-      ? (parsed.understanding as Array<Record<string, unknown>>).slice(0, 3).map((u) => ({
-          q: String(u.q || ""),
-          choices: Array.isArray(u.choices) ? (u.choices as unknown[]).slice(0, 4).map(String) : [],
-          answer: Number.isInteger(u.answer) ? (u.answer as number) : 0,
-          explanation: String(u.explanation || ""),
-        }))
+      ? (parsed.understanding as Array<Record<string, unknown>>).slice(0, 3).map((u) =>
+          shuffleMcq(
+            String(u.q || ""),
+            Array.isArray(u.choices) ? (u.choices as unknown[]).slice(0, 4).map(String) : [],
+            Number.isInteger(u.answer) ? (u.answer as number) : 0,
+            String(u.explanation || ""),
+          ))
       : [];
     const reflection = Array.isArray(parsed.reflection)
       ? (parsed.reflection as unknown[]).slice(0, 3).map(String)
