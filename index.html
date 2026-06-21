@@ -393,6 +393,12 @@
   .pc-title { font-size: 18px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 10px; }
   .pc-desc { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
   .pc-pts { display: inline-block; margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
+  /* Pillar sub-tabs on the Today page */
+  .pillar-tabs { display: flex; gap: 8px; margin: 4px 0 18px; }
+  .pillar-tab { flex: 1; background: var(--field); border: 1px solid var(--field-border); color: var(--muted); border-radius: 12px; padding: 12px 6px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; cursor: pointer; transition: all .15s ease; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .pillar-tab .pt-ico { width: 20px; height: 20px; }
+  .pillar-tab:hover { border-color: var(--gold); color: var(--text); }
+  .pillar-tab.active { border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 0 2px rgba(217,169,62,0.22); }
   .pc-freeflow { border-color: rgba(96,165,250,0.4); }
   .pc-freeflow:hover { border-color: #60a5fa; }
   .pc-freeflow .pc-icon { border-color: #60a5fa; color: #60a5fa; }
@@ -1092,8 +1098,13 @@
         <div class="prayer-circles" id="prayerCircles" data-tab="circles"></div>
 
         <button class="reorder-btn" id="reorderToggle" data-tab="today" type="button">✎ Reorder</button>
+        <div class="pillar-tabs" data-tab="today">
+          <button type="button" class="pillar-tab active" data-pillar="faith"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M7 8h10"/></svg>Faith</button>
+          <button type="button" class="pillar-tab" data-pillar="family"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg>Family</button>
+          <button type="button" class="pillar-tab" data-pillar="fitness"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5M4 9l2-2M18 20l2-2M3 13l3 3M18 5l3 3"/></svg>Fitness</button>
+        </div>
         <div class="pillar-cards" data-tab="today">
-          <div class="pillar-card pc-freeflow" data-type="freeflow">
+          <div class="pillar-card pc-freeflow" data-type="freeflow" data-pillars="faith family">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
             </div>
@@ -1101,7 +1112,7 @@
             <div class="pc-desc">Just write whatever is on your mind. No structure. No limits. Just you and the page.</div>
             <span class="pc-pts">+10 pts</span>
           </div>
-          <div class="pillar-card pc-guided" data-type="guided">
+          <div class="pillar-card pc-guided" data-type="guided" data-pillars="family">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
             </div>
@@ -1109,7 +1120,7 @@
             <div class="pc-desc">Answer intentional questions to reflect on your day, your choices, and your growth.</div>
             <span class="pc-pts">+12 pts</span>
           </div>
-          <div class="pillar-card pc-reframe" data-type="reframe">
+          <div class="pillar-card pc-reframe" data-type="reframe" data-pillars="faith family">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 20 6-10 4 6 3-4 5 8Z"/></svg>
             </div>
@@ -1117,7 +1128,7 @@
             <div class="pc-desc">Challenge the view you have toward something and replace it with truth.</div>
             <span class="pc-pts">+13 pts</span>
           </div>
-          <div class="pillar-card pc-devotional" data-type="devotional">
+          <div class="pillar-card pc-devotional" data-type="devotional" data-pillars="faith">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18V5a1 1 0 0 1 1-1h6a2 2 0 0 1 2 2 2 2 0 0 1 2-2h6a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-7a1 1 0 0 0-1 1 1 1 0 0 0-1-1H4a1 1 0 0 1-1-1Z"/></svg>
             </div>
@@ -1125,7 +1136,7 @@
             <div class="pc-desc">Spend time in God's Word and prayer. Draw closer to the One who leads and strengthens you.</div>
             <span class="pc-pts">+15 pts</span>
           </div>
-          <div class="pillar-card pc-prayer" data-type="prayer">
+          <div class="pillar-card pc-prayer" data-type="prayer" data-pillars="faith">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.5c-1.2 2.3-3 4.3-3 7.5v5a2.5 2.5 0 0 0 2.5 2.5h1"/><path d="M12.5 3.5c1.2 2.3 3 4.3 3 7.5v5a2.5 2.5 0 0 1-2.5 2.5h-1"/><path d="M8.5 13H6M18 13h-2.5"/></svg>
             </div>
@@ -1133,7 +1144,7 @@
             <div class="pc-desc">Lift up the people and needs on your heart. Write your prayers and bring them before God.</div>
             <span class="pc-pts">+13 pts</span>
           </div>
-          <div class="pillar-card pc-family" data-type="family">
+          <div class="pillar-card pc-family" data-type="family" data-pillars="family">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></svg>
             </div>
@@ -1141,7 +1152,7 @@
             <div class="pc-desc">Invest in the people God gave you. Reflect on how you led, served and showed up for your family today.</div>
             <span class="pc-pts">+9 pts</span>
           </div>
-          <div class="pillar-card pc-fitness" data-type="fitness">
+          <div class="pillar-card pc-fitness" data-type="fitness" data-pillars="fitness">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
             </div>
@@ -1149,7 +1160,7 @@
             <div class="pc-desc">Track your training, energy and goals. Steward your body and stay disciplined.</div>
             <span class="pc-pts">+7 pts</span>
           </div>
-          <div class="pillar-card pc-finances" data-type="finances">
+          <div class="pillar-card pc-finances" data-type="finances" data-pillars="fitness">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
@@ -1157,7 +1168,7 @@
             <div class="pc-desc">Your weekly money check-in. Once a week, reflect on how you stewarded what God's entrusted to you — spending, giving, saving — and where money has your heart.</div>
             <span class="pc-pts">Weekly · +5 pts</span>
           </div>
-          <div class="pillar-card pc-gratitude" data-type="gratitude">
+          <div class="pillar-card pc-gratitude" data-type="gratitude" data-pillars="faith">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </div>
@@ -1165,29 +1176,13 @@
             <div class="pc-desc">Count your blessings. Name the people, moments and gifts you're thankful for today.</div>
             <span class="pc-pts">+11 pts</span>
           </div>
-          <div class="pillar-card pc-drift" data-type="drift">
+          <div class="pillar-card pc-drift" data-type="drift" data-pillars="faith family">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="16.2 7.8 13.4 13.4 7.8 16.2 10.6 10.6"/></svg>
             </div>
             <div class="pc-title">DRIFT FIX</div>
             <div class="pc-desc">Feel off in an area of life? A guided, honest audit with personalized Scripture, a step and a prayer.</div>
             <span class="pc-pts">+12 pts</span>
-          </div>
-        </div>
-
-        <div class="pillars-divider" data-tab="today">THREE PILLARS. ONE PURPOSE.</div>
-        <div class="pillars-row" data-tab="today">
-          <div class="pillar">
-            <div class="p-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M7 8h10"/></svg></div>
-            <div class="p-name">FAITH</div>
-          </div>
-          <div class="pillar">
-            <div class="p-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg></div>
-            <div class="p-name">FAMILY</div>
-          </div>
-          <div class="pillar">
-            <div class="p-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5M4 9l2-2M18 20l2-2M3 13l3 3M18 5l3 3M14.5 6.5 17.5 9.5M6.5 14.5 9.5 17.5"/></svg></div>
-            <div class="p-name">FITNESS</div>
           </div>
         </div>
 
@@ -3170,7 +3165,10 @@
   }
 
   // ----- Customizable pillar order + 1-per-day done state -----
-  const DEFAULT_PILLAR_ORDER = ["freeflow", "guided", "reframe", "devotional", "prayer", "family", "fitness", "finances", "gratitude", "drift"];
+  // Order chosen so each pillar tab reads well after filtering by data-pillars:
+  // Faith → devotional, prayer, gratitude, reframe, drift, freeflow
+  // Family → family, guided, reframe, drift, freeflow   ·   Fitness → fitness, finances
+  const DEFAULT_PILLAR_ORDER = ["devotional", "prayer", "gratitude", "family", "guided", "fitness", "finances", "reframe", "drift", "freeflow"];
   function pillarOrderKey() { return APP + ":pillarorder:" + (currentEmail() || ""); }
   function getPillarOrder() {
     let a; try { a = JSON.parse(localStorage.getItem(pillarOrderKey())); } catch (e) { a = null; }
@@ -3200,6 +3198,7 @@
         card.appendChild(c);
       });
     }
+    if (typeof showPillar === "function") showPillar(__activePillar); // show-all while reordering, refilter when done
   }
   function movePillar(type, dir) {
     const order = getPillarOrder(); const i = order.indexOf(type); if (i < 0) return;
@@ -3223,6 +3222,32 @@
       c.classList.toggle("pc-done", !isWeekly && !!daily[t]);
     });
   }
+  // ----- Pillar sub-tabs (Faith / Family / Fitness) on the Today page -----
+  let __activePillar = "faith";
+  function pillarTabKey() { return APP + ":activepillar:" + (currentEmail() || ""); }
+  function loadActivePillar() {
+    let v = null; try { v = localStorage.getItem(pillarTabKey()); } catch (e) {}
+    return (["faith", "family", "fitness"].indexOf(v) >= 0) ? v : "faith";
+  }
+  function showPillar(name) {
+    if (["faith", "family", "fitness"].indexOf(name) < 0) name = "faith";
+    __activePillar = name;
+    try { localStorage.setItem(pillarTabKey(), name); } catch (e) {}
+    document.querySelectorAll(".pillar-tab").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-pillar") === name);
+    });
+    // While reordering, show every card so any card can be moved; otherwise filter by pillar.
+    const showAll = __reorderMode;
+    document.querySelectorAll(".pillar-card").forEach(function (c) {
+      const pillars = (c.getAttribute("data-pillars") || "").split(/\s+/);
+      c.style.display = (showAll || pillars.indexOf(name) >= 0) ? "" : "none";
+    });
+  }
+  (function initPillarTabs() {
+    document.querySelectorAll(".pillar-tab").forEach(function (b) {
+      b.addEventListener("click", function () { showPillar(b.getAttribute("data-pillar")); });
+    });
+  })();
   (function initReorder() {
     const btn = document.getElementById("reorderToggle");
     if (btn) btn.addEventListener("click", function () { setReorderMode(!__reorderMode); });
@@ -4813,7 +4838,7 @@
       if (name === "rewards") renderRewards();
       if (name === "circles") { if (typeof renderCircles === "function") renderCircles(); if (typeof migrateGroupsToCircles === "function") migrateGroupsToCircles(); }
       if (name === "progress") renderScore();
-      if (name === "today") { if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); }
+      if (name === "today") { if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
       if (name === "settings" && typeof renderBlockedList === "function") renderBlockedList();
     } catch (e) {}
     window.scrollTo(0, 0);
