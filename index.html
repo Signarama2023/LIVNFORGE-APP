@@ -534,6 +534,20 @@
   /* The activity is chosen on the Today page now — hide the in-entry type switcher. */
   #typeSelector { display: none; }
   .write-title { font-size: 20px; font-weight: 700; letter-spacing: .3px; color: var(--text); margin: 2px 0 20px; }
+  /* Morning / End-of-day daypart toggle inside an entry */
+  .daypart-wrap { margin-bottom: 22px; }
+  .daypart-row { display: flex; gap: 8px; }
+  .daypart-btn { flex: 1; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 10px; padding: 12px 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s ease; }
+  .daypart-btn:hover { border-color: var(--gold); }
+  .daypart-btn.active { border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 0 2px rgba(217,169,62,0.22); font-weight: 700; }
+  .daypart-hint { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  /* One-question-at-a-time (forward-only) stepper */
+  .step-progress { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  textarea.step-empty { border-color: #f0768a !important; box-shadow: 0 0 0 2px rgba(240,118,138,0.25); }
+  .step-nav { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
+  .step-nav .step-next { flex: 1; margin: 0; }
+  .step-back { background: none; border: 1px solid var(--field-border); color: var(--muted); border-radius: 10px; padding: 12px 18px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+  .step-back:hover { border-color: var(--gold); color: var(--text); }
   .type-option {
     display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 12px;
     background: var(--field); border: 1px solid var(--field-border); cursor: pointer;
@@ -1413,18 +1427,37 @@
     freeflow: { title: "Free Flow", freeform: true, placeholder: "Write anything you want…" },
     guided: {
       title: "Guided Journal",
-      items: [
-        "How am I feeling right now?",
-        "What is on my mind today?",
-        "What happened today that I want to remember?",
+      morning: [
+        "How am I feeling as I start today?",
+        "What's on my mind heading into today?",
+        "What do I want to make happen today?",
         "What am I grateful for right now?",
-        "What do I want to let go of?",
-        "What is one thing I'm looking forward to?"
+        "What do I want to let go of as I step into the day?",
+        "What is one thing I'm looking forward to today?"
+      ],
+      evening: [
+        "How am I feeling now, at the end of today?",
+        "What was on my mind today?",
+        "What happened today that I want to remember?",
+        "What am I grateful for from today?",
+        "What do I want to let go of from today?",
+        "What is one thing I'm looking forward to tomorrow?"
       ]
     },
     reframe: {
       title: "Re-Frame",
-      items: [
+      morning: [
+        "What worry or heavy thought am I carrying into today?",
+        "What situation today is it tied to?",
+        "Why does this thought have such a grip on me?",
+        "What is the belief underneath it — about myself, someone, or this day?",
+        "Is this belief true?",
+        "Can you be certain this is 100% true?",
+        "How does carrying this belief affect me and the people around me today?",
+        "How could I see myself or this day differently, in a way that serves me and the people around me?",
+        "What truth or evidence supports that better belief?"
+      ],
+      evening: [
         "What emotion am I feeling?",
         "What thought or situation triggered this emotion?",
         "Why did I get triggered by this specific thought or situation?",
@@ -1450,12 +1483,19 @@
     prayer: { title: "Prayer Requests", freeform: true, placeholder: "Write your prayer requests here… who and what are you lifting up to God?" },
     family: {
       title: "Family",
-      items: [
+      morning: [
+        "Who in my family do I want to pour into today, and how?",
+        "How do I want to show up for my spouse, kids, or family today?",
+        "What's one way I can lead or serve my family today?",
+        "Who in my family do I want to encourage today?",
+        "How can I model Christ to the people closest to me today?"
+      ],
+      evening: [
         "Who in my family did I pour into today, and how?",
         "Where did I fall short with my spouse, kids, or family — and how can I make it right?",
         "What is one way I can lead or serve my family better tomorrow?",
         "What did I appreciate about someone in my family today?",
-        "How am I modeling Christ to the people closest to me?"
+        "How did I model Christ to the people closest to me today?"
       ]
     },
     finances: {
@@ -1482,7 +1522,15 @@
     },
     gratitude: {
       title: "Gratitude Journal",
-      items: [
+      morning: [
+        "Even before today begins, what am I genuinely grateful for?",
+        "Who in my life am I thankful for, and how could I show it today?",
+        "What provision or blessing from God am I leaning on as I start today?",
+        "What do I have right now that I once hoped, prayed, or worked for?",
+        "What strength, gift, or opportunity can I be grateful to use today?",
+        "How can I carry a grateful heart into today through my actions, words, and attitude?"
+      ],
+      evening: [
         "What happened today that I'm genuinely grateful for, and why did it matter to me?",
         "Who positively impacted my day today, and how did they make a difference?",
         "What challenge, setback, or frustration today taught me something valuable?",
@@ -2182,6 +2230,7 @@
   }
 
   let currentType = "reframe";
+  let currentDaypart = "morning"; // "morning" (forward-looking) | "evening" (reflective)
 
   // ----- Fitness preset workouts (per build) + timer -----
   let currentFitnessPreset = null; // preset id within the active build, or null
@@ -2247,6 +2296,42 @@
     setTimerToggleState(false);
   }
   const questionsEl = document.getElementById("questions");
+  let currentStep = 0;
+  function showStep(i) {
+    const steps = questionsEl.querySelectorAll(".qstep");
+    if (!steps.length) return;
+    i = Math.max(0, Math.min(i, steps.length - 1));
+    steps.forEach(function (s, idx) { s.style.display = idx === i ? "" : "none"; });
+    const prog = document.getElementById("stepProgress");
+    if (prog) prog.textContent = "Question " + (i + 1) + " of " + steps.length;
+    const dw = document.getElementById("daypartWrap"); // daypart can only be set on the first question
+    if (dw) dw.style.display = i === 0 ? "" : "none";
+    const last = i >= steps.length - 1;
+    const stepNext = document.getElementById("stepNext");
+    const stepBack = document.getElementById("stepBack");
+    if (stepNext) stepNext.textContent = last ? "Submit" : "Next →"; // last question saves
+    if (stepBack) stepBack.style.display = i > 0 ? "" : "none";      // back appears after the first question
+  }
+  function advanceStep() {
+    const steps = questionsEl.querySelectorAll(".qstep");
+    const cur = steps[currentStep];
+    if (!cur) return;
+    const ta = cur.querySelector("textarea");
+    if (ta && !ta.value.trim()) { ta.classList.add("step-empty"); ta.focus(); return; } // must answer to move on
+    if (ta) ta.classList.remove("step-empty");
+    if (currentStep < steps.length - 1) { currentStep++; showStep(currentStep); window.scrollTo(0, 0); }
+    else { const f = document.getElementById("journalForm"); if (f.requestSubmit) f.requestSubmit(); else f.submit(); } // last → save
+  }
+  function backStep() {
+    if (currentStep > 0) { currentStep--; showStep(currentStep); window.scrollTo(0, 0); } // answers are retained
+  }
+  questionsEl.addEventListener("click", function (e) {
+    if (!e.target.closest) return;
+    const dp = e.target.closest("[data-daypart]");
+    if (dp) { currentDaypart = dp.getAttribute("data-daypart"); renderQuestions(currentType); return; } // re-render in the chosen daypart
+    if (e.target.closest("#stepBack")) { backStep(); return; }
+    if (e.target.closest("#stepNext")) { advanceStep(); return; }
+  });
   const selector = document.getElementById("typeSelector");
   const signInView = document.getElementById("signInView");
   const landingView = document.getElementById("landingView");
@@ -2335,10 +2420,10 @@
           </div>
         </div>
         <div class="fit-opt-group">
-          <div class="fit-opt-label">Training time</div>
+          <div class="fit-opt-label">Time of day</div>
           <div class="fit-opt-row" id="fitTime">
             <button type="button" class="fit-opt-btn active" data-fittime="Morning">🌅 Morning</button>
-            <button type="button" class="fit-opt-btn" data-fittime="Afternoon">☀️ Afternoon</button>
+            <button type="button" class="fit-opt-btn" data-fittime="End of day">🌙 End of day</button>
           </div>
         </div>
         <div class="fit-opt-group">
@@ -2409,14 +2494,48 @@
         <textarea id="q0" data-question="Journal entry" placeholder="${data.placeholder || 'Write anything you want…'}" style="min-height: 260px;" required></textarea>
       </div>`;
     } else {
-      html += data.items.map((q, i) => `
+      // Daily reflection types carry morning (forward-looking) + evening (reflective)
+      // question sets; a toggle picks which. Types without them just use items.
+      const hasDaypart = !!(data.morning && data.evening);
+      const itemList = hasDaypart ? (currentDaypart === "morning" ? data.morning : data.evening) : (data.items || []);
+      // These daily reflection types are answered one question at a time, forward-only:
+      // you must fill the current question to advance, and can't go back without restarting.
+      const stepwise = hasDaypart;
+      if (hasDaypart) {
+        html += `
+        <div class="daypart-wrap" id="daypartWrap">
+          <div class="daypart-row" id="daypartRow">
+            <button type="button" class="daypart-btn ${currentDaypart === "morning" ? "active" : ""}" data-daypart="morning">🌅 Morning</button>
+            <button type="button" class="daypart-btn ${currentDaypart === "evening" ? "active" : ""}" data-daypart="evening">🌙 End of day</button>
+          </div>
+          <div class="daypart-hint">${currentDaypart === "morning" ? "Looking ahead — set your intention for the day." : "Looking back — reflect on how today went."}</div>
+        </div>`;
+      }
+      if (stepwise) {
+        html += '<div class="step-progress" id="stepProgress"></div>';
+        html += itemList.map((q, i) => `
+          <div class="qstep" data-step="${i}"${i === 0 ? "" : ' style="display:none"'}>
+            <div class="field-group">
+              <label for="q${i}">${q} <span class="req">*</span></label>
+              <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here" required></textarea>
+            </div>
+          </div>`).join("");
+        html += '<div class="step-nav"><button type="button" class="step-back" id="stepBack" style="display:none">← Back</button><button type="button" class="submit-btn step-next" id="stepNext">Next →</button></div>';
+      } else {
+        html += itemList.map((q, i) => `
         <div class="field-group">
           <label for="q${i}">${q} <span class="req">*</span></label>
           <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here" required></textarea>
         </div>
       `).join("");
+      }
     }
     questionsEl.innerHTML = html;
+    if (questionsEl.querySelector(".qstep")) {
+      currentStep = 0;
+      const _sb = document.querySelector("#journalForm > .submit-btn"); if (_sb) _sb.style.display = "none";
+      showStep(0);
+    }
 
     if (type === "fitness") {
       currentFitnessIntensity = "Medium"; currentFitnessTime = "Morning";
@@ -2875,6 +2994,10 @@
 
   function setActiveType(type) {
     currentType = type;
+    // For daypart types, default to morning before noon, end-of-day afterward.
+    if (QUESTIONS[type] && QUESTIONS[type].morning && QUESTIONS[type].evening) {
+      currentDaypart = (new Date().getHours() < 12) ? "morning" : "evening";
+    }
     selector.querySelectorAll(".type-option").forEach(o => o.classList.toggle("active", o.dataset.type === type));
     const wt = document.getElementById("writeTitle"); if (wt) wt.textContent = (QUESTIONS[type] && QUESTIONS[type].title) || "";
     if (type !== "fitness") { currentFitnessPreset = null; resetTimerState(); }
@@ -3537,7 +3660,10 @@
       if (currentFitnessPreset && currentFitnessVariation && currentFitnessVariation !== "As prescribed") {
         answers.unshift({ q: "Workout variation", a: currentFitnessVariation });
       }
-      answers.unshift({ q: "Training time", a: currentFitnessTime }, { q: "Intensity", a: currentFitnessIntensity });
+      answers.unshift({ q: "Time of day", a: currentFitnessTime }, { q: "Intensity", a: currentFitnessIntensity });
+    }
+    if (QUESTIONS[currentType] && QUESTIONS[currentType].morning && QUESTIONS[currentType].evening) {
+      answers.unshift({ q: "Time of day", a: currentDaypart === "morning" ? "Morning" : "End of day" });
     }
 
     const entry = {
