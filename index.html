@@ -362,6 +362,11 @@
   /* Settings cards */
   .settings-card { background:var(--panel); border:1px solid var(--field-border); border-radius:14px; padding:16px; margin-bottom:14px; }
   .settings-card .sc-title { font-weight:800; font-size:15px; margin-bottom:4px; }
+  .invite-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .invite-btn { background: none; border: 1px solid var(--field-border); color: var(--text); border-radius: 9px; padding: 10px 16px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color .15s ease; }
+  .invite-btn:hover { border-color: var(--gold); }
+  .invite-btn.primary { background: var(--gold); border-color: var(--gold); color: #1c1402; }
+  .invite-btn.primary:hover { background: var(--gold-light); }
   .settings-card .sc-desc { font-size:12px; color:var(--muted); margin:0 0 10px; line-height:1.45; }
   .settings-card textarea { width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:48px; margin-bottom:10px; }
   .sc-saved { font-size:12px; color:#4ade80; margin-left:10px; }
@@ -1031,6 +1036,17 @@
             <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
             <button id="signOutBtn">Sign out</button>
           </span>
+        </div>
+
+        <div class="settings-card" id="inviteSettings" data-tab="settings">
+          <div class="sc-title">Invite friends</div>
+          <p class="sc-desc">Know someone who wants to live on purpose? Send them LIVN FORGE — it's free to try for 7 days.</p>
+          <div class="invite-actions">
+            <button class="invite-btn primary" id="inviteShare" type="button">Share</button>
+            <button class="invite-btn" id="inviteText" type="button">Text</button>
+            <button class="invite-btn" id="inviteEmail" type="button">Email</button>
+            <button class="invite-btn" id="inviteCopy" type="button">Copy link</button>
+          </div>
         </div>
 
         <div class="settings-card" id="reminderSettings" data-tab="settings" style="display:none;">
@@ -4301,6 +4317,33 @@
       try { await navigator.clipboard.writeText(text); showToast("Invite copied — code " + code); } catch (e) { showToast("Share the circle code: " + code); }
     } else { showToast("Share the circle code: " + code); }
   }
+
+  // ----- Invite friends to the app (uses the device's own Messages / Mail) -----
+  const APP_INVITE_URL = "https://www.livnforge.com/"; // TODO: change to the App Store link once the app is live
+  function appInviteText() {
+    const me = (typeof getName === "function" && getName()) ? getName() : "";
+    return (me ? me + " thinks you'd love LIVN FORGE — " : "Join me on LIVN FORGE — ") +
+      "a daily faith + fitness journal to help you live on purpose (Faith, Family, Fitness & Finances). Free to try for 7 days:\n" + APP_INVITE_URL;
+  }
+  async function inviteToApp() {
+    const text = appInviteText();
+    if (navigator.share) {
+      try { await navigator.share({ title: "Join me on LIVN FORGE", text: text }); } catch (e) {}
+    } else { inviteCopy(); }
+  }
+  function inviteByText() { window.location.href = "sms:?&body=" + encodeURIComponent(appInviteText()); }
+  function inviteByEmail() { window.location.href = "mailto:?subject=" + encodeURIComponent("Join me on LIVN FORGE") + "&body=" + encodeURIComponent(appInviteText()); }
+  async function inviteCopy() {
+    try { await navigator.clipboard.writeText(appInviteText()); showToast("Invite copied — paste it into a text or email."); }
+    catch (e) { showToast("Couldn't copy — try Share instead."); }
+  }
+  (function initInvite() {
+    const map = { inviteShare: inviteToApp, inviteText: inviteByText, inviteEmail: inviteByEmail, inviteCopy: inviteCopy };
+    Object.keys(map).forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", map[id]);
+    });
+  })();
   async function leaveCircle(code) {
     if (!sb) return;
     try { await sb.from("prayer_circle_members").delete().eq("code", code).eq("email", currentEmail()); } catch (e) {}
