@@ -4311,7 +4311,7 @@
     } catch (e) { el.innerHTML = '<div class="bl-empty">Couldn\'t load your blocked list.</div>'; }
   }
   async function shareInvite(code) {
-    const text = "Join my LIVN FORGE circle! Open the app, go to Circles, and enter code: " + code + "\nhttps://www.livnforge.com/";
+    const text = "Join my LIVN FORGE circle! Open the app, go to Circles, and enter code: " + code + "\nhttps://apps.apple.com/app/id6776882761";
     if (navigator.share) {
       try { await navigator.share({ title: "Join my LIVN FORGE circle", text: text }); } catch (e) {}
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -4320,7 +4320,7 @@
   }
 
   // ----- Invite friends to the app (uses the device's own Messages / Mail) -----
-  const APP_INVITE_URL = "https://www.livnforge.com/"; // TODO: change to the App Store link once the app is live
+  const APP_INVITE_URL = "https://apps.apple.com/app/id6776882761"; // App Store download link
   function appInviteText() {
     const me = (typeof getName === "function" && getName()) ? getName() : "";
     return (me ? me + " thinks you'd love LIVN FORGE — " : "Join me on LIVN FORGE — ") +
@@ -5033,7 +5033,7 @@
   });
 
   // ----- Gentle "rate the app" nudge (after a few entries) -----
-  const APP_STORE_REVIEW_URL = "https://www.livnforge.com/"; // TODO: set to apps.apple.com/app/idXXXXXXXX?action=write-review at launch
+  const APP_STORE_REVIEW_URL = "https://apps.apple.com/app/id6776882761?action=write-review"; // jumps to Write a Review
   function rateStateKey() { return APP + ":rateState:" + (currentEmail() || "").toLowerCase(); }
   function renderRateBanner() {
     const el = document.getElementById("rateBanner");
