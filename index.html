@@ -1082,6 +1082,7 @@
 
         <div class="weekly-banner finances-banner" id="financesBanner" data-tab="today" style="display:none;"></div>
         <div class="weekly-banner" id="weeklyBanner" data-tab="today" style="display:none;"></div>
+        <div class="weekly-banner rate-banner" id="rateBanner" data-tab="today" style="display:none;"></div>
 
         <div class="scoreboard" data-tab="today">
           <div class="score-tile points"><div class="num" id="scorePoints">0</div><div class="lbl">Points</div></div>
@@ -3033,7 +3034,7 @@
   const buildChooser = document.getElementById("buildChooser");
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderRewards(); showTab(__activeTab); maybeShowTutorial(); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderRateBanner(); renderRewards(); showTab(__activeTab); maybeShowTutorial(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
 
   // ----- Paywall / subscription gate -----
@@ -5029,6 +5030,36 @@
   document.getElementById("financesBanner").addEventListener("click", (e) => {
     if (e.target.id === "fbOpen") { setActiveType("finances"); showApp(); showWrite(); window.scrollTo(0, 0); }
     else if (e.target.id === "fbDismiss") { localStorage.setItem(financesBannerDismissedKey(), dayKey(new Date())); renderFinancesBanner(); }
+  });
+
+  // ----- Gentle "rate the app" nudge (after a few entries) -----
+  const APP_STORE_REVIEW_URL = "https://www.livnforge.com/"; // TODO: set to apps.apple.com/app/idXXXXXXXX?action=write-review at launch
+  function rateStateKey() { return APP + ":rateState:" + (currentEmail() || "").toLowerCase(); }
+  function renderRateBanner() {
+    const el = document.getElementById("rateBanner");
+    if (!el) return;
+    const state = (function () { try { return localStorage.getItem(rateStateKey()) || ""; } catch (e) { return ""; } })();
+    if (state === "done") { el.style.display = "none"; return; }            // rated — never ask again
+    if (loadEntries().length < 3) { el.style.display = "none"; return; }      // earn the ask first
+    if (state.indexOf("snooze:") === 0) {                                    // "Not now" → wait a week
+      const since = state.slice(7);
+      const days = (new Date() - new Date(since)) / 86400000;
+      if (!isNaN(days) && days < 7) { el.style.display = "none"; return; }
+    }
+    el.style.display = "flex";
+    el.innerHTML = '<div class="wb-text">Enjoying LIVN FORGE? A quick rating helps other men and women find it.</div>' +
+      '<button id="rateOpen">Rate it ★</button>' +
+      '<button class="wb-dismiss" id="rateLater">Not now</button>';
+  }
+  document.getElementById("rateBanner").addEventListener("click", (e) => {
+    if (e.target.id === "rateOpen") {
+      try { window.open(APP_STORE_REVIEW_URL, "_blank"); } catch (_e) { window.location.href = APP_STORE_REVIEW_URL; }
+      try { localStorage.setItem(rateStateKey(), "done"); } catch (_e) {}
+      renderRateBanner();
+    } else if (e.target.id === "rateLater") {
+      try { localStorage.setItem(rateStateKey(), "snooze:" + new Date().toISOString()); } catch (_e) {}
+      renderRateBanner();
+    }
   });
 
   // ----- Boot -----
