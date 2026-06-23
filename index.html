@@ -5040,12 +5040,13 @@
     if (!el) return;
     const state = (function () { try { return localStorage.getItem(rateStateKey()) || ""; } catch (e) { return ""; } })();
     if (state === "done") { el.style.display = "none"; return; }            // rated — never ask again
-    if (loadEntries().length < 3) { el.style.display = "none"; return; }      // earn the ask first
-    if (state.indexOf("snooze:") === 0) {                                    // "Not now" → wait a week
+    if (loadEntries().length < 3) { el.style.display = "none"; return; }      // earn the ask first (3+ entries)
+    if (state.indexOf("snooze:") === 0) {                                    // "Not now" → ask again in a month
       const since = state.slice(7);
       const days = (new Date() - new Date(since)) / 86400000;
-      if (!isNaN(days) && days < 7) { el.style.display = "none"; return; }
+      if (!isNaN(days) && days < 30) { el.style.display = "none"; return; }
     }
+    // Otherwise show it, then once a month until they've reviewed.
     el.style.display = "flex";
     el.innerHTML = '<div class="wb-text">Enjoying LIVN FORGE? A quick rating helps other men and women find it.</div>' +
       '<button id="rateOpen">Rate it ★</button>' +
