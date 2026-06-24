@@ -3499,7 +3499,10 @@
     try {
       if (authMode === "reset") {
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setAuthError("Please enter a valid email address."); return; }
-        const redirectTo = location.origin + location.pathname;
+        // In the native app, location.origin is capacitor://localhost — a link the Mail app
+        // can't open. Always send the reset to the real website, where the user sets a new
+        // password in the browser, then logs into the app with it.
+        const redirectTo = IN_NATIVE_APP ? "https://www.livnforge.com/" : (location.origin + location.pathname);
         const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
         if (error) { setAuthError(error.message || "Couldn't send reset email."); return; }
         authMode = "login";
