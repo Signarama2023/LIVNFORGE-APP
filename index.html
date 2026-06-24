@@ -407,15 +407,14 @@
   /* Quick journal — Free Flow + Guided, the always-available go-to */
   .quick-journal { margin-bottom: 20px; }
   .qj-label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
-  .quick-journal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 560px) { .quick-journal-row { grid-template-columns: 1fr; } }
-  /* Compact the Quick Journal cards — smaller than the full pillar cards. */
-  .quick-journal-row .pillar-card { padding: 16px 14px; }
-  .quick-journal-row .pc-icon { width: 40px; height: 40px; margin: 0 auto 10px; }
-  .quick-journal-row .pc-icon svg { width: 20px; height: 20px; }
-  .quick-journal-row .pc-title { font-size: 15px; letter-spacing: 1px; margin-bottom: 0; }
+  /* Two compact Quick Journal cards, kept side by side even on phones. */
+  .quick-journal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .quick-journal-row .pillar-card { padding: 14px 10px; }
+  .quick-journal-row .pc-icon { width: 36px; height: 36px; margin: 0 auto 8px; }
+  .quick-journal-row .pc-icon svg { width: 18px; height: 18px; }
+  .quick-journal-row .pc-title { font-size: 13.5px; letter-spacing: .5px; margin-bottom: 0; line-height: 1.2; }
   .quick-journal-row .pc-desc { display: none; }
-  .quick-journal-row .pc-pts { margin-top: 8px; }
+  .quick-journal-row .pc-pts { margin-top: 6px; font-size: 11px; }
   .pc-freeflow { border-color: rgba(96,165,250,0.4); }
   .pc-freeflow:hover { border-color: #60a5fa; }
   .pc-freeflow .pc-icon { border-color: #60a5fa; color: #60a5fa; }
