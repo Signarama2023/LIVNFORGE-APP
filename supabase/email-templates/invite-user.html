@@ -1,0 +1,40 @@
+<!--
+  LIVN FORGE — Supabase "Invite user" email template.
+  Paste below into: Dashboard → Authentication → Email Templates → Invite user → Message body.
+  Suggested subject: "You're invited to LIVN FORGE". Uses {{ .ConfirmationURL }}.
+-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0;background:#0d0f13;">
+  <tr>
+    <td align="center" style="padding:32px 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#1b1d22;border:1px solid #2a2d34;border-radius:16px;overflow:hidden;">
+        <tr><td style="background:#d9a93e;height:4px;line-height:4px;font-size:0;">&nbsp;</td></tr>
+        <tr><td align="center" style="padding:34px 32px 0;">
+          <img src="https://www.livnforge.com/LIVNFORGE%20Logo.png" alt="LIVN FORGE" width="172" style="display:block;width:172px;max-width:70%;height:auto;">
+        </td></tr>
+        <tr><td align="center" style="padding:12px 32px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#d9a93e;font-size:11px;font-weight:700;letter-spacing:3px;">
+          LIVE ON PURPOSE
+        </td></tr>
+        <tr><td align="center" style="padding:26px 32px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f4f1eb;font-size:23px;font-weight:700;letter-spacing:.2px;">
+          You've been invited
+        </td></tr>
+        <tr><td align="center" style="padding:14px 40px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#b3b0a8;font-size:15px;line-height:1.65;">
+          You've been invited to join LIVN FORGE — a daily faith + fitness journal to help you live on purpose. Tap below to set up your account.
+        </td></tr>
+        <tr><td align="center" style="padding:28px 32px 4px;">
+          <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#d9a93e;color:#1a1303;text-decoration:none;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;letter-spacing:.3px;padding:15px 40px;border-radius:11px;">Accept invite</a>
+        </td></tr>
+        <tr><td align="center" style="padding:14px 40px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#76736c;font-size:12px;line-height:1.6;">
+          Button not working? Paste this link into your browser:<br>
+          <a href="{{ .ConfirmationURL }}" style="color:#d9a93e;word-break:break-all;">{{ .ConfirmationURL }}</a>
+        </td></tr>
+        <tr><td style="padding:26px 40px 0;"><div style="border-top:1px solid #2a2d34;font-size:0;line-height:0;">&nbsp;</div></td></tr>
+        <tr><td align="center" style="padding:16px 40px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#76736c;font-size:12.5px;line-height:1.6;">
+          Weren't expecting this? You can safely ignore this email.
+        </td></tr>
+        <tr><td align="center" style="padding:20px 40px 34px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#8a8780;font-size:12px;line-height:1.6;font-style:italic;">
+          "Whatever you do, work at it with all your heart." — Colossians 3:23
+        </td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
