@@ -215,9 +215,11 @@
   .rw-claim-item { border-top:1px solid var(--field-border); padding:10px 0; font-size:13px; line-height:1.5; }
   /* Bottom tab navigation */
   .bottom-nav { position: fixed; left:0; right:0; bottom:0; z-index:900; display:flex; background:var(--panel); border-top:1px solid var(--field-border); padding:8px 4px calc(8px + max(env(safe-area-inset-bottom,0px), 16px)); box-shadow:0 -4px 16px rgba(0,0,0,0.18); }
-  .bottom-nav button { flex:1; background:none; border:none; color:var(--muted); font-family:inherit; font-size:10px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
+  .bottom-nav button { position:relative; flex:1; background:none; border:none; color:var(--muted); font-family:inherit; font-size:10px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
   .bottom-nav .bn-ico { width:23px; height:23px; }
   .bottom-nav button.active { color:var(--gold-light); }
+  .bn-badge { display:none; position:absolute; top:-1px; left:calc(50% + 7px); min-width:16px; height:16px; padding:0 4px; box-sizing:border-box; background:#e5484d; color:#fff; font-size:10px; font-weight:800; line-height:16px; text-align:center; border-radius:9px; box-shadow:0 0 0 2px var(--panel); }
+  .pcl-badge { display:none; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 6px; box-sizing:border-box; background:#e5484d; color:#fff; font-size:12px; font-weight:800; line-height:1; border-radius:11px; flex:0 0 auto; }
   #landingView .landing-body { padding-bottom: 116px; }
   .tab-off { display:none !important; }
   .tab-title { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:4px 0 16px; }
@@ -1292,7 +1294,7 @@
 
       <nav class="bottom-nav" id="bottomNav">
         <button data-go="today"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg>Today</button>
-        <button data-go="circles"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg>Circles</button>
+        <button data-go="circles"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg>Circles<span class="bn-badge" id="circlesNavBadge"></span></button>
         <button data-go="rewards"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M7 5H4.5v1.5A2.5 2.5 0 0 0 7 9"/><path d="M17 5h2.5v1.5A2.5 2.5 0 0 1 17 9"/></svg>Rewards</button>
         <button data-go="progress"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Progress</button>
         <button data-go="settings"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>Settings</button>
@@ -3997,6 +3999,56 @@
   function saveCircles(a) { localStorage.setItem(pcKey(), JSON.stringify(a)); }
   function addCircleCode(c) { const a = getCircles(); if (!a.includes(c)) { a.push(c); saveCircles(a); } }
   function removeCircleCode(c) { saveCircles(getCircles().filter(function (x) { return x !== c; })); }
+
+  // ---- Circle unread badges -----------------------------------------------
+  // Tracks, per user + per circle, the newest message timestamp the user has
+  // seen (set when they open that circle). Unread = newer messages from others.
+  function pcSeenKey() { return "lf_circle_seen_" + (currentEmail() || "").toLowerCase(); }
+  function getCircleSeen() { try { return JSON.parse(localStorage.getItem(pcSeenKey())) || {}; } catch (e) { return {}; } }
+  function setCircleSeen(m) { try { localStorage.setItem(pcSeenKey(), JSON.stringify(m)); } catch (e) {} }
+  function markCircleSeen(code, ts) {
+    if (!code) return;
+    const m = getCircleSeen();
+    const v = ts || new Date().toISOString();
+    if (!m[code] || v > m[code]) { m[code] = v; setCircleSeen(m); }
+  }
+  async function fetchCircleUnread(code) {
+    if (!sb || !code) return 0;
+    const me = (currentEmail() || "").toLowerCase();
+    let rows;
+    try {
+      rows = (await sb.from("circle_messages").select("created_at,email")
+        .eq("code", code).order("created_at", { ascending: false }).limit(30)).data || [];
+    } catch (e) { return 0; }
+    const seen = getCircleSeen();
+    if (!(code in seen)) {
+      // First time we've checked this circle — treat current history as "caught up"
+      // so we don't flood the user with a badge for old messages. New ones will count.
+      markCircleSeen(code, rows.length ? rows[0].created_at : new Date().toISOString());
+      return 0;
+    }
+    const since = seen[code];
+    return rows.filter(function (m) {
+      return (m.email || "").toLowerCase() !== me && m.created_at > since;
+    }).length;
+  }
+  let __unreadBusy = false;
+  async function refreshCircleUnread() {
+    if (!sb || !currentEmail() || __unreadBusy) return;
+    __unreadBusy = true;
+    try {
+      const codes = getCircles();
+      const counts = await Promise.all(codes.map(function (c) { return fetchCircleUnread(c); }));
+      let total = 0;
+      counts.forEach(function (n, i) {
+        total += n;
+        const lb = document.getElementById("pclBadge_" + i);
+        if (lb) { lb.textContent = n > 9 ? "9+" : String(n); lb.style.display = n > 0 ? "inline-flex" : "none"; }
+      });
+      const nav = document.getElementById("circlesNavBadge");
+      if (nav) { nav.textContent = total > 9 ? "9+" : String(total); nav.style.display = total > 0 ? "block" : "none"; }
+    } catch (e) {} finally { __unreadBusy = false; }
+  }
   const prayerCirclesEl = document.getElementById("prayerCircles");
 
   const CIRCLE_TYPES = {
@@ -4044,6 +4096,7 @@
           '<span class="pcl-ico">⭕</span>' +
           '<span class="pcl-text"><span class="pcl-name">' + escapeHtml(code) + '</span>' +
           '<span class="pcl-meta" id="pclMeta_' + i + '">Loading…</span></span>' +
+          '<span class="pcl-badge" id="pclBadge_' + i + '"></span>' +
           '<span class="pcl-arrow">›</span></button>';
       });
     } else {
@@ -4052,6 +4105,7 @@
     html += '</div>';
     prayerCirclesEl.innerHTML = html;
     codes.forEach(function (code, i) { loadCircleSummary(code, i); });
+    refreshCircleUnread();
   }
 
   async function loadCircleSummary(code, i) {
@@ -4098,6 +4152,9 @@
       const notBlocked = function (row) { return !blockedSet[(row.email || "").toLowerCase()]; };
       const requests = (results[3].data || []).filter(notBlocked);
       const messages = (results[4].data || []).filter(notBlocked).slice().reverse();
+      // Opening the circle = caught up: mark the newest message as seen, clear its badge.
+      markCircleSeen(code, (results[4].data && results[4].data[0]) ? results[4].data[0].created_at : null);
+      refreshCircleUnread();
       const lb = results[5].data || [];
       const type = circle.type || "prayer";
       const tinfo = CIRCLE_TYPES[type] || CIRCLE_TYPES.prayer;
@@ -5220,6 +5277,16 @@
     document.querySelectorAll("#bottomNav button").forEach(function (b) {
       b.addEventListener("click", function () { showTab(b.getAttribute("data-go")); });
     });
+  })();
+
+  // Keep the Circles unread badge current, even when you're on another tab.
+  (function initCircleUnreadPolling() {
+    function tick() { if (typeof refreshCircleUnread === "function") { try { refreshCircleUnread(); } catch (e) {} } }
+    setTimeout(tick, 3000);
+    setTimeout(tick, 9000);
+    setInterval(tick, 30000);
+    // Re-check the moment the app comes back to the foreground.
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) tick(); });
   })();
 
   // ---- Merch rewards (loyalty ladder) ----
