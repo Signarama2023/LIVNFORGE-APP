@@ -1055,6 +1055,14 @@
           </div>
         </div>
 
+        <div class="settings-card" id="adminGiftCard" data-tab="settings" style="display:none;">
+          <div class="sc-title">Admin — give a free year</div>
+          <p class="sc-desc">Hand out a free-year code from the pool. Each tap claims one unused code and opens your share sheet.</p>
+          <div class="invite-actions">
+            <button class="invite-btn primary" id="adminGiftBtn" type="button">Give a code</button>
+          </div>
+        </div>
+
         <div class="settings-card" id="reminderSettings" data-tab="settings" style="display:none;">
           <div class="sc-title">⏰ Daily reminder</div>
           <p class="sc-desc">Pick a time and write a note to yourself — it pops up every day with your message.</p>
@@ -3040,7 +3048,7 @@
   const buildChooser = document.getElementById("buildChooser");
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderRateBanner(); renderRewards(); showTab(__activeTab); maybeShowTutorial(); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderRateBanner(); renderRewards(); applyAdminUI(); showTab(__activeTab); maybeShowTutorial(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
 
   // ----- Paywall / subscription gate -----
@@ -4353,6 +4361,36 @@
       const el = document.getElementById(id);
       if (el) el.addEventListener("click", map[id]);
     });
+  })();
+
+  // ----- Admin: give out a free-year code from the pool -----
+  const LF_ADMIN_EMAIL = "markbailey1@me.com";
+  function isAdminUser() { return (currentEmail() || "").toLowerCase() === LF_ADMIN_EMAIL; }
+  function applyAdminUI() {
+    const c = document.getElementById("adminGiftCard");
+    if (c) c.style.display = isAdminUser() ? "" : "none";
+  }
+  async function adminGiveGiftCode() {
+    if (!sb) return;
+    const btn = document.getElementById("adminGiftBtn");
+    if (btn) { btn.disabled = true; btn.textContent = "Getting a code…"; }
+    try {
+      const { data, error } = await sb.functions.invoke("claim-gift-code", { body: {} });
+      if (error) throw error;
+      if (data && data.soldOut) { showToast("No gift codes left — load more into the pool."); return; }
+      if (data && data.error) { showToast(data.error); return; }
+      const code = data.code;
+      const url = data.redeemUrl || ("https://apps.apple.com/redeem?code=" + code);
+      const text = "Here's a free year of LIVN FORGE — a daily faith + fitness journal to help you live on purpose.\n\nCode: " + code + "\nRedeem: " + url + "\nDownload: https://apps.apple.com/app/id6776882761";
+      if (navigator.share) { try { await navigator.share({ title: "A free year of LIVN FORGE", text: text }); } catch (e) {} }
+      else if (navigator.clipboard && navigator.clipboard.writeText) { try { await navigator.clipboard.writeText(text); showToast("Code copied: " + code); } catch (e) { showToast("Code: " + code); } }
+      else { showToast("Code: " + code); }
+    } catch (e) { showToast("Couldn't get a code right now."); }
+    finally { if (btn) { btn.disabled = false; btn.textContent = "Give a code"; } }
+  }
+  (function initAdminGift() {
+    const b = document.getElementById("adminGiftBtn");
+    if (b) b.addEventListener("click", adminGiveGiftCode);
   })();
   async function leaveCircle(code) {
     if (!sb) return;
