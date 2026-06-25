@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       return json({ error: "Missing ANTHROPIC_API_KEY secret on the function." }, 500);
     }
 
-    const { passage = "", reference = "" } = await req.json();
+    const { passage = "", reference = "", debug = false } = await req.json();
     if (!passage || !passage.trim()) {
       return json({ error: "No passage provided." }, 400);
     }
@@ -75,37 +75,65 @@ Deno.serve(async (req) => {
       "Passage:\n" + passage + "\n\n" +
       "Return the JSON object now.";
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 1800,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: userContent }],
-      }),
-    });
+    // Parse the model's text into the JSON object we expect, tolerating stray
+    // prose or code fences around it. Returns null if it can't be parsed.
+    const tryParse = (raw: string): Record<string, unknown> | null => {
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+      try { return JSON.parse(cleaned); } catch (_e) { /* fall through */ }
+      const s = cleaned.indexOf("{"), e = cleaned.lastIndexOf("}");
+      if (s === -1 || e === -1 || e <= s) return null;
+      try { return JSON.parse(cleaned.slice(s, e + 1)); } catch (_e2) { return null; }
+    };
 
-    const data = await resp.json();
-    if (!resp.ok) {
-      return json({ error: (data && data.error && data.error.message) || "AI request failed." }, 502);
+    // The model is non-deterministic and occasionally emits malformed JSON (a
+    // dropped comma, an unescaped quote), independent of passage length. A fresh
+    // generation almost always parses, so retry a couple of times before failing.
+    let parsed: Record<string, unknown> | null = null;
+    let lastDebug: Record<string, unknown> | null = null;
+    let sawMaxTokens = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          // Headroom: the richer output (3 MCQs with explanations + 3 reflection
+          // prompts + key verse) ran past the old 1800 ceiling on longer/denser
+          // passages, truncating the JSON mid-array. 4096 comfortably fits it.
+          max_tokens: 4096,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: "user", content: userContent }],
+        }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        // Overloaded / rate-limited: worth another attempt. Hard errors: stop.
+        if ((resp.status === 429 || resp.status >= 500) && attempt < 2) continue;
+        return json({ error: (data && data.error && data.error.message) || "AI request failed." }, 502);
+      }
+
+      const raw = (data.content || []).map((b: { text?: string }) => b.text || "").join("").trim();
+      if (data.stop_reason === "max_tokens") sawMaxTokens = true;
+      if (debug) lastDebug = { stop_reason: data.stop_reason, usage: data.usage, length: raw.length, raw };
+
+      parsed = tryParse(raw);
+      if (parsed) break; // got valid JSON — done
+      // else loop and try again with a fresh generation
     }
 
-    let raw = (data.content || []).map((b: { text?: string }) => b.text || "").join("").trim();
-    // strip any accidental code fences
-    raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+    if (debug) return json({ debug: true, parsedOk: !!parsed, ...(lastDebug || {}) });
 
-    let parsed: Record<string, unknown>;
-    try {
-      parsed = JSON.parse(raw);
-    } catch (_e) {
-      const s = raw.indexOf("{"), e = raw.lastIndexOf("}");
-      if (s === -1 || e === -1) return json({ error: "Model did not return valid JSON." }, 502);
-      parsed = JSON.parse(raw.slice(s, e + 1));
+    if (!parsed) {
+      // Truncation can't be salvaged by a retry at the same ceiling, so name it.
+      if (sawMaxTokens) {
+        return json({ error: "That passage was a bit long for the study to finish — try a shorter passage or a few verses." }, 502);
+      }
+      return json({ error: "The study couldn't be generated just now. Please try again." }, 502);
     }
 
     // Shuffle a question's choices so the correct answer's POSITION is randomized,
