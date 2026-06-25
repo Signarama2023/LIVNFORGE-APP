@@ -1838,7 +1838,9 @@
       try {
         const r = await P.getCustomerInfo(); const ci = r.customerInfo || r;
         const ent = ci && ci.entitlements && ci.entitlements.active && ci.entitlements.active[RC_ENTITLEMENT];
-        return !!(ent && ent.productIdentifier === "app.thedailyforge.annual");
+        // Paid annual only — exclude free-year recipients (intro/trial/promotional period).
+        const periodNormal = !ent.periodType || String(ent.periodType).toUpperCase() === "NORMAL";
+        return !!(ent && ent.productIdentifier === "app.thedailyforge.annual" && periodNormal);
       } catch (e) { return false; }
     }
     async function packages() {

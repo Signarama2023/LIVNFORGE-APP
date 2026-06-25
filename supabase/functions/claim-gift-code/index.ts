@@ -23,8 +23,11 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// True only if RevenueCat says this user has an ACTIVE entitlement whose product is the ANNUAL one.
-async function isActiveAnnual(appUserId: string): Promise<boolean> {
+// True only if RevenueCat says this user is a PAYING annual member right now — active
+// annual entitlement AND a "normal" paid period. Free-year recipients (offer/promo codes
+// or RevenueCat-granted comps) are in an intro/trial/promotional period, so they're excluded:
+// someone who got a free year can't give one away.
+async function isPaidAnnual(appUserId: string): Promise<boolean> {
   const key = Deno.env.get("REVENUECAT_SECRET_KEY");
   if (!key) return false; // not configured yet -> nobody qualifies
   try {
@@ -34,10 +37,12 @@ async function isActiveAnnual(appUserId: string): Promise<boolean> {
     if (!r.ok) return false;
     const d = await r.json();
     const ent = d?.subscriber?.entitlements?.[RC_ENTITLEMENT];
-    if (!ent) return false;
+    const sub = d?.subscriber?.subscriptions?.[ANNUAL_PRODUCT];
+    if (!ent || !sub) return false;
     const isAnnual = ent.product_identifier === ANNUAL_PRODUCT;
     const active = !ent.expires_date || new Date(ent.expires_date).getTime() > Date.now();
-    return isAnnual && active;
+    const paid = sub.period_type === "normal" && sub.store !== "promotional"; // not a free/comp period
+    return isAnnual && active && paid;
   } catch (_e) {
     return false;
   }
@@ -61,8 +66,8 @@ Deno.serve(async (req) => {
         .from("gift_codes").select("code, redeem_url").eq("claimed_by", user.id).limit(1).maybeSingle();
       if (existing?.code) return json({ code: existing.code, redeemUrl: existing.redeem_url || null, alreadyClaimed: true });
 
-      const ok = await isActiveAnnual(user.id);
-      if (!ok) return json({ error: "Only active annual members can gift a free year." }, 403);
+      const ok = await isPaidAnnual(user.id);
+      if (!ok) return json({ error: "Only paying annual members can gift a free year." }, 403);
     }
 
     const { data, error } = await admin.rpc("claim_one_gift_code", { p_user: user.id, p_email: email });
