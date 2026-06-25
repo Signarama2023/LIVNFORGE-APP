@@ -1061,6 +1061,11 @@
           <div class="invite-actions">
             <button class="invite-btn primary" id="adminGiftBtn" type="button">Give a code</button>
           </div>
+          <p class="sc-desc" style="margin-top:14px;">Let someone gift a free year too (e.g. an ambassador you gave a year to):</p>
+          <div class="invite-actions">
+            <input id="allowGifterEmail" type="email" placeholder="email@example.com" autocapitalize="off" style="flex:1; min-width:160px; background:var(--field); border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:10px 12px; font-family:inherit; font-size:14px;">
+            <button class="invite-btn" id="allowGifterBtn" type="button">Allow to gift</button>
+          </div>
         </div>
 
         <div class="settings-card" id="memberGiftCard" data-tab="settings" style="display:none;">
@@ -4388,14 +4393,31 @@
   function applyAdminUI() {
     const adminCard = document.getElementById("adminGiftCard");
     if (adminCard) adminCard.style.display = isAdminUser() ? "" : "none";
-    // Member gift card: shown only to active ANNUAL members (not the admin).
+    // Member gift card: shown to anyone the server says can gift (paying annual OR allowlisted).
     const memberCard = document.getElementById("memberGiftCard");
     if (memberCard) {
       memberCard.style.display = "none";
-      if (!isAdminUser() && IN_NATIVE_APP && RC && RC.isAnnualIAP) {
-        RC.isAnnualIAP().then(function (ok) { if (ok) memberCard.style.display = ""; }).catch(function () {});
+      if (!isAdminUser() && sb && currentEmail()) {
+        sb.functions.invoke("claim-gift-code", { body: { check: true } })
+          .then(function (res) { if (res && res.data && res.data.eligible) memberCard.style.display = ""; })
+          .catch(function () {});
       }
     }
+  }
+  async function adminAllowGifter() {
+    if (!sb) return;
+    const inp = document.getElementById("allowGifterEmail");
+    const btn = document.getElementById("allowGifterBtn");
+    const email = ((inp && inp.value) || "").trim();
+    if (!email) { showToast("Enter an email."); return; }
+    if (btn) { btn.disabled = true; btn.textContent = "Adding…"; }
+    try {
+      const { data, error } = await sb.functions.invoke("claim-gift-code", { body: { allowEmail: email } });
+      if (error) throw error;
+      if (data && data.error) { showToast(data.error); return; }
+      if (data && data.ok) { showToast(data.allowed + " can now gift a free year."); if (inp) inp.value = ""; }
+    } catch (e) { showToast("Couldn't add that email."); }
+    finally { if (btn) { btn.disabled = false; btn.textContent = "Allow to gift"; } }
   }
   async function giveGiftCode(btn) {
     if (!sb) return;
@@ -4421,6 +4443,8 @@
       const b = document.getElementById(id);
       if (b) b.addEventListener("click", function () { giveGiftCode(b); });
     });
+    const allowBtn = document.getElementById("allowGifterBtn");
+    if (allowBtn) allowBtn.addEventListener("click", adminAllowGifter);
   })();
   async function leaveCircle(code) {
     if (!sb) return;
