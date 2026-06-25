@@ -2084,7 +2084,7 @@
     const status = document.getElementById("bsStatus");
     const btn = document.getElementById("bsGenerateBtn");
     if (!__devo.passage) { status.textContent = "Load a passage first."; return; }
-    if (!(await ensureAiAck())) { status.textContent = ""; return; }
+    if (!(await ensureAiAck())) { status.textContent = 'Tap Generate and choose "I understand" on the AI notice to create your study.'; return; }
     status.textContent = "Asking Claude for reflection questions…";
     btn.disabled = true; const orig = btn.textContent; btn.textContent = "Generating…";
     try {
