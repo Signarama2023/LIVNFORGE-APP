@@ -35,13 +35,11 @@ begin
   delete from public.scores                 where group_code = p_code;
   delete from public.prayer_circles         where code = p_code;
 
-  -- Remove the circle's chat attachments so deleting a circle doesn't orphan
-  -- files in storage. Attachments live at circle-attachments/<code>/<file>, so
-  -- the first path segment is the circle code. Definer rights let us clear every
-  -- member's uploads here (client-side delete is limited to the uploader's own).
-  delete from storage.objects
-    where bucket_id = 'circle-attachments'
-      and (storage.foldername(name))[1] = p_code;
+  -- NOTE: we do NOT delete from storage.objects here. Supabase forbids direct
+  -- deletes on storage tables ("Use the Storage API instead"), and doing so threw
+  -- and rolled back the whole deletion. The client already removes this circle's
+  -- files via the Storage API before calling delete_circle, and the attachment
+  -- references (columns on circle_messages) are gone with the rows above.
 end;
 $$;
 
