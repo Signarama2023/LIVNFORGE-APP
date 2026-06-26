@@ -4291,7 +4291,11 @@
       } else if (focus && !existing.focus) {
         await sb.from("prayer_circles").update({ focus: focus }).eq("code", code);
       }
-      await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: name || getName() }, { onConflict: "code,email" });
+      // ignoreDuplicates -> ON CONFLICT DO NOTHING. Rejoining a circle you're
+      // already a member of must NOT try to UPDATE the row (there's no RLS
+      // update policy on prayer_circle_members, so a merge-upsert would throw and
+      // the join would silently fail to show you as a member).
+      await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: name || getName() }, { onConflict: "code,email", ignoreDuplicates: true });
       addCircleCode(code);
       addGroup(code);
       syncToGroup(true);
@@ -4308,7 +4312,7 @@
       try {
         const existing = (await sb.from("prayer_circles").select("code").eq("code", code).maybeSingle()).data;
         if (!existing) await sb.from("prayer_circles").insert({ code: code, name: code, focus: "", type: "team", created_by: currentEmail() });
-        await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: getName() }, { onConflict: "code,email" });
+        await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: getName() }, { onConflict: "code,email", ignoreDuplicates: true });
         addCircleCode(code); changed = true;
       } catch (e) {}
     }
