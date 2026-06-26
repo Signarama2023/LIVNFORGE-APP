@@ -11,13 +11,18 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_email text := lower(auth.jwt() ->> 'email');
 begin
-  -- Only the circle's creator may delete it (case-insensitive email match).
-  if (auth.jwt() ->> 'email') is null
-     or not exists (
-       select 1 from public.prayer_circles
-       where code = p_code and lower(created_by) = lower(auth.jwt() ->> 'email')
-     ) then
+  -- The circle's creator may delete it (case-insensitive email match), and so
+  -- may the app admin — a safety valve for orphaned circles whose created_by no
+  -- longer matches anyone (e.g. left over from earlier data migrations).
+  if v_email is null
+     or ( v_email <> 'markbailey1@me.com'
+          and not exists (
+            select 1 from public.prayer_circles
+            where code = p_code and lower(created_by) = v_email
+          ) ) then
     raise exception 'Only the circle creator can delete this circle';
   end if;
 

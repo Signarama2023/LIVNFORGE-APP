@@ -4273,7 +4273,7 @@
         '<button class="pcc-btn" data-sendmsg="' + escapeHtml(code) + '" data-i="' + i + '">Send</button></div></div>' +
         membersBlock +
         '<div class="pc-foot"><button class="pc-leave" data-leave="' + escapeHtml(code) + '">Leave circle</button>' +
-        (iAmCreator ? '<button class="pc-delete" data-deletecircle="' + escapeHtml(code) + '">Delete circle</button>' : '') + '</div>';
+        ((iAmCreator || isAdminUser()) ? '<button class="pc-delete" data-deletecircle="' + escapeHtml(code) + '">Delete circle</button>' : '') + '</div>';
       const _cl = document.getElementById("pcChatList_" + i); if (_cl) _cl.scrollTop = _cl.scrollHeight;
       try { hydrateAttachments(); } catch (e) {}
     } catch (e) {
