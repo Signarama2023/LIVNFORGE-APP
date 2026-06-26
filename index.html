@@ -4012,22 +4012,42 @@
   function addCircleCode(c) { const a = getCircles(); if (!a.includes(c)) { a.push(c); saveCircles(a); } }
   function removeCircleCode(c) { saveCircles(getCircles().filter(function (x) { return x !== c; })); }
 
+  // Make sure the current user actually has a membership row for a circle. The
+  // leaderboard (scores) is written from the local group list and does NOT prove
+  // membership, so people could show on the leaderboard yet be missing from
+  // prayer_circle_members — which blocks chat, prayer requests, and logs (all
+  // RLS-gated on is_circle_member). This re-asserts the row (insert-if-missing).
+  async function ensureCircleMembership(code) {
+    if (!sb || !code || !currentEmail()) return;
+    try {
+      await sb.from("prayer_circle_members").upsert(
+        { code: code, email: currentEmail(), name: getName() },
+        { onConflict: "code,email", ignoreDuplicates: true }
+      );
+    } catch (e) {}
+  }
+
   // Circle membership is stored server-side in prayer_circle_members, but the app
   // renders from the LOCAL list. iOS periodically clears local storage for
   // remotely-loaded web apps, which wiped people's circles and forced them to
-  // rejoin. Restore the list from the server on every sign-in so it's durable.
+  // rejoin. Restore the list from the server on every sign-in so it's durable,
+  // and re-assert membership for every local circle so chat works.
   async function hydrateCirclesFromCloud() {
     if (!sb || !currentEmail()) return;
     try {
       const { data, error } = await sb.from("prayer_circle_members").select("code").eq("email", currentEmail());
-      if (error || !Array.isArray(data)) return;
-      const local = getCircles();
-      let changed = false;
-      data.map(function (r) { return r.code; }).filter(Boolean).forEach(function (c) {
-        if (!local.includes(c)) { local.push(c); changed = true; }
-        try { addGroup(c); } catch (e) {} // keep the leaderboard group list in sync too
-      });
-      if (changed) saveCircles(local);
+      if (!error && Array.isArray(data)) {
+        const local = getCircles();
+        let changed = false;
+        data.map(function (r) { return r.code; }).filter(Boolean).forEach(function (c) {
+          if (!local.includes(c)) { local.push(c); changed = true; }
+          try { addGroup(c); } catch (e) {} // keep the leaderboard group list in sync too
+        });
+        if (changed) saveCircles(local);
+      }
+      // Self-heal: ensure a membership row exists for every circle we have locally.
+      var codes = getCircles();
+      if (codes.length) await Promise.all(codes.map(function (c) { return ensureCircleMembership(c); }));
       try { refreshCircleUnread(); } catch (e) {}
     } catch (e) {}
   }
@@ -4161,6 +4181,10 @@
     if (!card || !sb) return;
     const me = (currentEmail() || "").toLowerCase();
     const today = dayKey(new Date());
+    // Make sure we're actually a member before reading — messages, prayer
+    // requests and logs are RLS-gated on membership, so a missing row would make
+    // the circle look empty / chat fail even though you "joined".
+    await ensureCircleMembership(code);
     try {
       const results = await Promise.all([
         sb.from("prayer_circles").select("name,focus,type,created_by").eq("code", code).maybeSingle(),
