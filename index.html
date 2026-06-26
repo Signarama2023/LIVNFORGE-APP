@@ -1176,6 +1176,17 @@
           </div>
         </div>
 
+        <div class="rw-modal" id="aiOffModal">
+          <div class="rw-modal-inner">
+            <h3>AI features are off</h3>
+            <p class="ai-ack-text">You haven’t agreed to the AI notice yet, so the AI features — the <b>devotional questions</b>, the <b>weekly review</b>, and <b>Drift Fix</b> — won’t work until you do.<br><br>Tap <b>Turn on AI features</b> to review the notice and agree, or you can leave them off.</p>
+            <div class="rw-modal-actions">
+              <button class="rw-cancel" id="aiOffClose" type="button">Leave off</button>
+              <button class="rw-submit" id="aiOffTurnOn" type="button">Turn on AI features</button>
+            </div>
+          </div>
+        </div>
+
         <button class="landing-cta" id="landingSummaryCta" data-tab="progress">
           <span class="cta-ico">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
@@ -3553,6 +3564,7 @@
     setAuthError("");
     await migrateLocalEntriesIfNeeded();
     await fetchEntriesFromCloud();
+    hydrateCirclesFromCloud();
     renderQuestions(currentType);
     updateCount();
     // Gate: paywall (if enabled) -> build chooser -> landing
@@ -4000,6 +4012,26 @@
   function addCircleCode(c) { const a = getCircles(); if (!a.includes(c)) { a.push(c); saveCircles(a); } }
   function removeCircleCode(c) { saveCircles(getCircles().filter(function (x) { return x !== c; })); }
 
+  // Circle membership is stored server-side in prayer_circle_members, but the app
+  // renders from the LOCAL list. iOS periodically clears local storage for
+  // remotely-loaded web apps, which wiped people's circles and forced them to
+  // rejoin. Restore the list from the server on every sign-in so it's durable.
+  async function hydrateCirclesFromCloud() {
+    if (!sb || !currentEmail()) return;
+    try {
+      const { data, error } = await sb.from("prayer_circle_members").select("code").eq("email", currentEmail());
+      if (error || !Array.isArray(data)) return;
+      const local = getCircles();
+      let changed = false;
+      data.map(function (r) { return r.code; }).filter(Boolean).forEach(function (c) {
+        if (!local.includes(c)) { local.push(c); changed = true; }
+        try { addGroup(c); } catch (e) {} // keep the leaderboard group list in sync too
+      });
+      if (changed) saveCircles(local);
+      try { refreshCircleUnread(); } catch (e) {}
+    } catch (e) {}
+  }
+
   // ---- Circle unread badges -----------------------------------------------
   // Tracks, per user + per circle, the newest message timestamp the user has
   // seen (set when they open that circle). Unread = newer messages from others.
@@ -4020,16 +4052,14 @@
       rows = (await sb.from("circle_messages").select("created_at,email")
         .eq("code", code).order("created_at", { ascending: false }).limit(30)).data || [];
     } catch (e) { return 0; }
-    const seen = getCircleSeen();
-    if (!(code in seen)) {
-      // First time we've checked this circle — treat current history as "caught up"
-      // so we don't flood the user with a badge for old messages. New ones will count.
-      markCircleSeen(code, rows.length ? rows[0].created_at : new Date().toISOString());
-      return 0;
-    }
-    const since = seen[code];
+    // `since` is undefined until the user has actually opened this circle (which
+    // sets the baseline). Until then, every message from someone else counts as
+    // unread — so the badge shows up whenever a circle has messages you haven't
+    // opened. Opening the circle marks it caught up and clears the badge.
+    const since = getCircleSeen()[code];
     return rows.filter(function (m) {
-      return (m.email || "").toLowerCase() !== me && m.created_at > since;
+      if ((m.email || "").toLowerCase() === me) return false; // your own messages aren't unread
+      return since ? (m.created_at > since) : true;
     }).length;
   }
   let __unreadBusy = false;
@@ -5450,7 +5480,10 @@
     const m = document.getElementById("aiAckModal");
     if (m) m.style.display = "none";
     if (ok) { try { localStorage.setItem(AI_ACK_KEY, new Date().toISOString()); } catch (e) {} }
+    const wasGating = !!__aiAckResolve; // a feature was actually waiting on this
     if (__aiAckResolve) { const r = __aiAckResolve; __aiAckResolve = null; r(!!ok); }
+    // Declined while a feature was waiting -> pop up that AI stays off until agreed.
+    if (!ok && wasGating) { const off = document.getElementById("aiOffModal"); if (off) off.style.display = "flex"; }
   }
   (function initAiAckUI() {
     const ok = document.getElementById("aiAckOk");
@@ -5462,6 +5495,14 @@
     if (modal) modal.addEventListener("click", function (e) { if (e.target === modal) __aiAckClose(false); });
     // Settings -> "Review AI disclaimer": just show it (no gate pending).
     if (review) review.addEventListener("click", function () { const m = document.getElementById("aiAckModal"); if (m) m.style.display = "flex"; });
+    // "AI is off" popup (shown when the notice is declined mid-feature).
+    const offModal = document.getElementById("aiOffModal");
+    const offClose = document.getElementById("aiOffClose");
+    const offTurnOn = document.getElementById("aiOffTurnOn");
+    function hideOff() { if (offModal) offModal.style.display = "none"; }
+    if (offClose) offClose.addEventListener("click", hideOff);
+    if (offModal) offModal.addEventListener("click", function (e) { if (e.target === offModal) hideOff(); });
+    if (offTurnOn) offTurnOn.addEventListener("click", function () { hideOff(); const am = document.getElementById("aiAckModal"); if (am) am.style.display = "flex"; });
   })();
 
   // ---- Daily reminder (native app only): schedules an on-device notification ----
@@ -5602,6 +5643,7 @@
         }
         await migrateLocalEntriesIfNeeded();
         await fetchEntriesFromCloud();
+        hydrateCirclesFromCloud();
         updateCount();
         renderQuestions(currentType);
         if (/[?&]checkout=success/.test(location.search)) {
