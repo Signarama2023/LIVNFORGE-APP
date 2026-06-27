@@ -35,7 +35,8 @@ Deno.serve(async (req) => {
   try {
     if (!RESEND_API_KEY) return json({ error: "Missing RESEND_API_KEY secret." }, 500);
 
-    const { id } = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => ({}));
+    const id = body && body.id;
     if (!id) return json({ error: "id required" }, 400);
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -65,18 +66,22 @@ Deno.serve(async (req) => {
       '<p style="margin:18px 0 0;color:#9a978f;font-size:12px;">Mark it fulfilled in the app: Rewards &rarr; View all claims (admin).</p>' +
       '</div></div></div>';
 
-    const resp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + RESEND_API_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: OWNER_TO, subject, html }),
-    });
-    const data = await resp.json();
-    if (!resp.ok) return json({ error: (data && data.message) || "Resend send failed." }, 502);
-    return json({ ok: true, id: data.id });
+    return await sendEmail(subject, html);
   } catch (err) {
     return json({ error: String((err as Error)?.message || err) }, 500);
   }
 });
+
+async function sendEmail(subject: string, html: string): Promise<Response> {
+  const resp = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + RESEND_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: FROM, to: OWNER_TO, subject, html }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) return json({ error: (data && data.message) || "Resend send failed." }, 502);
+  return json({ ok: true, id: data.id });
+}
 
 function row(label: string, value: string): string {
   return '<tr>' +
