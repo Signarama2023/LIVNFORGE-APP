@@ -188,10 +188,10 @@
   .rw-tier { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--field-border); }
   .rw-tier:first-of-type { border-top:none; }
   .rw-emoji { font-size:26px; width:34px; text-align:center; }
-  .rw-img { width:34px; height:34px; object-fit:cover; object-position:center; border-radius:7px; display:block; }
+  .rw-img { width:34px; height:34px; object-fit:cover; object-position:center; border-radius:7px; display:block; cursor:zoom-in; }
   .rw-locked .rw-emoji { filter:grayscale(1); opacity:.45; }
   .rw-locked .rw-img { filter:grayscale(1); opacity:.45; }
-  .claim-hero { width:100%; border-radius:12px; margin:0 0 14px; display:block; }
+  .claim-hero { width:100%; border-radius:12px; margin:0 0 14px; display:block; cursor:zoom-in; }
   .rw-info { flex:1; min-width:0; }
   .rw-name { font-weight:700; font-size:14px; margin-bottom:6px; }
   .rw-bar { height:7px; border-radius:99px; background:rgba(255,255,255,0.08); overflow:hidden; }
@@ -3186,13 +3186,16 @@
     if (!__currentUser.build) { showChooser(false); }
     else { showLanding(); }
   }
-  // Tap a chat photo thumbnail to view it full-size; tap the backdrop to close.
+  // Tap a chat photo thumbnail (or any [data-zoom] image, e.g. the hat reward) to
+  // view it full-size; tap the backdrop to close. data-zoom lets a small thumbnail
+  // open a different (larger) image than the one shown inline.
   document.addEventListener("click", function (e) {
-    const img = e.target && e.target.closest ? e.target.closest(".pc-att-img") : null;
-    if (img && img.getAttribute("src")) {
-      const lb = document.getElementById("imgLightbox"), li = document.getElementById("imgLightboxImg");
-      if (lb && li) { li.src = img.getAttribute("src"); lb.style.display = "flex"; }
-    }
+    const img = e.target && e.target.closest ? e.target.closest(".pc-att-img, [data-zoom]") : null;
+    if (!img) return;
+    const src = img.getAttribute("data-zoom") || img.getAttribute("src");
+    if (!src) return;
+    const lb = document.getElementById("imgLightbox"), li = document.getElementById("imgLightboxImg");
+    if (lb && li) { li.src = src; lb.style.display = "flex"; }
   });
   (function () {
     const lb = document.getElementById("imgLightbox");
@@ -5395,7 +5398,7 @@
           : '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + "</span>";
       } else { state = "locked"; barW = 0; right = '<span class="rw-status">🔒 Locked</span>'; }
       return '<div class="rw-tier rw-' + state + '">' +
-        '<div class="rw-emoji">' + (t.img ? '<img class="rw-img" src="' + t.img + '" alt="' + escapeHtml(t.name) + '">' : t.emoji) + "</div>" +
+        '<div class="rw-emoji">' + (t.img ? '<img class="rw-img" src="' + t.img + '" data-zoom="' + (t.hero || t.img) + '" alt="' + escapeHtml(t.name) + '">' : t.emoji) + "</div>" +
         '<div class="rw-info"><div class="rw-name">' + t.name + "</div>" +
         '<div class="rw-bar"><span style="width:' + barW + '%"></span></div></div>' +
         '<div class="rw-right">' + right + "</div></div>";
@@ -5424,7 +5427,7 @@
     document.getElementById("claimTitle").textContent = "Claim your " + tier.name + (tier.img ? "" : " " + tier.emoji);
     const hero = document.getElementById("claimHero");
     if (hero) {
-      if (tier.hero || tier.img) { hero.src = tier.hero || tier.img; hero.alt = tier.name; hero.style.display = "block"; }
+      if (tier.hero || tier.img) { hero.src = tier.hero || tier.img; hero.setAttribute("data-zoom", tier.hero || tier.img); hero.alt = tier.name; hero.style.display = "block"; }
       else { hero.style.display = "none"; hero.removeAttribute("src"); }
     }
     document.getElementById("claimSizeWrap").style.display = tier.needsSize ? "" : "none";
