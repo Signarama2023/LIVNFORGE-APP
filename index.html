@@ -188,7 +188,10 @@
   .rw-tier { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--field-border); }
   .rw-tier:first-of-type { border-top:none; }
   .rw-emoji { font-size:26px; width:34px; text-align:center; }
+  .rw-img { width:34px; height:34px; object-fit:cover; object-position:center; border-radius:7px; display:block; }
   .rw-locked .rw-emoji { filter:grayscale(1); opacity:.45; }
+  .rw-locked .rw-img { filter:grayscale(1); opacity:.45; }
+  .claim-hero { width:100%; border-radius:12px; margin:0 0 14px; display:block; }
   .rw-info { flex:1; min-width:0; }
   .rw-name { font-weight:700; font-size:14px; margin-bottom:6px; }
   .rw-bar { height:7px; border-radius:99px; background:rgba(255,255,255,0.08); overflow:hidden; }
@@ -1138,6 +1141,7 @@
         <div class="rw-modal" id="claimModal">
           <div class="rw-modal-inner">
             <h3 id="claimTitle">Claim your reward</h3>
+            <img id="claimHero" class="claim-hero" style="display:none" alt="">
             <div class="rw-field"><label>Full name</label><input id="claimName" autocomplete="name"></div>
             <div class="rw-field" id="claimSizeWrap" style="display:none;"><label>Size</label>
               <select id="claimSize"><option value="">Choose a size…</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option></select>
@@ -5351,7 +5355,7 @@
   const REWARD_TIERS = [
     { key: "keychain", name: "LIVN FORGE Keychain", emoji: "🔑", points: 500, needsSize: false },
     { key: "shirt", name: "LIVN FORGE Shirt", emoji: "👕", points: 4000, needsSize: true  },
-    { key: "hat",   name: "LIVN FORGE Hat",   emoji: "🧢", points: 7000, needsSize: false },
+    { key: "hat",   name: "LIVN FORGE Hat",   emoji: "🧢", img: "livnforgehat-icon.jpg", hero: "livnforgehat.jpg", points: 7000, needsSize: false },
   ];
   let __redemptions = [];
   let __entitled = false;
@@ -5391,7 +5395,7 @@
           : '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + "</span>";
       } else { state = "locked"; barW = 0; right = '<span class="rw-status">🔒 Locked</span>'; }
       return '<div class="rw-tier rw-' + state + '">' +
-        '<div class="rw-emoji">' + t.emoji + "</div>" +
+        '<div class="rw-emoji">' + (t.img ? '<img class="rw-img" src="' + t.img + '" alt="' + escapeHtml(t.name) + '">' : t.emoji) + "</div>" +
         '<div class="rw-info"><div class="rw-name">' + t.name + "</div>" +
         '<div class="rw-bar"><span style="width:' + barW + '%"></span></div></div>' +
         '<div class="rw-right">' + right + "</div></div>";
@@ -5417,7 +5421,12 @@
     const tier = REWARD_TIERS.find(function (t) { return t.key === tierKey; });
     if (!tier || !rwCanClaim()) return;
     const m = document.getElementById("claimModal");
-    document.getElementById("claimTitle").textContent = "Claim your " + tier.name + " " + tier.emoji;
+    document.getElementById("claimTitle").textContent = "Claim your " + tier.name + (tier.img ? "" : " " + tier.emoji);
+    const hero = document.getElementById("claimHero");
+    if (hero) {
+      if (tier.hero || tier.img) { hero.src = tier.hero || tier.img; hero.alt = tier.name; hero.style.display = "block"; }
+      else { hero.style.display = "none"; hero.removeAttribute("src"); }
+    }
     document.getElementById("claimSizeWrap").style.display = tier.needsSize ? "" : "none";
     document.getElementById("claimError").textContent = "";
     const nm = document.getElementById("claimName"); if (nm && !nm.value) nm.value = (typeof getName === "function" ? getName() : "") || "";
