@@ -5455,8 +5455,10 @@
     if (tier.needsSize && !payload.size) { err.textContent = "Please choose a size."; return; }
     const btn = document.getElementById("claimSubmit"); btn.disabled = true; btn.textContent = "Submitting…";
     try {
-      const { error } = await sb.from("redemptions").insert(payload);
+      const { data: ins, error } = await sb.from("redemptions").insert(payload).select("id").single();
       if (error) throw error;
+      // Notify the owner by email (fire-and-forget — never block/break the claim).
+      try { sb.functions.invoke("notify-claim", { body: { id: ins && ins.id } }); } catch (e2) {}
       closeClaim();
       if (typeof showToast === "function") showToast("Claim received! We'll forge and ship your " + tier.name + " 🔨");
       await loadRedemptions(); renderRewards();
