@@ -768,6 +768,12 @@
   .field-group { margin-bottom: 22px; }
   .field-group label { display: block; font-size: 15px; margin-bottom: 10px; color: var(--text); }
   .field-group label .req { color: var(--star); margin-left: 3px; }
+  /* Guided Journal — labeled reflection fields (bold label + sub-prompt) */
+  .guided-field { margin-bottom: 16px; }
+  .guided-field label { margin-bottom: 8px; }
+  .guided-field .gf-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold-light); }
+  .guided-field .gf-prompt { display: block; font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+  .guided-field textarea { min-height: 70px; }
   .bs-panel { background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
   .bs-controls { display: flex; flex-direction: column; gap: 12px; }
   .bs-row { display: flex; flex-direction: column; gap: 6px; }
@@ -1800,21 +1806,15 @@
     freeflow: { title: "Free Flow", freeform: true, placeholder: "Write anything you want…" },
     guided: {
       title: "Guided Journal",
-      morning: [
-        "How am I feeling as I start today?",
-        "What's on my mind heading into today?",
-        "What do I want to make happen today?",
-        "What am I grateful for right now?",
-        "What do I want to let go of as I step into the day?",
-        "What is one thing I'm looking forward to today?"
-      ],
-      evening: [
-        "How am I feeling now, at the end of today?",
-        "What was on my mind today?",
-        "What happened today that I want to remember?",
-        "What am I grateful for from today?",
-        "What do I want to let go of from today?",
-        "What is one thing I'm looking forward to tomorrow?"
+      // Single-screen, faith-forward reflection: short labels + a sub-prompt each.
+      // Fill what speaks to you — not every field is required.
+      fields: [
+        { label: "Win", prompt: "What was a highlight today?" },
+        { label: "Challenge", prompt: "What was difficult?" },
+        { label: "God Moment", prompt: "Where did you see God today?" },
+        { label: "Prayer", prompt: "What are you praying for?" },
+        { label: "Lesson", prompt: "What did you learn?" },
+        { label: "Tomorrow", prompt: "What's your focus for tomorrow?" }
       ]
     },
     reframe: {
@@ -2881,6 +2881,14 @@
         <label for="q0">Journal entry <span class="req">*</span></label>
         <textarea id="q0" data-question="Journal entry" placeholder="${data.placeholder || 'Write anything you want…'}" style="min-height: 260px;" required></textarea>
       </div>`;
+    } else if (data.fields) {
+      // Single-screen labeled reflection (e.g. Guided Journal): bold label + sub-prompt.
+      // Optional fields — write what speaks to you; a guard requires at least one.
+      html += data.fields.map((f, i) => `
+        <div class="field-group guided-field">
+          <label for="q${i}"><span class="gf-label">${f.label}</span><span class="gf-prompt">${f.prompt}</span></label>
+          <textarea id="q${i}" data-question="${(f.label + " — " + f.prompt).replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
+        </div>`).join("");
     } else {
       // Daily reflection types carry morning (forward-looking) + evening (reflective)
       // question sets; a toggle picks which. Types without them just use items.
@@ -4275,6 +4283,12 @@
       });
     } else {
       answers = fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }));
+    }
+    // Optional labeled forms (Guided Journal): allow blanks, but require at least one answer.
+    if (QUESTIONS[currentType] && QUESTIONS[currentType].fields && !answers.some(a => a.a)) {
+      const first = questionsEl.querySelector("textarea"); if (first) first.focus();
+      alert("Write at least one field to save your entry.");
+      return;
     }
     if (currentType === "fitness") {
       if (currentFitnessCardio && currentFitnessCardio !== "No cardio") {
