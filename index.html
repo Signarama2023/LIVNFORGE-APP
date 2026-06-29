@@ -261,6 +261,29 @@
   .jr-pct { position:absolute; font-size:16px; font-weight:800; }
   .jr-lbl { font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:700; }
   .jr-sub { font-size:11px; color:var(--muted); margin-top:-3px; }
+  /* Journey — This Week bar chart */
+  .jr-week { background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:18px; padding:16px 16px 14px; margin-bottom:18px; }
+  .jr-week-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; font-weight:800; color:var(--muted); margin-bottom:14px; }
+  .jr-week-bars { display:flex; align-items:flex-end; justify-content:space-between; gap:8px; height:104px; }
+  .jrwb-col { display:flex; flex-direction:column; align-items:center; gap:8px; flex:1; height:100%; }
+  .jrwb-track { flex:1; width:100%; display:flex; align-items:flex-end; justify-content:center; }
+  .jrwb-bar { width:62%; max-width:22px; min-height:6px; border-radius:6px; background:rgba(255,255,255,.10); transition:height .6s cubic-bezier(.3,1,.4,1); }
+  .jrwb-bar.has { background:linear-gradient(180deg, var(--gold-light), var(--gold)); }
+  .jrwb-bar.today { box-shadow:0 0 0 2px rgba(240,198,116,.28); }
+  .jrwb-bar.future { opacity:.45; }
+  .jrwb-lbl { font-size:11px; font-weight:700; color:var(--muted); }
+  .jrwb-lbl.today { color:var(--gold-light); }
+  /* Journey — summary / AI review cards */
+  .jr-cards { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  .jr-card { display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; text-align:left; background:var(--panel); border:1px solid var(--field-border); border-radius:16px; padding:15px 16px; cursor:pointer; font-family:inherit; color:var(--text); transition:border-color .15s ease, transform .1s ease; }
+  .jr-card:hover { border-color:var(--gold); }
+  .jr-card:active { transform:scale(.99); }
+  .jr-card-ico { width:42px; height:42px; flex:0 0 auto; border-radius:12px; background:rgba(217,169,62,.12); color:var(--gold-light); display:flex; align-items:center; justify-content:center; }
+  .jr-card-text { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+  .jr-card-title { font-weight:800; font-size:15px; }
+  .jr-card-sub { font-size:12.5px; color:var(--muted); }
+  .jr-card-arrow { color:var(--muted); font-size:22px; flex:0 0 auto; line-height:1; }
+  .jr-card-badge { flex:0 0 auto; font-size:10px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:#0c0a07; background:var(--gold); padding:4px 9px; border-radius:999px; }
   /* ===== Profile tab ===== */
   #landingView .profile-bar > span:first-child { display:none; }
   .prof-head { display:flex; align-items:center; gap:14px; margin:6px 0 18px; }
@@ -1429,17 +1452,28 @@
               <span class="jr-lbl" style="color:#34d399">Fitness</span><span class="jr-sub" id="jrsub_fitness">0/7 days</span>
             </div>
           </div>
+          <div class="jr-week">
+            <div class="jr-week-label">This Week</div>
+            <div class="jr-week-bars" id="jrWeekBars"></div>
+          </div>
         </div>
 
-        <button class="landing-cta" id="landingSummaryCta" data-tab="progress">
-          <span class="cta-ico">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
-          </span>
-          <span>
-            <span class="cta-main">View Weekly Summary</span>
-            <span class="cta-sub">Your week + AI review</span>
-          </span>
-        </button>
+        <div class="jr-cards" data-tab="progress">
+          <button class="jr-card" id="landingSummaryCta">
+            <span class="jr-card-ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
+            </span>
+            <span class="jr-card-text"><span class="jr-card-title">Weekly Summary</span><span class="jr-card-sub" id="jrWeekRange">This week</span></span>
+            <span class="jr-card-arrow">›</span>
+          </button>
+          <button class="jr-card" id="jrAiReviewCta">
+            <span class="jr-card-ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.7 5L19 9.6l-5.3 1.6L12 16l-1.7-4.8L5 9.6l5.3-1.6L12 3z"/><path d="M19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z"/></svg>
+            </span>
+            <span class="jr-card-text"><span class="jr-card-title">AI Review</span><span class="jr-card-sub">See how you're growing</span></span>
+            <span class="jr-card-badge">New</span>
+          </button>
+        </div>
 
         <div class="personal-bests" data-tab="progress">
           <div class="pb-label">Personal bests</div>
@@ -1543,7 +1577,7 @@
           <div class="v-ref" id="verseRef">COLOSSIANS 3:23</div>
         </div>
         <div class="landing-footer" data-tab="today">SHOW UP. WRITE IT DOWN. LIVE IT OUT.</div>
-        <button class="landing-summary" id="landingSummary" data-tab="progress">View weekly summary</button>
+        <button class="landing-summary" id="landingSummary" data-tab="progress" style="display:none">View weekly summary</button>
         <button class="landing-history" id="landingHistory" data-tab="progress">Review your history</button>
       </div>
 
@@ -3802,6 +3836,21 @@
     });
     return Object.keys(days).length;
   }
+  // Entries-per-day across the current Sun–Sat week, for the "This Week" bars.
+  function journeyWeekBars() {
+    var start = startOfWeek(new Date());
+    var labels = ["S", "M", "T", "W", "T", "F", "S"];
+    var todayK = dayKey(new Date());
+    var counts = {};
+    loadEntries().forEach(function (e) { var d = entryDay(e); if (d) counts[d] = (counts[d] || 0) + 1; });
+    var bars = [];
+    for (var i = 0; i < 7; i++) {
+      var dt = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      var k = dayKey(dt);
+      bars.push({ label: labels[i], count: counts[k] || 0, isToday: k === todayK, future: k > todayK });
+    }
+    return bars;
+  }
   function renderJourney() {
     if (!document.getElementById("journeyHome")) return;
     [["faith", ["devotional", "prayer", "gratitude", "reframe", "drift"]],
@@ -3813,6 +3862,25 @@
       var pe = document.getElementById("jrpct_" + p[0]); if (pe) pe.textContent = Math.round(frac * 100) + "%";
       var se = document.getElementById("jrsub_" + p[0]); if (se) se.textContent = days + "/7 days";
     });
+    // This Week bar chart
+    var host = document.getElementById("jrWeekBars");
+    if (host) {
+      var bars = journeyWeekBars();
+      var max = bars.reduce(function (m, b) { return Math.max(m, b.count); }, 0);
+      host.innerHTML = bars.map(function (b) {
+        var h = max ? Math.round((b.count / max) * 100) : 0;
+        var cls = "jrwb-bar" + (b.isToday ? " today" : "") + (b.future ? " future" : "") + (b.count ? " has" : "");
+        return '<div class="jrwb-col"><div class="jrwb-track"><div class="' + cls + '" style="height:' + Math.max(b.count ? 14 : 6, h) + '%"></div></div><div class="jrwb-lbl' + (b.isToday ? " today" : "") + '">' + b.label + '</div></div>';
+      }).join("");
+    }
+    // Weekly Summary date range (matches the Sun–Sat week the summary covers)
+    var rangeEl = document.getElementById("jrWeekRange");
+    if (rangeEl) {
+      var mo = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      var s = startOfWeek(new Date());
+      var e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 6);
+      rangeEl.textContent = mo[s.getMonth()] + " " + s.getDate() + " – " + mo[e.getMonth()] + " " + e.getDate();
+    }
   }
   // ===== Profile tab — level from lifetime Kingdom Points =====
   const LEVELS = [
@@ -3903,6 +3971,7 @@
   document.getElementById("landingHistory").addEventListener("click", () => { showApp(); showHistory(); window.scrollTo(0, 0); });
   document.getElementById("landingSummary").addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); });
   document.getElementById("landingSummaryCta").addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); });
+  (function () { var ai = document.getElementById("jrAiReviewCta"); if (ai) ai.addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); }); })();
   document.getElementById("homeBtn").addEventListener("click", () => { showLanding(); window.scrollTo(0, 0); });
 
   let showingHistory = false;
