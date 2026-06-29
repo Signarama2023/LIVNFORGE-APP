@@ -617,6 +617,12 @@
   .kv-text { font-size: 15px; line-height: 1.5; color: var(--text); font-style: italic; margin-bottom: 6px; }
   .kv-ref { font-size: 12px; color: var(--muted); }
   .bs-section-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin: 22px 0 12px; }
+  .bs-summary { font-size: 15px; line-height: 1.6; color: var(--text); margin-bottom: 6px; }
+  .bs-keypoints { margin: 0 0 6px; padding-left: 20px; }
+  .bs-keypoints li { font-size: 14.5px; line-height: 1.5; color: var(--text); margin-bottom: 8px; }
+  .bs-teacher { background: rgba(255,255,255,0.04); border: 1px solid var(--field-border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .bs-teacher-name { font-size: 13px; font-weight: 700; color: var(--gold-light); margin-bottom: 4px; }
+  .bs-teacher-insight { font-size: 14px; line-height: 1.55; color: var(--text); }
   .bs-mcq { margin-bottom: 20px; }
   .bs-mcq .mcq-q { font-size: 15px; line-height: 1.45; color: var(--text); margin-bottom: 10px; }
   .bs-choice { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1px solid var(--field-border); border-radius: 10px; background: var(--field); margin-bottom: 8px; cursor: pointer; font-size: 14px; color: var(--text); transition: border-color 0.15s ease, background 0.15s ease; }
@@ -2066,7 +2072,7 @@
     if (vEnd) return { id: bookId + "." + chapter + "." + vStart + "-" + bookId + "." + chapter + "." + vEnd, label: ref };
     return { id: bookId + "." + chapter + "." + vStart, label: ref };
   }
-  let __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", questions: [], understanding: [], reflection: [] };
+  let __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", summary: "", keyPoints: [], teacherInsights: [], reflection: [] };
   async function loadBiblePassage() {
     const refRaw = (document.getElementById("bsReference") || {}).value || "";
     const translation = (document.getElementById("bsTranslation") || {}).value || "78a9f6124f344018-01";
@@ -2091,7 +2097,7 @@
       document.getElementById("bsPassageWrap").style.display = "block";
       document.getElementById("bsQuestionsWrap").style.display = "none";
       status.textContent = "";
-      __devo = { passage: text, reference: reference, translation: translation, keyVerse: "", keyVerseRef: "", questions: [], understanding: [], reflection: [] };
+      __devo = { passage: text, reference: reference, translation: translation, keyVerse: "", keyVerseRef: "", summary: "", keyPoints: [], teacherInsights: [], reflection: [] };
     } catch (err) {
       status.textContent = "Couldn't load that passage. Check the reference and try again.";
       console.error(err);
@@ -2101,8 +2107,8 @@
     const status = document.getElementById("bsStatus");
     const btn = document.getElementById("bsGenerateBtn");
     if (!__devo.passage) { status.textContent = "Load a passage first."; return; }
-    if (!(await ensureAiAck())) { status.textContent = 'Tap Generate and choose "I understand" on the AI notice to create your study.'; return; }
-    status.textContent = "Asking Claude for reflection questions…";
+    if (!(await ensureAiAck())) { status.textContent = 'Tap Study and choose "I understand" on the AI notice to begin.'; return; }
+    status.textContent = "Reading the passage and pulling out the key points…";
     btn.disabled = true; const orig = btn.textContent; btn.textContent = "Generating…";
     try {
       const session = (await sb.auth.getSession()).data.session;
@@ -2117,26 +2123,28 @@
       if (data && data.error) throw new Error(data.error);
       __devo.keyVerse = data.key_verse || "";
       __devo.keyVerseRef = data.key_verse_reference || "";
-      __devo.understanding = Array.isArray(data.understanding) ? data.understanding : [];
+      __devo.summary = data.summary || "";
+      __devo.keyPoints = Array.isArray(data.key_points) ? data.key_points : [];
+      __devo.teacherInsights = Array.isArray(data.teacher_insights) ? data.teacher_insights : [];
       __devo.reflection = Array.isArray(data.reflection) ? data.reflection : [];
-      // backward-compat: older function returned a single flat questions[] array
-      if (!__devo.understanding.length && !__devo.reflection.length && Array.isArray(data.questions)) {
-        __devo.reflection = data.questions;
-      }
       const kv = document.getElementById("bsKeyVerse");
       if (__devo.keyVerse) {
         kv.innerHTML = '<div class="kv-label">KEY VERSE</div><div class="kv-text">"' + escapeHtml(__devo.keyVerse) + '"</div><div class="kv-ref">— ' + escapeHtml(__devo.keyVerseRef) + '</div>';
       } else { kv.innerHTML = ""; }
       let qHtml = "";
-      if (__devo.understanding.length) {
-        qHtml += '<div class="bs-section-label">Understanding the passage</div>';
-        qHtml += __devo.understanding.map(function(u, i) {
-          var choices = (u.choices || []).map(function(c, ci) {
-            return '<label class="bs-choice"><input type="radio" name="bsu' + i + '" value="' + ci + '"><span>' + escapeHtml(c) + '</span></label>';
-          }).join("");
-          return '<div class="bs-mcq" data-answer="' + (typeof u.answer === "number" ? u.answer : 0) + '">' +
-            '<div class="mcq-q">' + (i + 1) + '. ' + escapeHtml(u.q || "") + '</div>' + choices +
-            '<div class="mcq-explain">' + escapeHtml(u.explanation || "") + '</div></div>';
+      if (__devo.summary) {
+        qHtml += '<div class="bs-section-label">Summary</div>';
+        qHtml += '<div class="bs-summary">' + escapeHtml(__devo.summary) + '</div>';
+      }
+      if (__devo.keyPoints.length) {
+        qHtml += '<div class="bs-section-label">Key points</div>';
+        qHtml += '<ul class="bs-keypoints">' + __devo.keyPoints.map(function (p) { return '<li>' + escapeHtml(p) + '</li>'; }).join("") + '</ul>';
+      }
+      if (__devo.teacherInsights.length) {
+        qHtml += '<div class="bs-section-label">How these teachers approach it</div>';
+        qHtml += __devo.teacherInsights.map(function (t) {
+          return '<div class="bs-teacher"><div class="bs-teacher-name">' + escapeHtml(t.teacher || "") + '</div>' +
+            '<div class="bs-teacher-insight">' + escapeHtml(t.insight || "") + '</div></div>';
         }).join("");
       }
       if (__devo.reflection.length) {
@@ -2150,7 +2158,7 @@
       document.getElementById("bsQuestionsWrap").style.display = "block";
       status.textContent = "";
     } catch (err) {
-      status.textContent = "Couldn't generate questions: " + (err.message || err);
+      status.textContent = "Couldn't generate the study: " + (err.message || err);
       console.error(err);
     } finally { btn.disabled = false; btn.textContent = orig; }
   }
@@ -2582,12 +2590,12 @@
             <div class="bs-passage-ref" id="bsPassageRef"></div>
             <div class="bs-passage-text" id="bsPassageText"></div>
             <div class="bs-copyright" id="bsCopyright"></div>
-            <button type="button" id="bsGenerateBtn" class="bs-btn">Generate reflection questions</button>
+            <button type="button" id="bsGenerateBtn" class="bs-btn">Study this passage</button>
           </div>
           <div class="bs-questions-wrap" id="bsQuestionsWrap" style="display:none">
             <div class="bs-key-verse" id="bsKeyVerse"></div>
             <div id="bsQuestions"></div>
-            <p class="ai-note"><b>AI-generated — may be inaccurate.</b> Read the passage yourself and test these questions against Scripture. Not a substitute for the Bible, prayer, or your pastor.</p>
+            <p class="ai-note"><b>AI-generated — may be inaccurate.</b> The teacher insights describe how these pastors generally teach — they are <b>not actual quotes</b>. Read the passage yourself and test everything against Scripture. Not a substitute for the Bible, prayer, or your pastor.</p>
           </div>
         </div>`;
     } else if (data.freeform) {

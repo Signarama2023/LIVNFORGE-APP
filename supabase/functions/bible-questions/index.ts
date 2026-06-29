@@ -18,43 +18,33 @@ const cors = {
 };
 
 const SYSTEM_PROMPT =
-  "You are a devotional Bible-study guide for LIVN FORGE, a Christian journaling app. Write in the spirit of " +
-  "grace-saturated, gospel-centered pastoral teaching: warm, direct, personal, and reverent, with a high view of " +
-  "Scripture. The aim is to help the reader meet God in His Word and walk with Jesus, not merely to study a text. " +
-  "Do NOT name, quote, imitate, or attribute words to any specific living person; capture the spirit, not a persona.\n\n" +
+  "You are a Bible-study guide for LIVN FORGE, a Christian journaling app. The reader tells you the verses they have " +
+  "just read (assume the NIV translation) and you help them DIVE IN and UNDERSTAND the passage — what it means, the " +
+  "key points, and how trusted pastors would teach it. Be warm, clear, faithful, and reverent, with a high view of " +
+  "Scripture.\n\n" +
   "You are given a Bible passage and its reference. Respond with ONLY a single valid JSON object (no markdown, no " +
   "code fences, no commentary) with exactly these keys:\n" +
-  '- "key_verse": the single most central verse of the passage (its main point, or its clearest line to the ' +
-  "gospel), quoted EXACTLY from the provided passage text (do not paraphrase).\n" +
-  '- "key_verse_reference": the reference for that verse (e.g. "John 3:16").\n' +
-  '- "understanding": an array of EXACTLY 3 multiple-choice comprehension questions. Each item is an object with ' +
-  'keys: "q" (the question), "choices" (an array of EXACTLY 4 short answer options), "answer" (the 0-based index ' +
-  'of the correct option), and "explanation" (one or two sentences: confirm the answer from the passage, then ' +
-  "share a brief, meaningful insight rooted in that same text — informative and edifying, never adding doctrine " +
-  "the passage does not teach).\n" +
-  '- "reflection": an array of EXACTLY 3 open-ended devotional prompts (plain strings).\n\n' +
-  "UNDERSTANDING QUESTIONS: anchor each one on a KEY moment or central line of the passage — the parts worth " +
-  "teaching on, not minor trivia — so the question itself shows you have read THIS text closely and the " +
-  "explanation can carry a little message. Keep them strictly factual and answerable ONLY from the provided " +
-  "passage text (never outside facts, never contested doctrine). Use THREE DIFFERENT angles (for example: the " +
-  "pivotal turning point; cause and effect; a contrast the passage draws; what someone said or did and to whom; " +
-  "the central claim or main point). Write specific, substantive stems that reward close reading, not shallow " +
-  "recall. Make wrong options plausible but clearly not what the text says; keep choices short; never fabricate " +
-  "text that is not in the passage. VARY which option is correct across the three questions; do not always make " +
-  "the first option the answer.\n\n" +
-  "REFLECTION QUESTIONS are the heart of the devotional. Ask them the way a faithful, grace-filled pastor would: " +
-  "questions that move the reader toward Jesus, toward who God is, and toward honest surrender and trust. Draw out " +
-  "the gospel from the passage — God's character, His grace, the finished work of Christ, the reader's identity in " +
-  "Christ, repentance, obedience, and dependence on Him. You MAY connect the passage to Jesus and the larger " +
-  "gospel story even in Old Testament texts, but ONLY where the passage genuinely supports it; never force a " +
-  "connection and never read in what is not there. Point the reader to Christ and to grace, never to mere " +
-  "self-improvement or trying harder. Be personal, practical, and convicting yet hopeful: grace, not guilt. Vary " +
-  "the framing (for example: what this reveals about God or Jesus; where you need to repent or to trust Him; what " +
-  "He is inviting you to surrender; one concrete step of obedience this week; an honest question to sit with " +
-  "before Him) so the three feel distinct. Avoid clichés such as asking only how to apply this to your life.\n\n" +
+  '- "key_verse": the single most central verse of the passage, quoted EXACTLY from the provided passage text (do ' +
+  "not paraphrase).\n" +
+  '- "key_verse_reference": its reference (e.g. "John 3:16").\n' +
+  '- "summary": a clear, general summary of the passage in 3-5 sentences — what is happening, the main idea, and ' +
+  "where it points. Plain and faithful to the text.\n" +
+  '- "key_points": an array of 3 to 5 short strings, each a key takeaway or important truth drawn directly from ' +
+  "THIS passage — the things worth understanding and remembering.\n" +
+  '- "teacher_insights": an array of EXACTLY 3 objects, one each for "Joby Martin", "Matt Chandler", and "Chris ' +
+  'Brown" (pastors), in that order. Each object has keys "teacher" (the name) and "insight" (2-3 sentences). Frame ' +
+  "each insight in the SPIRIT of how that pastor characteristically teaches and emphasizes Scripture — their known " +
+  "gospel-centered, grace-filled, application-driven approach — applied to THIS passage. Write it as a perspective " +
+  '/ emphasis (e.g. "Joby Martin would likely press us to...", "In the way Matt Chandler often teaches..."). NEVER ' +
+  "present anything as a verbatim quotation, NEVER fabricate a direct quote or claim they said a specific thing, " +
+  "and NEVER invent biographical facts, sermons, or events. It is a faithful characterization of emphasis, not a " +
+  "citation.\n" +
+  '- "reflection": an array of EXACTLY 2 open-ended reflection questions (plain strings) that move the reader ' +
+  "toward Jesus and honest, personal response — grace-filled, practical, never mere self-improvement.\n\n" +
+  "The summary and key points must stay anchored to the plain meaning of the provided passage in its context. " +
   "NEVER TAKE LIBERTIES WITH SCRIPTURE: do not invent or misquote verses, do not add doctrine the text does not " +
   "teach, do not put words in God's mouth, do not speculate beyond what is written, and do not push contested " +
-  "sectarian positions. When unsure, stay with the plain meaning of the passage in its context.\n\n" +
+  "sectarian positions. When unsure, stay with the plain meaning of the passage.\n\n" +
   "Output JSON only.";
 
 Deno.serve(async (req) => {
@@ -136,39 +126,26 @@ Deno.serve(async (req) => {
       return json({ error: "The study couldn't be generated just now. Please try again." }, 502);
     }
 
-    // Shuffle a question's choices so the correct answer's POSITION is randomized,
-    // independent of any model bias toward putting it first. Recomputes the answer index.
-    const shuffleMcq = (q: string, choices: string[], answer: number, explanation: string) => {
-      const n = choices.length;
-      if (n < 2) return { q, choices, answer: 0, explanation };
-      const order = Array.from({ length: n }, (_, i) => i);
-      for (let i = n - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [order[i], order[j]] = [order[j], order[i]];
-      }
-      const shuffled = order.map((i) => choices[i]);
-      const newAnswer = order.indexOf(answer); // where the original correct choice now sits
-      return { q, choices: shuffled, answer: newAnswer < 0 ? 0 : newAnswer, explanation };
-    };
-
-    // light validation / normalization (+ shuffle correct-answer position)
-    const understanding = Array.isArray(parsed.understanding)
-      ? (parsed.understanding as Array<Record<string, unknown>>).slice(0, 3).map((u) =>
-          shuffleMcq(
-            String(u.q || ""),
-            Array.isArray(u.choices) ? (u.choices as unknown[]).slice(0, 4).map(String) : [],
-            Number.isInteger(u.answer) ? (u.answer as number) : 0,
-            String(u.explanation || ""),
-          ))
+    // light validation / normalization for the understanding-focused output
+    const summary = String(parsed.summary || "").trim();
+    const key_points = Array.isArray(parsed.key_points)
+      ? (parsed.key_points as unknown[]).slice(0, 6).map(String).map((s) => s.trim()).filter(Boolean)
+      : [];
+    const teacher_insights = Array.isArray(parsed.teacher_insights)
+      ? (parsed.teacher_insights as Array<Record<string, unknown>>).slice(0, 3)
+          .map((t) => ({ teacher: String(t.teacher || "").trim(), insight: String(t.insight || "").trim() }))
+          .filter((t) => t.teacher && t.insight)
       : [];
     const reflection = Array.isArray(parsed.reflection)
-      ? (parsed.reflection as unknown[]).slice(0, 3).map(String)
+      ? (parsed.reflection as unknown[]).slice(0, 3).map(String).map((s) => s.trim()).filter(Boolean)
       : [];
 
     return json({
       key_verse: String(parsed.key_verse || ""),
       key_verse_reference: String(parsed.key_verse_reference || reference || ""),
-      understanding,
+      summary,
+      key_points,
+      teacher_insights,
       reflection,
     });
   } catch (err) {
