@@ -248,6 +248,16 @@
   .forge-complete .fc-t { font-size:18px; font-weight:800; color:var(--gold-light); }
   .forge-complete .fc-s { font-size:13px; color:var(--muted); margin-top:4px; }
   .forge-more { font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:24px 2px 12px; }
+  /* ===== Journey tab — pillar rings ===== */
+  .jrings { display:flex; justify-content:space-around; gap:8px; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:18px; padding:22px 10px 16px; margin-bottom:18px; }
+  .jring { display:flex; flex-direction:column; align-items:center; gap:9px; }
+  .jr-wrap { position:relative; display:flex; align-items:center; justify-content:center; }
+  .jring svg { width:80px; height:80px; transform:rotate(-90deg); }
+  .jr-bg { fill:none; stroke:rgba(255,255,255,.08); stroke-width:7; }
+  .jr-fg { fill:none; stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset .9s cubic-bezier(.3,1,.4,1); }
+  .jr-pct { position:absolute; font-size:16px; font-weight:800; }
+  .jr-lbl { font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:700; }
+  .jr-sub { font-size:11px; color:var(--muted); margin-top:-3px; }
   .profile-bar {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     font-size: 13px; color: var(--muted); margin-bottom: 18px; flex-wrap: wrap;
@@ -1329,6 +1339,25 @@
           </div>
         </div>
 
+        <div id="journeyHome" data-tab="progress">
+          <h1 class="forge-greet">Your Journey</h1>
+          <div class="forge-date">Keep forging forward.</div>
+          <div class="jrings">
+            <div class="jring">
+              <div class="jr-wrap"><svg viewBox="0 0 80 80"><circle class="jr-bg" cx="40" cy="40" r="33"></circle><circle class="jr-fg" id="jr_faith" cx="40" cy="40" r="33" stroke="#f0c674" stroke-dasharray="207" stroke-dashoffset="207"></circle></svg><span class="jr-pct" id="jrpct_faith" style="color:#f0c674">0%</span></div>
+              <span class="jr-lbl" style="color:#f0c674">Faith</span><span class="jr-sub" id="jrsub_faith">0/7 days</span>
+            </div>
+            <div class="jring">
+              <div class="jr-wrap"><svg viewBox="0 0 80 80"><circle class="jr-bg" cx="40" cy="40" r="33"></circle><circle class="jr-fg" id="jr_family" cx="40" cy="40" r="33" stroke="#5aa9f0" stroke-dasharray="207" stroke-dashoffset="207"></circle></svg><span class="jr-pct" id="jrpct_family" style="color:#5aa9f0">0%</span></div>
+              <span class="jr-lbl" style="color:#5aa9f0">Family</span><span class="jr-sub" id="jrsub_family">0/7 days</span>
+            </div>
+            <div class="jring">
+              <div class="jr-wrap"><svg viewBox="0 0 80 80"><circle class="jr-bg" cx="40" cy="40" r="33"></circle><circle class="jr-fg" id="jr_fitness" cx="40" cy="40" r="33" stroke="#34d399" stroke-dasharray="207" stroke-dashoffset="207"></circle></svg><span class="jr-pct" id="jrpct_fitness" style="color:#34d399">0%</span></div>
+              <span class="jr-lbl" style="color:#34d399">Fitness</span><span class="jr-sub" id="jrsub_fitness">0/7 days</span>
+            </div>
+          </div>
+        </div>
+
         <button class="landing-cta" id="landingSummaryCta" data-tab="progress">
           <span class="cta-ico">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
@@ -1449,8 +1478,8 @@
         <button data-go="today"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg>Today</button>
         <button data-go="circles"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg>Circles<span class="bn-badge" id="circlesNavBadge"></span></button>
         <button data-go="rewards"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M7 5H4.5v1.5A2.5 2.5 0 0 0 7 9"/><path d="M17 5h2.5v1.5A2.5 2.5 0 0 1 17 9"/></svg>Rewards</button>
-        <button data-go="progress"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Progress</button>
-        <button data-go="settings"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>Settings</button>
+        <button data-go="progress"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Journey</button>
+        <button data-go="settings"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>Profile</button>
       </nav>
     </div>
 
@@ -3689,6 +3718,29 @@
     var qb = document.getElementById("forgeQjBtn"); if (qb) qb.addEventListener("click", openQj);
     var qi = document.getElementById("forgeQjInput"); if (qi) qi.addEventListener("click", openQj);
   })();
+  // ===== Journey tab — 3 pillar rings (days engaged this week) =====
+  function pillarWeekDays(types) {
+    var days = {}, cutoff = Date.now() - 7 * 86400000;
+    loadEntries().forEach(function (e) {
+      if (types.indexOf(e.type) >= 0) {
+        var t = e.savedAt ? new Date(e.savedAt).getTime() : 0;
+        if (t >= cutoff) days[entryDay(e)] = 1;
+      }
+    });
+    return Object.keys(days).length;
+  }
+  function renderJourney() {
+    if (!document.getElementById("journeyHome")) return;
+    [["faith", ["devotional", "prayer", "gratitude", "reframe", "drift"]],
+     ["family", ["family", "reframe", "drift"]],
+     ["fitness", ["fitness"]]].forEach(function (p) {
+      var days = pillarWeekDays(p[1]), frac = Math.min(1, days / 7);
+      var ring = document.getElementById("jr_" + p[0]);
+      if (ring) ring.setAttribute("stroke-dashoffset", String(Math.round(207 * (1 - frac))));
+      var pe = document.getElementById("jrpct_" + p[0]); if (pe) pe.textContent = Math.round(frac * 100) + "%";
+      var se = document.getElementById("jrsub_" + p[0]); if (se) se.textContent = days + "/7 days";
+    });
+  }
   // ----- Pillar sub-tabs (Faith / Family / Fitness) on the Today page -----
   let __activePillar = "faith";
   function pillarTabKey() { return APP + ":activepillar:" + (currentEmail() || ""); }
@@ -5550,7 +5602,7 @@
     __activeTab = name;
     document.body.setAttribute("data-activetab", name);
     var __ht = document.getElementById("heroTitle");
-    if (__ht) __ht.textContent = ({ circles: "Circles", rewards: "Rewards", progress: "Progress", settings: "Settings" })[name] || "";
+    if (__ht) __ht.textContent = ({ circles: "Circles", rewards: "Rewards", progress: "Journey", settings: "Profile" })[name] || "";
     document.querySelectorAll("#landingView [data-tab]").forEach(function (el) {
       const tabs = (el.getAttribute("data-tab") || "").split(/\s+/);
       el.classList.toggle("tab-off", tabs.indexOf(name) < 0);
@@ -5561,7 +5613,7 @@
     try {
       if (name === "rewards") renderRewards();
       if (name === "circles") { if (typeof renderCircles === "function") renderCircles(); if (typeof migrateGroupsToCircles === "function") migrateGroupsToCircles(); }
-      if (name === "progress") renderScore();
+      if (name === "progress") { renderScore(); if (typeof renderJourney === "function") renderJourney(); }
       if (name === "today") { if (typeof renderForge === "function") renderForge(); if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
       if (name === "settings" && typeof renderBlockedList === "function") renderBlockedList();
     } catch (e) {}
