@@ -5808,6 +5808,14 @@
     if (!ok && wasGating) { const off = document.getElementById("aiOffModal"); if (off) off.style.display = "flex"; }
   }
   (function initAiAckUI() {
+    // These modals live inside #landingView, but AI features like the devotional
+    // and Drift Fix run in #appView (which hides #landingView) — a modal in a
+    // display:none parent can't show. Reparent them to <body> so they overlay
+    // any screen.
+    ["aiAckModal", "aiOffModal"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.parentNode !== document.body) document.body.appendChild(el);
+    });
     const ok = document.getElementById("aiAckOk");
     const cancel = document.getElementById("aiAckCancel");
     const modal = document.getElementById("aiAckModal");
