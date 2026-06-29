@@ -1227,6 +1227,14 @@
           </span>
         </div>
 
+        <div class="settings-card" id="nameSettings" data-tab="settings">
+          <div class="sc-title">What should we call you?</div>
+          <p class="sc-desc">This is the name used in your greeting, your profile, and your circles.</p>
+          <input id="nameInput" type="text" placeholder="e.g. Mark" autocomplete="given-name" maxlength="40" style="width:100%; box-sizing:border-box; background:var(--field); border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:11px 13px; font-family:inherit; font-size:16px; margin-bottom:10px;">
+          <button class="pcc-btn" id="nameSave" type="button">Save name</button>
+          <span class="sc-saved" id="nameSaved"></span>
+        </div>
+
         <div class="settings-card" id="inviteSettings" data-tab="settings">
           <div class="sc-title">Invite friends</div>
           <p class="sc-desc">Know someone who wants to live on purpose? Send them LIVN FORGE — it's free to try for 7 days.</p>
@@ -3786,12 +3794,28 @@
     var av = document.getElementById("profAvatar"); if (av) av.textContent = (nm || em || "?").trim().charAt(0).toUpperCase();
     var ne = document.getElementById("profName"); if (ne) ne.textContent = nm || (em ? em.split("@")[0] : "Your profile");
     var ee = document.getElementById("profEmail"); if (ee) ee.textContent = em;
+    var ni = document.getElementById("nameInput"); if (ni && document.activeElement !== ni) ni.value = nm;
     var pts = totalPoints() || 0, L = levelInfo(pts);
     var ln = document.getElementById("profLevelNum"); if (ln) ln.textContent = "Level " + L.num;
     var lname = document.getElementById("profLevelName"); if (lname) lname.textContent = L.name;
     var lp = document.getElementById("profLevelPts"); if (lp) lp.textContent = L.maxed ? (pts.toLocaleString() + " pts") : (pts.toLocaleString() + " / " + L.nextMin.toLocaleString() + " pts");
     var lb = document.getElementById("profLevelBar"); if (lb) lb.style.width = Math.round(L.frac * 100) + "%";
   }
+  (function initNameSetting() {
+    var inp = document.getElementById("nameInput"), btn = document.getElementById("nameSave"), saved = document.getElementById("nameSaved");
+    if (!inp || !btn) return;
+    function save() {
+      var v = (inp.value || "").trim();
+      if (!v) { inp.focus(); return; }
+      setName(v);
+      if (saved) { saved.textContent = "Saved"; setTimeout(function () { if (saved) saved.textContent = ""; }, 2000); }
+      try { renderProfile(); } catch (e) {}
+      try { renderForge(); } catch (e) {}            // refresh the greeting
+      try { syncToGroup(true); } catch (e) {}         // push the new name to leaderboards
+    }
+    btn.addEventListener("click", save);
+    inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); save(); } });
+  })();
   // ----- Pillar sub-tabs (Faith / Family / Fitness) on the Today page -----
   let __activePillar = "faith";
   function pillarTabKey() { return APP + ":activepillar:" + (currentEmail() || ""); }
