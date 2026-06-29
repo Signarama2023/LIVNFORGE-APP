@@ -106,9 +106,12 @@
   .hero-inner { position: relative; z-index: 1; }
   .logo { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto 10px; mix-blend-mode: normal; }
   @media (max-width: 480px) { .logo { max-width: 260px; } }
-  /* On non-Today tabs, shrink the hero to a slim bar so the content is the focus. */
-  body[data-activetab]:not([data-activetab="today"]) #landingView .hero { padding: calc(8px + env(safe-area-inset-top, 0px)) 24px 6px; }
-  body[data-activetab]:not([data-activetab="today"]) #landingView .logo { max-width: 60px; margin-bottom: 0; }
+  .hero-title { display: none; }
+  /* On non-Today tabs, shrink the hero to a slim LEFT-aligned bar: small logo + page name. */
+  body[data-activetab]:not([data-activetab="today"]) #landingView .hero { padding: calc(8px + env(safe-area-inset-top, 0px)) 20px 8px; text-align: left; }
+  body[data-activetab]:not([data-activetab="today"]) #landingView .hero-inner { display: flex; align-items: center; gap: 12px; }
+  body[data-activetab]:not([data-activetab="today"]) #landingView .logo { width: auto; max-width: 44px; margin: 0; }
+  body[data-activetab]:not([data-activetab="today"]) #landingView .hero-title { display: block; font-size: 19px; font-weight: 800; letter-spacing: .3px; color: var(--text); }
   body[data-activetab]:not([data-activetab="today"]) #landingView .hero-desc { display: none; }
   body[data-activetab]:not([data-activetab="today"]) #landingView .hero .mountains { display: none; }
   .crown { color: var(--gold); margin-bottom: 6px; }
@@ -1047,6 +1050,7 @@
         </svg>
         <div class="hero-inner">
           <img class="logo" src="LIVNFORGE%20Logo.png" alt="LIVN FORGE">
+          <div class="hero-title" id="heroTitle"></div>
         </div>
       </div>
 
@@ -5332,6 +5336,8 @@
   function showTab(name) {
     __activeTab = name;
     document.body.setAttribute("data-activetab", name);
+    var __ht = document.getElementById("heroTitle");
+    if (__ht) __ht.textContent = ({ circles: "Circles", rewards: "Rewards", progress: "Progress", settings: "Settings" })[name] || "";
     document.querySelectorAll("#landingView [data-tab]").forEach(function (el) {
       const tabs = (el.getAttribute("data-tab") || "").split(/\s+/);
       el.classList.toggle("tab-off", tabs.indexOf(name) < 0);
