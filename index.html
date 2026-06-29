@@ -437,9 +437,11 @@
   .pc-att-file { display:inline-block; margin-top:6px; color:var(--gold-light); font-size:13px; text-decoration:none; border:1px solid var(--field-border); border-radius:8px; padding:6px 10px; max-width:100%; box-sizing:border-box; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .pc-type-label { font-size:11px; color:var(--muted); letter-spacing:0.5px; margin:2px 0 6px; }
   .pc-type-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
-  .pc-type-chip { background:rgba(255,255,255,0.05); border:1px solid var(--field-border); color:var(--text); border-radius:99px; padding:6px 12px; font-size:13px; font-family:inherit; cursor:pointer; }
+  .pc-type-chip { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.05); border:1px solid var(--field-border); color:var(--text); border-radius:99px; padding:6px 12px; font-size:13px; font-family:inherit; cursor:pointer; }
+  .pc-type-chip svg { flex:0 0 auto; }
   .pc-type-chip.active { border-color:var(--tc); color:var(--tc); box-shadow:0 0 0 1px var(--tc); }
-  .pcc-type { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+  .pcc-type { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+  .pcc-type svg { flex:0 0 auto; }
   .pc-lb { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
   .pc-lb .lb-list { margin-top:6px; }
   .pc-admin { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
@@ -474,14 +476,29 @@
   .pc-leave { background:none; border:none; color:var(--muted); font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; margin-top:10px; }
   /* Circles list -> detail */
   .pc-list-label { font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:18px 0 10px; }
-  .pc-list-btn { display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; text-align:left; background:var(--panel); border:1px solid var(--field-border); border-left:4px solid var(--tc, var(--gold)); border-radius:14px; padding:14px 14px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text); transition:border-color .15s ease, transform .1s ease; }
+  .pc-list-btn { display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; text-align:left; background:var(--panel); border:1px solid var(--field-border); border-radius:16px; padding:10px 12px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text); transition:border-color .15s ease, transform .1s ease; }
   .pc-list-btn:hover { border-color:var(--gold); }
   .pc-list-btn:active { transform:scale(0.99); }
-  .pc-list-btn .pcl-ico { font-size:24px; line-height:1; flex:0 0 auto; }
+  .pc-list-btn .pcl-photo { width:60px; height:60px; border-radius:13px; overflow:hidden; flex:0 0 auto; background:#16130d; display:flex; align-items:center; justify-content:center; }
+  .pc-list-btn .pcl-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+  .pc-list-btn .pcl-photo-ph { color:var(--tc, var(--gold)); display:flex; opacity:.92; }
   .pc-list-btn .pcl-text { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
   .pc-list-btn .pcl-name { font-weight:800; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .pc-list-btn .pcl-meta { color:var(--muted); font-size:12px; }
+  .pc-list-btn .pcl-focus { color:var(--muted); font-size:12.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pc-list-btn .pcl-focus:empty { display:none; }
+  .pc-list-btn .pcl-meta { color:var(--gold); font-size:11px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; }
   .pc-list-btn .pcl-arrow { color:var(--muted); font-size:24px; flex:0 0 auto; line-height:1; }
+  /* Circle detail header (photo + name) */
+  .pcd-head { display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .pcd-photo { width:66px; height:66px; border-radius:15px; overflow:hidden; flex:0 0 auto; background:#16130d; display:flex; align-items:center; justify-content:center; }
+  .pcd-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+  .pcd-photo-ph { color:var(--tc, var(--gold)); }
+  .pcd-head-text { min-width:0; flex:1; }
+  .pcd-photo-ctl { margin:0 0 12px; }
+  .pcd-photo-btn { background:none; border:1px solid var(--field-border); color:var(--muted); font-family:inherit; font-size:12px; padding:6px 13px; border-radius:999px; cursor:pointer; transition:border-color .15s ease,color .15s ease; }
+  .pcd-photo-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .pcd-head-text .pcc-name { margin-top:2px; }
+  .pcd-head-text .pcc-focus { margin:3px 0 0; }
   .pc-back { background:none; border:none; color:var(--gold-light); font-family:inherit; font-size:15px; font-weight:600; cursor:pointer; padding:4px 0 12px; }
   .pc-foot { display:flex; gap:18px; align-items:center; justify-content:space-between; margin-top:12px; }
   .pc-delete { background:none; border:none; color:#f87171; font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; }
@@ -4491,6 +4508,20 @@
     impact:  { label: "Impact Circle",  icon: "✨", color: "#34d399", focus: "Making an impact together" },
     iron:    { label: "Iron Circle",    icon: "⚔️", color: "#9aa0a6", focus: "Iron sharpening iron — Proverbs 27:17" }
   };
+  // Premium thin-line SVG icons per circle type (no emoji — brand rule). Inherit
+  // color via currentColor so callers tint with the type color.
+  const CIRCLE_ICON_PATHS = {
+    prayer:  '<path d="M12 20s-7-4.6-9.2-8.5C1 8 2.7 4.5 6 4.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.3 0 5 3.5 3.2 7C19 15.4 12 20 12 20z"/>',
+    team:    '<circle cx="9" cy="8.5" r="2.6"/><path d="M3.8 18.6a5.2 5.2 0 0 1 10.4 0"/><circle cx="16.6" cy="9.4" r="2.1"/><path d="M15.2 15.1a4.8 4.8 0 0 1 5 3.5"/>',
+    victory: '<path d="M8 4h8v3.4a4 4 0 0 1-8 0V4z"/><path d="M8 5.4H5.6A2.4 2.4 0 0 0 8 8.3"/><path d="M16 5.4h2.4A2.4 2.4 0 0 1 16 8.3"/><path d="M12 11.4v3"/><path d="M9.4 18.6h5.2"/><path d="M10 18.6l.5-2.6h3l.5 2.6"/>',
+    impact:  '<path d="M12 3.2l2.3 5.7 6 .5-4.6 3.9 1.5 5.9L12 16l-5.2 3.1 1.5-5.9L3.7 9.4l6-.5L12 3.2z"/>',
+    iron:    '<path d="M12 3l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6l7-3z"/>'
+  };
+  function circleIconSvg(type, size, stroke) {
+    const p = CIRCLE_ICON_PATHS[type] || CIRCLE_ICON_PATHS.prayer;
+    size = size || 22; stroke = stroke || 1.7;
+    return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="' + stroke + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+  }
   let pcNewType = "prayer";
 
   let pcOpen = null; // currently-open circle code; null = list view
@@ -4511,7 +4542,7 @@
     // ----- LIST view: join form + a button per circle -----
     const typeChips = Object.keys(CIRCLE_TYPES).map(function (k) {
       const t = CIRCLE_TYPES[k];
-      return '<button type="button" class="pc-type-chip ' + (pcNewType === k ? "active" : "") + '" data-newtype="' + k + '" style="--tc:' + t.color + '">' + t.icon + ' ' + t.label.replace(" Circle", "") + '</button>';
+      return '<button type="button" class="pc-type-chip ' + (pcNewType === k ? "active" : "") + '" data-newtype="' + k + '" style="--tc:' + t.color + '">' + circleIconSvg(k, 15) + '<span>' + t.label.replace(" Circle", "") + '</span></button>';
     }).join("");
     let html = '<div class="pc-wrap"><h3>Circles</h3>' +
       '<div class="pc-join">' +
@@ -4526,8 +4557,9 @@
       html += '<div class="pc-list-label">Your circles — tap to open</div>';
       codes.forEach(function (code, i) {
         html += '<button class="pc-list-btn" id="pcBtn_' + i + '" data-open="' + escapeHtml(code) + '">' +
-          '<span class="pcl-ico">⭕</span>' +
+          '<span class="pcl-photo"><span class="pcl-photo-ph">' + circleIconSvg("prayer", 26) + '</span></span>' +
           '<span class="pcl-text"><span class="pcl-name">' + escapeHtml(code) + '</span>' +
+          '<span class="pcl-focus" id="pclFocus_' + i + '"></span>' +
           '<span class="pcl-meta" id="pclMeta_' + i + '">Loading…</span></span>' +
           '<span class="pcl-badge" id="pclBadge_' + i + '"></span>' +
           '<span class="pcl-arrow">›</span></button>';
@@ -4546,15 +4578,21 @@
     if (!btn || !sb) return;
     try {
       const res = await Promise.all([
-        sb.from("prayer_circles").select("name,type").eq("code", code).maybeSingle(),
+        sb.from("prayer_circles").select("name,type,focus,image_url").eq("code", code).maybeSingle(),
         sb.from("prayer_circle_members").select("email").eq("code", code)
       ]);
       const circle = res[0].data || {};
       const tinfo = CIRCLE_TYPES[circle.type] || CIRCLE_TYPES.prayer;
       const count = (res[1].data || []).length;
       btn.style.setProperty("--tc", tinfo.color);
-      const ico = btn.querySelector(".pcl-ico"); if (ico) ico.textContent = tinfo.icon;
+      const photo = btn.querySelector(".pcl-photo");
+      if (photo) {
+        photo.innerHTML = circle.image_url
+          ? '<img src="' + escapeHtml(circle.image_url) + '" alt="" loading="lazy">'
+          : '<span class="pcl-photo-ph">' + circleIconSvg(circle.type, 26) + '</span>';
+      }
       const nm = btn.querySelector(".pcl-name"); if (nm) nm.textContent = circle.name || code;
+      const fc = btn.querySelector(".pcl-focus"); if (fc) fc.textContent = circle.focus || tinfo.focus;
       const meta = btn.querySelector(".pcl-meta"); if (meta) meta.textContent = tinfo.label.replace(" Circle", "") + " · " + count + (count === 1 ? " member" : " members");
     } catch (e) {}
   }
@@ -4663,10 +4701,20 @@
         (iAmCreator ? '<button class="pcc-btn pc-invite-btn" data-invite="' + escapeHtml(code) + '">Invite to circle</button>' : '') +
         '</div></div>';
 
+      const canEditPhoto = iAmCreator || isAdminUser();
+      const headerPhoto = circle.image_url
+        ? '<span class="pcd-photo"><img src="' + escapeHtml(circle.image_url) + '" alt=""></span>'
+        : '<span class="pcd-photo pcd-photo-ph" style="--tc:' + tinfo.color + '">' + circleIconSvg(type, 30) + '</span>';
+      const photoCtl = canEditPhoto
+        ? '<div class="pcd-photo-ctl"><input type="file" id="pcPhotoFile_' + i + '" accept="image/*" style="display:none" data-circlephoto="' + escapeHtml(code) + '">' +
+          '<button class="pcd-photo-btn" data-circlephotobtn="' + i + '" type="button">' + (circle.image_url ? "Change photo" : "Add a circle photo") + '</button></div>'
+        : '';
       card.innerHTML =
-        '<div class="pcc-type" style="color:' + tinfo.color + '">' + tinfo.icon + ' ' + tinfo.label + '</div>' +
+        '<div class="pcd-head">' + headerPhoto +
+        '<div class="pcd-head-text"><div class="pcc-type" style="color:' + tinfo.color + '">' + circleIconSvg(type, 14) + '<span>' + tinfo.label + '</span></div>' +
         '<div class="pcc-name">' + escapeHtml(circle.name || code) + '</div>' +
-        '<div class="pcc-focus">' + tinfo.icon + ' ' + escapeHtml(circle.focus || tinfo.focus) + '</div>' +
+        '<div class="pcc-focus">' + escapeHtml(circle.focus || tinfo.focus) + '</div></div></div>' +
+        photoCtl +
         '<div class="pc-meta"><span>' + members.length + ' member' + (members.length === 1 ? "" : "s") + '</span>' + (isPrayer ? '<span>' + prayedToday + ' prayed today</span>' : '') + '</div>' +
         prayerBlock +
         '<div class="pc-lb" id="pcLb_' + i + '"><button class="pc-members-head" data-lbtoggle="' + i + '" type="button"><span>Leaderboard</span><span class="pc-mem-caret">›</span></button><div class="pc-members-body"><div class="lb-list">' + lbHtml + '</div></div></div>' +
@@ -5010,6 +5058,10 @@
       const f = inp.files && inp.files[0];
       if (f) sendCircleAttachment(inp.dataset.attachcode, f);
       inp.value = "";
+    } else if (inp && inp.matches && inp.matches('input[type="file"][data-circlephoto]')) {
+      const f = inp.files && inp.files[0];
+      if (f) uploadCirclePhoto(inp.dataset.circlephoto, f);
+      inp.value = "";
     }
   });
   // Fix #4: Enter sends a chat message (Shift+Enter = newline), no reload.
@@ -5061,6 +5113,10 @@
     if (memBtn) { const sec = memBtn.closest(".pc-members"); if (sec) sec.classList.toggle("open"); return; }
     const lbBtn = t.closest ? t.closest("[data-lbtoggle]") : null;
     if (lbBtn) { const sec = lbBtn.closest(".pc-lb"); if (sec) sec.classList.toggle("open"); return; }
+    const photoBtn = t.closest ? t.closest("[data-circlephotobtn]") : null;
+    if (photoBtn) { const inp = document.getElementById("pcPhotoFile_" + photoBtn.getAttribute("data-circlephotobtn")); if (inp) inp.click(); return; }
+    const chipBtn = t.closest ? t.closest("[data-newtype]") : null;
+    if (chipBtn) { pcNewType = chipBtn.getAttribute("data-newtype"); document.querySelectorAll(".pc-type-chip").forEach(function (c) { c.classList.toggle("active", c.dataset.newtype === pcNewType); }); return; }
     if (t.id === "pcJoin") {
       const name = (document.getElementById("pcName").value || "").trim();
       const code = (document.getElementById("pcCode").value || "").trim().toUpperCase();
@@ -5758,6 +5814,24 @@
       __rewardImg = map;
     } catch (e) { /* table may not exist yet */ }
   }
+  async function uploadCirclePhoto(code, file) {
+    if (!sb || !file || !code) return;
+    if (!/^image\//.test(file.type || "")) { alert("Please choose an image file."); return; }
+    if (file.size > 8 * 1024 * 1024) { alert("That image is too large (max 8MB)."); return; }
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const path = code + "/" + Date.now() + "." + ext;
+    if (typeof showToast === "function") showToast("Uploading photo…");
+    try {
+      const up = await sb.storage.from("circle-photos").upload(path, file, { contentType: file.type || undefined, upsert: true });
+      if (up.error) throw up.error;
+      const url = sb.storage.from("circle-photos").getPublicUrl(path).data.publicUrl;
+      const { error } = await sb.from("prayer_circles").update({ image_url: url }).eq("code", code);
+      if (error) throw error;
+      if (typeof showToast === "function") showToast("Circle photo updated ✓");
+      renderCircles();
+    } catch (e) { alert("Couldn't update the photo: " + ((e && e.message) || e)); }
+  }
+
   async function uploadRewardPhoto(tierKey, file) {
     if (!sb || !file) return;
     if (!OWNER_EMAILS.includes((currentEmail() || "").toLowerCase())) return;
