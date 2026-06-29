@@ -2267,7 +2267,7 @@
         qHtml += '<ul class="bs-keypoints">' + __devo.keyPoints.map(function (p) { return '<li>' + escapeHtml(p) + '</li>'; }).join("") + '</ul>';
       }
       if (__devo.teacherInsights.length) {
-        qHtml += '<div class="bs-section-label">How these teachers approach it</div>';
+        qHtml += '<div class="bs-section-label">How they might talk about it</div>';
         qHtml += __devo.teacherInsights.map(function (t) {
           return '<div class="bs-teacher"><div class="bs-teacher-name">' + escapeHtml(t.teacher || "") + '</div>' +
             '<div class="bs-teacher-insight">' + escapeHtml(t.insight || "") + '</div></div>';

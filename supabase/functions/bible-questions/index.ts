@@ -31,14 +31,13 @@ const SYSTEM_PROMPT =
   "where it points. Plain and faithful to the text.\n" +
   '- "key_points": an array of 3 to 5 short strings, each a key takeaway or important truth drawn directly from ' +
   "THIS passage — the things worth understanding and remembering.\n" +
-  '- "teacher_insights": an array of EXACTLY 3 objects, one each for "Joby Martin", "Matt Chandler", and "Chris ' +
-  'Brown" (pastors), in that order. Each object has keys "teacher" (the name) and "insight" (2-3 sentences). Frame ' +
-  "each insight in the SPIRIT of how that pastor characteristically teaches and emphasizes Scripture — their known " +
-  "gospel-centered, grace-filled, application-driven approach — applied to THIS passage. Write it as a perspective " +
-  '/ emphasis (e.g. "Joby Martin would likely press us to...", "In the way Matt Chandler often teaches..."). NEVER ' +
-  "present anything as a verbatim quotation, NEVER fabricate a direct quote or claim they said a specific thing, " +
-  "and NEVER invent biographical facts, sermons, or events. It is a faithful characterization of emphasis, not a " +
-  "citation.\n" +
+  '- "teacher_insights": an array of EXACTLY 3 objects capturing the TEACHING STYLE of pastors Joby Martin, Matt ' +
+  'Chandler, and Chris Brown, in that order. Each object has keys "teacher" (set to EXACTLY "Joby Style", "Matt ' +
+  'Style", and "Chris Style" respectively) and "insight" (2-3 sentences written as how that teacher MIGHT talk ' +
+  "about THIS passage in their characteristic style — gospel-centered, grace-filled, application-driven — e.g. " +
+  '"Joby might put it like this: ...", "Matt would probably land on ...". This is a STYLE IMPRESSION, not a quote: ' +
+  "NEVER present anything as a verbatim quotation, NEVER claim they actually said a specific thing, and NEVER " +
+  "invent quotes, sermons, or biographical facts.\n" +
   '- "reflection": an array of EXACTLY 2 open-ended reflection questions (plain strings) that move the reader ' +
   "toward Jesus and honest, personal response — grace-filled, practical, never mere self-improvement.\n\n" +
   "The summary and key points must stay anchored to the plain meaning of the provided passage in its context. " +
