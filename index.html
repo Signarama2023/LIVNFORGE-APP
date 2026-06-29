@@ -5,30 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>LIVN FORGE — Forged in Faith. Refined in Purpose.</title>
 <script>
-/* Auto-update: the app loads remotely and GitHub Pages caches index.html for 10
-   minutes, so new deploys used to take a while to appear. At launch we check the
-   LIVE index's ETag (cache-busted, so it's the true latest); if it changed since
-   we last loaded, we reload the fresh copy. Hard-guarded against reload loops and
-   never disrupts the password-reset (#recovery) or Stripe-return (?checkout) flows. */
+/* Auto-update: the app loads remotely and iOS caches index.html for ~10 minutes,
+   so new deploys lagged. At launch we directly compare the version the app is
+   RUNNING (the cached copy) against the version that's LIVE — no stored state, so
+   it can't be defeated by iOS wiping local storage. If they differ, we reload the
+   fresh copy. Guarded against reload loops; never disrupts the password-reset
+   (#recovery) or Stripe-return (?checkout) flows. */
 (function () {
   try {
-    if (!/^https?:$/.test(location.protocol)) return;        // served over http(s) only
-    if (sessionStorage.getItem("lf_updchk")) return;          // run once per launch
+    if (!/^https?:$/.test(location.protocol)) return;          // served over http(s) only
+    if (/[?&]v=/.test(location.search)) return;                // already a fresh, cache-busted load
+    if (location.hash || /checkout/.test(location.search)) return; // don't disrupt reset/checkout
+    if (sessionStorage.getItem("lf_updchk")) return;           // once per launch
     sessionStorage.setItem("lf_updchk", "1");
-    fetch(location.origin + "/index.html?cb=" + Date.now(), { method: "HEAD", cache: "no-store" })
-      .then(function (r) {
-        if (!r || !r.ok) return;
-        var tag = r.headers.get("etag") || r.headers.get("last-modified") || "";
-        if (!tag) return;
-        var seen = localStorage.getItem("lf_build_tag");
-        if (!seen) { localStorage.setItem("lf_build_tag", tag); return; }  // first run: trust current
-        var clean = !location.hash && !/checkout/.test(location.search) && !/[?&]v=/.test(location.search);
-        if (tag !== seen && clean) {
-          localStorage.setItem("lf_build_tag", tag);
-          location.replace(location.pathname + "?v=" + Date.now());        // fresh, cache-busted load
-        }
-      })
-      .catch(function () {});
+    var here = location.origin + location.pathname;
+    var tagOf = function (opts, url) {
+      return fetch(url, opts).then(function (r) {
+        return (r && r.ok !== false) ? (r.headers.get("etag") || r.headers.get("last-modified") || "") : "";
+      }).catch(function () { return ""; });
+    };
+    Promise.all([
+      tagOf({ cache: "force-cache" }, here),                       // what we're RUNNING (read from cache)
+      tagOf({ method: "HEAD", cache: "no-store" }, here + "?cb=" + Date.now()), // what's LIVE now
+    ]).then(function (t) {
+      if (t[0] && t[1] && t[0] !== t[1]) {                      // running an old build -> refresh
+        location.replace(location.pathname + "?v=" + Date.now());
+      }
+    });
   } catch (e) {}
 })();
 </script>
