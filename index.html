@@ -135,13 +135,16 @@
   .logo { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto 10px; mix-blend-mode: normal; }
   @media (max-width: 480px) { .logo { max-width: 260px; } }
   .hero-title { display: none; }
-  /* On non-Today tabs, shrink the hero to a slim LEFT-aligned bar: small logo + page name. */
-  body[data-activetab]:not([data-activetab="today"]) #landingView .hero { padding: calc(8px + env(safe-area-inset-top, 0px)) 20px 8px; text-align: left; }
-  body[data-activetab]:not([data-activetab="today"]) #landingView .hero-inner { display: flex; align-items: center; gap: 12px; }
-  body[data-activetab]:not([data-activetab="today"]) #landingView .logo { width: auto; max-width: 44px; margin: 0; }
-  body[data-activetab]:not([data-activetab="today"]) #landingView .hero-title { display: block; font-size: 15px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
-  body[data-activetab]:not([data-activetab="today"]) #landingView .hero-desc { display: none; }
-  body[data-activetab]:not([data-activetab="today"]) #landingView .hero .mountains { display: none; }
+  /* Slim the hero to a left-aligned bar (small logo + page name) on every tab —
+     the Today home leads with the greeting, not the logo. */
+  body[data-activetab] #landingView .hero { padding: calc(8px + env(safe-area-inset-top, 0px)) 20px 8px; text-align: left; }
+  body[data-activetab] #landingView .hero-inner { display: flex; align-items: center; gap: 12px; }
+  body[data-activetab] #landingView .logo { width: auto; max-width: 44px; margin: 0; }
+  body[data-activetab] #landingView .hero-title { display: block; font-size: 15px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
+  body[data-activetab] #landingView .hero-desc { display: none; }
+  body[data-activetab] #landingView .hero .mountains { display: none; }
+  /* The Forge home replaces the old Today scoreboard / identity line / quick-journal. */
+  #landingView .scoreboard, #landingView #heroDesc, #landingView .quick-journal { display: none !important; }
   .crown { color: var(--gold); margin-bottom: 6px; }
   .brand-title { font-weight: 800; letter-spacing: 2px; line-height: 0.95; margin: 4px 0 2px; }
   .brand-title .rise { display: block; font-size: 52px; color: #f7f7f9; text-shadow: 0 2px 14px rgba(0,0,0,0.5); }
@@ -193,6 +196,54 @@
 
   /* ---------- LANDING ---------- */
   .landing-body { padding: 22px 24px 30px; }
+  /* ===== Forge home (Today) ===== */
+  .forge-greet { font-size:26px; font-weight:800; letter-spacing:.2px; margin:2px 0 3px; line-height:1.15; }
+  .forge-date { font-size:13px; color:var(--muted); margin-bottom:18px; }
+  .forge-card { background:var(--panel); border:1px solid var(--field-border); border-radius:16px; padding:16px 17px; margin-bottom:14px; }
+  .forge-card.accent { border-left:3px solid var(--gold); }
+  .forge-clabel { font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:9px; display:flex; align-items:center; justify-content:space-between; }
+  .forge-clabel svg { width:17px; height:17px; color:var(--muted); }
+  .fv-text { font-size:15.5px; line-height:1.55; color:var(--text); }
+  .fv-ref { font-size:13px; color:var(--gold-light); font-weight:700; margin-top:9px; }
+  .fmission { display:flex; align-items:center; gap:16px; }
+  .fmission .m-l { flex:1; }
+  .fmission .mtitle { font-size:18px; font-weight:800; margin-bottom:3px; }
+  .fmission .msub { font-size:13px; color:var(--muted); line-height:1.4; }
+  .fmission .mbtn { margin-top:12px; background:var(--gold); color:#1c1402; border:none; font-family:inherit; font-weight:800; font-size:13.5px; padding:10px 18px; border-radius:99px; cursor:pointer; }
+  .mring { position:relative; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .mring svg { width:82px; height:82px; transform:rotate(-90deg); }
+  .mring .bg { fill:none; stroke:rgba(255,255,255,.09); stroke-width:7; }
+  .mring .fg { fill:none; stroke:var(--gold); stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset .8s cubic-bezier(.3,1,.4,1); }
+  .mring .ctr { position:absolute; text-align:center; }
+  .mring .ctr .frac { font-size:19px; font-weight:800; line-height:1; }
+  .mring .ctr .pct { font-size:10px; color:var(--muted); margin-top:2px; }
+  .forge-stats { display:flex; gap:10px; margin-bottom:14px; }
+  .forge-stat { flex:1; background:var(--panel); border:1px solid var(--field-border); border-radius:14px; padding:14px 8px; text-align:center; }
+  .forge-stat .num { font-size:23px; font-weight:800; color:var(--gold-light); line-height:1; }
+  .forge-stat .lbl { font-size:10.5px; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); margin-top:7px; font-weight:700; line-height:1.25; }
+  .fqj { display:flex; align-items:center; gap:12px; }
+  .fqj input { flex:1; background:var(--field); border:1px solid var(--field-border); border-radius:10px; padding:11px 13px; color:var(--text); font-family:inherit; font-size:14px; }
+  .fqj input::placeholder { color:var(--muted); }
+  .fqj .pen { width:38px; height:38px; flex:0 0 auto; border-radius:10px; background:rgba(217,169,62,.16); color:var(--gold-light); display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; }
+  .fqj .pen svg { width:18px; height:18px; }
+  .fjourney { margin:2px 0 6px; }
+  .fstep { display:flex; align-items:center; gap:13px; background:var(--panel); border:1px solid var(--field-border); border-radius:14px; padding:14px 15px; margin-bottom:10px; cursor:pointer; transition:transform .1s ease; }
+  .fstep:active { transform:scale(.99); }
+  .fstep .sico { width:34px; height:34px; flex:0 0 auto; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--field); color:var(--muted); }
+  .fstep .sico svg { width:19px; height:19px; }
+  .fstep .stitle { font-size:15px; font-weight:700; }
+  .fstep .ssub { font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .fstep .schev { margin-left:auto; color:var(--muted); display:flex; }
+  .fstep .schev svg { width:20px; height:20px; }
+  .fstep.done { opacity:.6; }
+  .fstep.done .sico { background:rgba(52,211,153,.16); color:#34d399; }
+  .fstep.done .schev { color:#34d399; }
+  .fstep.next { border-color:var(--gold); background:linear-gradient(135deg,rgba(217,169,62,.16),rgba(217,169,62,.04)); }
+  .fstep.next .sico { background:rgba(217,169,62,.2); color:var(--gold-light); }
+  .forge-complete { text-align:center; background:linear-gradient(135deg,rgba(217,169,62,.18),rgba(217,169,62,.05)); border:1px solid var(--gold); border-radius:16px; padding:18px; margin-bottom:14px; }
+  .forge-complete .fc-t { font-size:18px; font-weight:800; color:var(--gold-light); }
+  .forge-complete .fc-s { font-size:13px; color:var(--muted); margin-top:4px; }
+  .forge-more { font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:24px 2px 12px; }
   .profile-bar {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     font-size: 13px; color: var(--muted); margin-bottom: 18px; flex-wrap: wrap;
@@ -1083,6 +1134,49 @@
       </div>
 
       <div class="landing-body">
+        <div id="forgeHome" data-tab="today">
+          <h1 class="forge-greet" id="forgeGreet">Good morning 👋</h1>
+          <div class="forge-date" id="forgeDate"></div>
+
+          <div class="forge-card accent">
+            <div class="forge-clabel">Verse of the day <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+            <div class="fv-text" id="forgeVerseText"></div>
+            <div class="fv-ref" id="forgeVerseRef"></div>
+          </div>
+
+          <div class="forge-card accent">
+            <div class="fmission">
+              <div class="m-l">
+                <div class="forge-clabel" style="margin-bottom:6px;">Today's mission</div>
+                <div class="mtitle">Forge your day</div>
+                <div class="msub">Complete each step to finish strong.</div>
+                <button class="mbtn" id="forgeStartBtn" type="button">Start journey →</button>
+              </div>
+              <div class="mring">
+                <svg viewBox="0 0 82 82"><circle class="bg" cx="41" cy="41" r="34"></circle><circle class="fg" id="forgeMRing" cx="41" cy="41" r="34" stroke-dasharray="214" stroke-dashoffset="214"></circle></svg>
+                <div class="ctr"><div class="frac" id="forgeMFrac">0/5</div><div class="pct" id="forgeMPct">0%</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="forge-stats">
+            <div class="forge-stat"><div class="num" id="forgePoints">0</div><div class="lbl">Kingdom Points</div></div>
+            <div class="forge-stat"><div class="num" id="forgeEntries">0</div><div class="lbl">Entries</div></div>
+            <div class="forge-stat"><div class="num" id="forgeStreak">0</div><div class="lbl">Day Streak</div></div>
+          </div>
+
+          <div class="forge-card">
+            <div class="forge-clabel">Quick journal</div>
+            <div class="fqj">
+              <input id="forgeQjInput" placeholder="What's on your mind?" readonly>
+              <button class="pen" id="forgeQjBtn" type="button" aria-label="Open journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>
+            </div>
+          </div>
+
+          <div class="fjourney" id="forgeJourney" style="display:none;"></div>
+          <div class="forge-more" data-tab="today">More ways to journal</div>
+        </div>
+
         <div class="profile-bar" data-tab="settings">
           <span>Signed in as <b id="profileEmail"></b></span>
           <span style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -3505,6 +3599,92 @@
       c.classList.toggle("pc-done", !isWeekly && !!daily[t]);
     });
   }
+  // ===== Forge home (Today) — guided daily experience =====
+  const DAILY_VERSES = [
+    { t: "Do not conform to the pattern of this world, but be transformed by the renewing of your mind.", r: "Romans 12:2" },
+    { t: "Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", r: "Joshua 1:9" },
+    { t: "I can do all this through him who gives me strength.", r: "Philippians 4:13" },
+    { t: "Trust in the Lord with all your heart and lean not on your own understanding.", r: "Proverbs 3:5" },
+    { t: "But those who hope in the Lord will renew their strength. They will soar on wings like eagles.", r: "Isaiah 40:31" },
+    { t: "And we know that in all things God works for the good of those who love him.", r: "Romans 8:28" },
+    { t: "The Lord is my shepherd, I lack nothing.", r: "Psalm 23:1" },
+    { t: "Commit to the Lord whatever you do, and he will establish your plans.", r: "Proverbs 16:3" },
+    { t: "Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!", r: "2 Corinthians 5:17" },
+    { t: "Whatever you do, work at it with all your heart, as working for the Lord.", r: "Colossians 3:23" },
+    { t: "Cast all your anxiety on him because he cares for you.", r: "1 Peter 5:7" },
+    { t: "Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.", r: "Galatians 6:9" },
+    { t: "The Lord himself goes before you and will be with you; he will never leave you nor forsake you.", r: "Deuteronomy 31:8" },
+    { t: "Be on your guard; stand firm in the faith; be courageous; be strong.", r: "1 Corinthians 16:13" },
+  ];
+  function forgeDayIndex() { var n = new Date(); return Math.floor(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) / 86400000); }
+  function todaysVerse() { return DAILY_VERSES[((forgeDayIndex() % DAILY_VERSES.length) + DAILY_VERSES.length) % DAILY_VERSES.length]; }
+  function markEncouragedToday() { try { localStorage.setItem("lf_encouraged_" + dayKey(new Date()), "1"); } catch (e) {} }
+  function forgeSteps() {
+    var today = dayKey(new Date()), d = {};
+    loadEntries().forEach(function (e) { if (entryDay(e) === today) d[e.type] = true; });
+    var journaled = d.guided || d.freeflow || d.family || d.gratitude || d.reframe || d.drift;
+    var encouraged = false; try { encouraged = localStorage.getItem("lf_encouraged_" + today) === "1"; } catch (e) {}
+    var openType = function (t) { return function () { setActiveType(t); showApp(); showWrite(); window.scrollTo(0, 0); }; };
+    return [
+      { title: "Read today's Scripture", sub: "Devotional", icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z', done: !!d.devotional, act: openType("devotional") },
+      { title: "Pray", sub: "Lift it up", icon: 'M12 3v3 M12 18v3 M5 5l2 2 M17 17l2 2 M3 12h3 M18 12h3', done: !!d.prayer, act: openType("prayer") },
+      { title: "Write one journal entry", sub: "What happened today?", icon: 'M12 20h9 M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z', done: !!journaled, act: openType("guided") },
+      { title: "Complete today's habit", sub: "Fitness routine", icon: 'M6.5 6.5 17.5 17.5 M4 9l2-2 M18 20l2-2 M3 13l3 3 M18 5l3 3', done: !!d.fitness, act: openType("fitness") },
+      { title: "Encourage someone", sub: "In a circle", icon: 'M19 14c1.5-1.5 3-3.2 3-5.5A3.5 3.5 0 0 0 18.5 5c-1.4 0-2.6.8-3.5 2-.9-1.2-2.1-2-3.5-2A3.5 3.5 0 0 0 8 8.5c0 2.3 1.5 4 3 5.5l4 4Z', done: encouraged, act: function () { showTab("circles"); window.scrollTo(0, 0); } },
+    ];
+  }
+  function renderForge() {
+    var g = document.getElementById("forgeGreet");
+    if (!g) return;
+    var hr = new Date().getHours();
+    var part = hr < 12 ? "Good morning" : (hr < 18 ? "Good afternoon" : "Good evening");
+    var nm = (typeof getName === "function" && getName()) ? getName() : "";
+    g.textContent = part + (nm ? ", " + nm : "") + " 👋";
+    var dt = document.getElementById("forgeDate"); if (dt) dt.textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+    var v = todaysVerse();
+    var vt = document.getElementById("forgeVerseText"); if (vt) vt.textContent = '“' + v.t + '”';
+    var vr = document.getElementById("forgeVerseRef"); if (vr) vr.textContent = v.r + " · NIV";
+    var pe = document.getElementById("forgePoints"); if (pe) pe.textContent = (totalPoints() || 0).toLocaleString();
+    var en = document.getElementById("forgeEntries"); if (en) en.textContent = loadEntries().length;
+    var st = document.getElementById("forgeStreak"); if (st) st.textContent = currentStreak();
+    var steps = forgeSteps();
+    var done = steps.filter(function (s) { return s.done; }).length;
+    var frac = done / steps.length;
+    var ring = document.getElementById("forgeMRing"); if (ring) ring.setAttribute("stroke-dashoffset", String(Math.round(214 * (1 - frac))));
+    var mf = document.getElementById("forgeMFrac"); if (mf) mf.textContent = done + "/" + steps.length;
+    var mp = document.getElementById("forgeMPct"); if (mp) mp.textContent = Math.round(frac * 100) + "%";
+    var startBtn = document.getElementById("forgeStartBtn");
+    if (startBtn) startBtn.textContent = done === 0 ? "Start journey →" : (done === steps.length ? "Forge complete ✓" : "Continue journey →");
+    var jw = document.getElementById("forgeJourney");
+    if (jw) {
+      var nextIx = steps.findIndex(function (s) { return !s.done; });
+      var html = "";
+      if (done === steps.length) html += '<div class="forge-complete"><div class="fc-t">Today’s Forge complete 🔥</div><div class="fc-s">You showed up. Well done — see you tomorrow.</div></div>';
+      html += steps.map(function (s, i) {
+        var cls = s.done ? "done" : (i === nextIx ? "next" : "");
+        var chev = s.done
+          ? '<span class="schev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>'
+          : '<span class="schev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>';
+        return '<div class="fstep ' + cls + '" data-fstep="' + i + '">' +
+          '<span class="sico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="' + s.icon + '"/></svg></span>' +
+          '<div><div class="stitle">' + s.title + '</div><div class="ssub">' + (s.done ? "Done" : s.sub) + '</div></div>' + chev + '</div>';
+      }).join("");
+      jw.innerHTML = html;
+      jw.querySelectorAll("[data-fstep]").forEach(function (el) {
+        el.addEventListener("click", function () { var s = forgeSteps()[+el.getAttribute("data-fstep")]; if (s && s.act) s.act(); });
+      });
+    }
+  }
+  (function initForge() {
+    var sb2 = document.getElementById("forgeStartBtn");
+    if (sb2) sb2.addEventListener("click", function () {
+      var jw = document.getElementById("forgeJourney");
+      if (jw) { jw.style.display = "block"; jw.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    });
+    function openQj() { setActiveType("freeflow"); showApp(); showWrite(); window.scrollTo(0, 0); }
+    var qb = document.getElementById("forgeQjBtn"); if (qb) qb.addEventListener("click", openQj);
+    var qi = document.getElementById("forgeQjInput"); if (qi) qi.addEventListener("click", openQj);
+  })();
   // ----- Pillar sub-tabs (Faith / Family / Fitness) on the Today page -----
   let __activePillar = "faith";
   function pillarTabKey() { return APP + ":activepillar:" + (currentEmail() || ""); }
@@ -4446,6 +4626,7 @@
         .insert({ code: code, email: currentEmail(), name: getName(), body: body })
         .select("id,created_at").single();
       if (error) throw error;
+      if (typeof markEncouragedToday === "function") markEncouragedToday(); // completes the Forge "Encourage" step
       // Fix #4: append the new message in place — no full re-render / reload.
       if (listEl) {
         const empty = listEl.querySelector(".pc-chat-empty"); if (empty) empty.remove();
@@ -5377,7 +5558,7 @@
       if (name === "rewards") renderRewards();
       if (name === "circles") { if (typeof renderCircles === "function") renderCircles(); if (typeof migrateGroupsToCircles === "function") migrateGroupsToCircles(); }
       if (name === "progress") renderScore();
-      if (name === "today") { if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
+      if (name === "today") { if (typeof renderForge === "function") renderForge(); if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
       if (name === "settings" && typeof renderBlockedList === "function") renderBlockedList();
     } catch (e) {}
     window.scrollTo(0, 0);
