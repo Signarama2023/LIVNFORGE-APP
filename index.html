@@ -4,6 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>LIVN FORGE — Forged in Faith. Refined in Purpose.</title>
+<script>
+/* Auto-update: the app loads remotely and GitHub Pages caches index.html for 10
+   minutes, so new deploys used to take a while to appear. At launch we check the
+   LIVE index's ETag (cache-busted, so it's the true latest); if it changed since
+   we last loaded, we reload the fresh copy. Hard-guarded against reload loops and
+   never disrupts the password-reset (#recovery) or Stripe-return (?checkout) flows. */
+(function () {
+  try {
+    if (!/^https?:$/.test(location.protocol)) return;        // served over http(s) only
+    if (sessionStorage.getItem("lf_updchk")) return;          // run once per launch
+    sessionStorage.setItem("lf_updchk", "1");
+    fetch(location.origin + "/index.html?cb=" + Date.now(), { method: "HEAD", cache: "no-store" })
+      .then(function (r) {
+        if (!r || !r.ok) return;
+        var tag = r.headers.get("etag") || r.headers.get("last-modified") || "";
+        if (!tag) return;
+        var seen = localStorage.getItem("lf_build_tag");
+        if (!seen) { localStorage.setItem("lf_build_tag", tag); return; }  // first run: trust current
+        var clean = !location.hash && !/checkout/.test(location.search) && !/[?&]v=/.test(location.search);
+        if (tag !== seen && clean) {
+          localStorage.setItem("lf_build_tag", tag);
+          location.replace(location.pathname + "?v=" + Date.now());        // fresh, cache-busted load
+        }
+      })
+      .catch(function () {});
+  } catch (e) {}
+})();
+</script>
 <meta name="description" content="A faith-driven daily journal for men and women — journaling, scripture devotionals, fitness, prayer, gratitude, and an AI weekly review. Start your 7-day free trial.">
 <meta name="theme-color" content="#15161a">
 <!-- Link preview (Open Graph) -->
