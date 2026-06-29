@@ -312,6 +312,26 @@
   .rw-done { color:#4ade80; font-weight:700; }
   .rw-claim { background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#1c1402; border:none; border-radius:99px; padding:7px 16px; font-weight:800; font-size:13px; cursor:pointer; font-family:inherit; }
   .rw-claim:hover { filter:brightness(1.05); }
+  /* ===== Rewards tab — hero + photo cards ===== */
+  .rw-hero { margin:2px 0 18px; }
+  .rw-hero-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .rw-hero-title { font-size:23px; font-weight:800; line-height:1.1; }
+  .rw-hero-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+  .rw-hero-pts { text-align:right; flex:0 0 auto; }
+  .rw-hero-num { font-size:23px; font-weight:800; color:var(--gold-light); line-height:1; }
+  .rw-hero-lbl { font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:700; margin-top:4px; }
+  .rw-card { display:flex; gap:14px; align-items:center; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:14px; margin-bottom:12px; }
+  .rw-card-photo { width:84px; height:84px; flex:0 0 auto; border-radius:12px; overflow:hidden; background:var(--field); display:flex; align-items:center; justify-content:center; font-size:34px; }
+  .rw-card-photo img { width:100%; height:100%; object-fit:cover; cursor:zoom-in; display:block; }
+  .rw-card-body { flex:1; min-width:0; }
+  .rw-card-name { font-size:15px; font-weight:800; margin-bottom:10px; }
+  .rw-card-bar { height:7px; border-radius:99px; background:rgba(255,255,255,0.08); overflow:hidden; margin-bottom:10px; }
+  .rw-card-bar > span { display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--gold),var(--gold-light)); transition:width .5s ease; }
+  .rw-card-meta { display:flex; align-items:center; gap:8px; }
+  .rw-card-meta .rw-status { margin-right:auto; }
+  .rw-card.rw-locked { opacity:.72; }
+  .rw-card.rw-locked .rw-card-photo img { filter:grayscale(1); opacity:.5; }
+  .rw-card.rw-claimed .rw-status.rw-done { color:#4ade80; font-weight:700; }
   .rw-foot { margin-top:10px; font-size:12px; color:var(--muted); text-align:center; }
   .rw-admin-link { display:inline-block; margin-top:10px; font-size:12px; color:var(--gold-light); background:none; border:none; cursor:pointer; text-decoration:underline; font-family:inherit; padding:0; }
   .rw-modal { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:18px; }
@@ -5780,34 +5800,37 @@
       const done = !!claimed[t.key];
       const isActive = ti === activeIndex;
       const reached = lifetime >= t.points;
-      let state, right, barW;
-      if (done) { state = "claimed"; barW = 100; right = '<span class="rw-status rw-done">Claimed ✓</span>'; }
+      let state, meta, barW;
+      if (done) { state = "claimed"; barW = 100; meta = '<span class="rw-status rw-done">Claimed</span>'; }
       else if (isActive) {
         state = reached ? "ready" : "active";
         barW = Math.min(100, Math.round((lifetime / t.points) * 100));
-        right = (reached && rwCanClaim())
-          ? '<button class="rw-claim" data-tier="' + t.key + '">Claim</button>'
-          : '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + "</span>";
-      } else { state = "locked"; barW = 0; right = '<span class="rw-status">🔒 Locked</span>'; }
+        meta = (reached && rwCanClaim())
+          ? '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + ' pts</span><button class="rw-claim" data-tier="' + t.key + '">Claim</button>'
+          : '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + " pts</span>";
+      } else { state = "locked"; barW = Math.min(100, Math.round((lifetime / t.points) * 100)); meta = '<span class="rw-status">' + lifetime.toLocaleString() + " / " + t.points.toLocaleString() + " pts</span>"; }
       const customImg = __rewardImg[t.key];
-      const iconSrc = customImg || t.img;           // small icon (hat default = crop)
-      const zoomSrc = customImg || t.hero || t.img; // full-size on tap
+      const iconSrc = customImg || t.img;
+      const zoomSrc = customImg || t.hero || t.img;
+      const photo = iconSrc
+        ? '<img src="' + iconSrc + '" data-zoom="' + zoomSrc + '" alt="' + escapeHtml(t.name) + '">'
+        : '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><path d="M20 12v9H4v-9 M2 7h20v5H2z M12 21V7 M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>';
       const photoCtl = isOwner
-        ? '<button class="rw-photo-btn" data-rwphoto="' + t.key + '" type="button" title="Update photo">📷</button>' +
+        ? '<button class="rw-photo-btn" data-rwphoto="' + t.key + '" type="button" title="Update photo"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3.5"/></svg></button>' +
           '<input type="file" accept="image/*" class="rw-photo-input" id="rwPhotoInput_' + t.key + '" style="display:none">'
         : "";
-      return '<div class="rw-tier rw-' + state + '">' +
-        '<div class="rw-emoji">' + (iconSrc ? '<img class="rw-img" src="' + iconSrc + '" data-zoom="' + zoomSrc + '" alt="' + escapeHtml(t.name) + '">' : t.emoji) + "</div>" +
-        '<div class="rw-info"><div class="rw-name">' + t.name + "</div>" +
-        '<div class="rw-bar"><span style="width:' + barW + '%"></span></div></div>' +
-        '<div class="rw-right">' + right + photoCtl + "</div></div>";
+      return '<div class="rw-card rw-' + state + '">' +
+        '<div class="rw-card-photo">' + photo + '</div>' +
+        '<div class="rw-card-body"><div class="rw-card-name">' + t.name + '</div>' +
+        '<div class="rw-card-bar"><span style="width:' + barW + '%"></span></div>' +
+        '<div class="rw-card-meta">' + meta + photoCtl + '</div></div></div>';
     }).join("");
 
-    let headerText;
-    if (!target) headerText = "All rewards unlocked 🏆";
-    else if (lifetime >= target.points) headerText = "Ready to claim your " + target.name + "! 🎉";
-    else headerText = (target.points - lifetime).toLocaleString() + " pts to your " + target.name;
-    const header = '<div class="rw-head"><span class="rw-title">Rewards</span><span class="rw-next">' + headerText + "</span></div>";
+    const L = (typeof levelInfo === "function") ? levelInfo(lifetime) : { num: 1 };
+    const header = '<div class="rw-hero"><div class="rw-hero-top">' +
+      '<div><div class="rw-hero-title">Forge Rewards</div><div class="rw-hero-sub">Faithfulness has value.</div></div>' +
+      '<div class="rw-hero-pts"><div class="rw-hero-num">' + lifetime.toLocaleString() + '</div><div class="rw-hero-lbl">pts · Level ' + L.num + '</div></div>' +
+      '</div></div>';
     const foot = rwCanClaim() ? "" : '<div class="rw-foot">An active membership is required to claim rewards.</div>';
     const admin = isOwner ? '<button class="rw-admin-link" id="rwAdminLink">View all claims (admin)</button>' : "";
     host.innerHTML = header + rows + foot + admin;
