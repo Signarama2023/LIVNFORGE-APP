@@ -4573,12 +4573,22 @@
     refreshCircleUnread();
   }
 
+  // Fetch a circle row, tolerating the image_url column not existing yet (before
+  // the circle_photos migration is run). Falls back to the same columns minus image_url.
+  async function circleRow(code, cols) {
+    let r = await sb.from("prayer_circles").select(cols).eq("code", code).maybeSingle();
+    if (r.error && /image_url/.test(r.error.message || "")) {
+      r = await sb.from("prayer_circles").select(cols.replace(/,?\s*image_url/, "")).eq("code", code).maybeSingle();
+    }
+    return r;
+  }
+
   async function loadCircleSummary(code, i) {
     const btn = document.getElementById("pcBtn_" + i);
     if (!btn || !sb) return;
     try {
       const res = await Promise.all([
-        sb.from("prayer_circles").select("name,type,focus,image_url").eq("code", code).maybeSingle(),
+        circleRow(code, "name,type,focus,image_url"),
         sb.from("prayer_circle_members").select("email").eq("code", code)
       ]);
       const circle = res[0].data || {};
@@ -4608,7 +4618,7 @@
     await ensureCircleMembership(code);
     try {
       const results = await Promise.all([
-        sb.from("prayer_circles").select("name,focus,type,created_by").eq("code", code).maybeSingle(),
+        circleRow(code, "name,focus,type,created_by,image_url"),
         sb.from("prayer_circle_members").select("email,name").eq("code", code),
         sb.from("prayer_logs").select("email").eq("code", code).eq("day", today),
         sb.from("prayer_requests").select("id,email,name,body,created_at").eq("code", code).order("created_at", { ascending: false }),
