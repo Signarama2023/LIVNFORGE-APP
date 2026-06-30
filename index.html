@@ -2328,42 +2328,47 @@
     "revelation":"REV","rev":"REV","re":"REV"
   };
   const BIBLE_BOOKS = [
-    {n:"Genesis",c:50},{n:"Exodus",c:40},{n:"Leviticus",c:27},{n:"Numbers",c:36},{n:"Deuteronomy",c:34},
-    {n:"Joshua",c:24},{n:"Judges",c:21},{n:"Ruth",c:4},{n:"1 Samuel",c:31},{n:"2 Samuel",c:24},
-    {n:"1 Kings",c:22},{n:"2 Kings",c:25},{n:"1 Chronicles",c:29},{n:"2 Chronicles",c:36},{n:"Ezra",c:10},
-    {n:"Nehemiah",c:13},{n:"Esther",c:10},{n:"Job",c:42},{n:"Psalm",c:150},{n:"Proverbs",c:31},
-    {n:"Ecclesiastes",c:12},{n:"Song of Solomon",c:8},{n:"Isaiah",c:66},{n:"Jeremiah",c:52},{n:"Lamentations",c:5},
-    {n:"Ezekiel",c:48},{n:"Daniel",c:12},{n:"Hosea",c:14},{n:"Joel",c:3},{n:"Amos",c:9},
-    {n:"Obadiah",c:1},{n:"Jonah",c:4},{n:"Micah",c:7},{n:"Nahum",c:3},{n:"Habakkuk",c:3},
-    {n:"Zephaniah",c:3},{n:"Haggai",c:2},{n:"Zechariah",c:14},{n:"Malachi",c:4},
-    {n:"Matthew",c:28},{n:"Mark",c:16},{n:"Luke",c:24},{n:"John",c:21},{n:"Acts",c:28},
-    {n:"Romans",c:16},{n:"1 Corinthians",c:16},{n:"2 Corinthians",c:13},{n:"Galatians",c:6},{n:"Ephesians",c:6},
-    {n:"Philippians",c:4},{n:"Colossians",c:4},{n:"1 Thessalonians",c:5},{n:"2 Thessalonians",c:3},{n:"1 Timothy",c:6},
-    {n:"2 Timothy",c:4},{n:"Titus",c:3},{n:"Philemon",c:1},{n:"Hebrews",c:13},{n:"James",c:5},
-    {n:"1 Peter",c:5},{n:"2 Peter",c:3},{n:"1 John",c:5},{n:"2 John",c:1},{n:"3 John",c:1},
-    {n:"Jude",c:1},{n:"Revelation",c:22}
+    {n:"Genesis",c:50,v:1533},{n:"Exodus",c:40,v:1213},{n:"Leviticus",c:27,v:859},{n:"Numbers",c:36,v:1288},{n:"Deuteronomy",c:34,v:959},
+    {n:"Joshua",c:24,v:658},{n:"Judges",c:21,v:618},{n:"Ruth",c:4,v:85},{n:"1 Samuel",c:31,v:810},{n:"2 Samuel",c:24,v:695},
+    {n:"1 Kings",c:22,v:816},{n:"2 Kings",c:25,v:719},{n:"1 Chronicles",c:29,v:942},{n:"2 Chronicles",c:36,v:822},{n:"Ezra",c:10,v:280},
+    {n:"Nehemiah",c:13,v:406},{n:"Esther",c:10,v:167},{n:"Job",c:42,v:1070},{n:"Psalm",c:150,v:2461},{n:"Proverbs",c:31,v:915},
+    {n:"Ecclesiastes",c:12,v:222},{n:"Song of Solomon",c:8,v:117},{n:"Isaiah",c:66,v:1292},{n:"Jeremiah",c:52,v:1364},{n:"Lamentations",c:5,v:154},
+    {n:"Ezekiel",c:48,v:1273},{n:"Daniel",c:12,v:357},{n:"Hosea",c:14,v:197},{n:"Joel",c:3,v:73},{n:"Amos",c:9,v:146},
+    {n:"Obadiah",c:1,v:21},{n:"Jonah",c:4,v:48},{n:"Micah",c:7,v:105},{n:"Nahum",c:3,v:47},{n:"Habakkuk",c:3,v:56},
+    {n:"Zephaniah",c:3,v:53},{n:"Haggai",c:2,v:38},{n:"Zechariah",c:14,v:211},{n:"Malachi",c:4,v:55},
+    {n:"Matthew",c:28,v:1071},{n:"Mark",c:16,v:678},{n:"Luke",c:24,v:1151},{n:"John",c:21,v:879},{n:"Acts",c:28,v:1007},
+    {n:"Romans",c:16,v:433},{n:"1 Corinthians",c:16,v:437},{n:"2 Corinthians",c:13,v:257},{n:"Galatians",c:6,v:149},{n:"Ephesians",c:6,v:155},
+    {n:"Philippians",c:4,v:104},{n:"Colossians",c:4,v:95},{n:"1 Thessalonians",c:5,v:89},{n:"2 Thessalonians",c:3,v:47},{n:"1 Timothy",c:6,v:113},
+    {n:"2 Timothy",c:4,v:83},{n:"Titus",c:3,v:46},{n:"Philemon",c:1,v:25},{n:"Hebrews",c:13,v:303},{n:"James",c:5,v:108},
+    {n:"1 Peter",c:5,v:105},{n:"2 Peter",c:3,v:61},{n:"1 John",c:5,v:105},{n:"2 John",c:1,v:13},{n:"3 John",c:1,v:14},
+    {n:"Jude",c:1,v:25},{n:"Revelation",c:22,v:404}
   ];
   // First 39 books are Old Testament, the rest New Testament (canonical order).
   function testamentOf(i) { return i < 39 ? "OT" : "NT"; }
 
-  // "Bible in a year" plan: the whole Bible in canonical order, ~3 chapters per
-  // reading (about 5–8 minutes), chunked within each book. Finishes in just over a
-  // year. We remember the reader's place so each day picks up where they left off.
+  // Whole-Bible reading plan: each reading is 1–3 chapters, sized by actual length to
+  // land near ~5 minutes (using per-book verses-per-chapter), chunked within each book.
+  // We remember the reader's place so each day picks up where they left off.
   const BIBLE_PLAN = (function () {
+    const TARGET_VERSES = 50; // ~5 minutes of reading
     const out = [];
     BIBLE_BOOKS.forEach(function (b) {
-      for (let c = 1; c <= b.c; c += 3) {
-        const end = Math.min(c + 2, b.c);
+      const avg = b.v / b.c;
+      let per = Math.round(TARGET_VERSES / avg);
+      if (per < 1) per = 1; if (per > 3) per = 3; // honor the 1–3 chapter range
+      for (let c = 1; c <= b.c; c += per) {
+        const end = Math.min(c + per - 1, b.c);
+        const nch = end - c + 1;
         out.push({
           ref: b.n + " " + c + (end > c ? "-" + end : ""),
           label: b.n + " " + c + (end > c ? "–" + end : ""),
-          chapters: end - c + 1
+          verses: Math.round(nch * avg)
         });
       }
     });
     return out;
   })();
-  function planMinutes(ch) { return Math.max(3, Math.round(ch * 2.6)); } // ~2.6 min/chapter
+  function planMinutes(verses) { return Math.max(2, Math.round(verses / 10)); } // ~10 verses/min
   function planKey() { return APP + ":bibleplan:" + (currentEmail() || "").toLowerCase(); }
   function getPlanIdx() {
     let v = 0; try { v = parseInt(localStorage.getItem(planKey()) || "0", 10); } catch (e) {}
@@ -2379,7 +2384,7 @@
     const idx = getPlanIdx(), r = BIBLE_PLAN[idx];
     const ref = document.getElementById("bsPlanRef"); if (ref) ref.textContent = r.label;
     const meta = document.getElementById("bsPlanMeta");
-    if (meta) meta.textContent = "Day " + (idx + 1) + " of " + BIBLE_PLAN.length + " · about " + planMinutes(r.chapters) + " min";
+    if (meta) meta.textContent = "Day " + (idx + 1) + " of " + BIBLE_PLAN.length + " · about " + planMinutes(r.verses) + " min";
   }
   function fillPickerOptions() {
     const bookSel = document.getElementById("bsBook");
@@ -2926,7 +2931,7 @@
         <div class="bs-panel">
           <div class="bs-controls">
             <div class="bs-plan" id="bsPlan">
-              <div class="bs-plan-label">Bible in a year</div>
+              <div class="bs-plan-label">Read through the Bible</div>
               <div class="bs-plan-ref" id="bsPlanRef">—</div>
               <div class="bs-plan-meta" id="bsPlanMeta"></div>
               <div class="bs-plan-actions">
