@@ -2194,8 +2194,20 @@
       if (!(await configure())) return false;
       try { const r = await P.restorePurchases(); return entActive(r.customerInfo || r); } catch (e) { return false; }
     }
+    // Opens Apple's native code-redemption sheet IN the app (iOS). Returns:
+    //   null  = not supported on this build/platform (caller should fall back)
+    //   true  = entitlement active after the sheet closed
+    //   false = sheet shown but no active entitlement (cancelled / invalid code)
+    async function redeemCode() {
+      const P = plugin();
+      if (!P || typeof P.presentCodeRedemptionSheet !== "function") return null;
+      await configure();
+      try { await P.presentCodeRedemptionSheet(); } catch (e) { return false; }
+      // Apple doesn't report the sheet's result, so re-check the entitlement once it closes.
+      try { const r = await P.getCustomerInfo(); return entActive(r.customerInfo || r); } catch (e) { return false; }
+    }
     function available() { return !!plugin(); }
-    return { configure, isEntitledIAP, isAnnualIAP, packages, purchase, restore, available };
+    return { configure, isEntitledIAP, isAnnualIAP, packages, purchase, restore, redeemCode, available };
   })();
   const BOOK_MAP = {
     "genesis":"GEN","gen":"GEN","ge":"GEN",
@@ -3566,6 +3578,7 @@
     if (note) {
       note.innerHTML = 'Monthly &amp; Annual auto-renew until canceled — manage or cancel anytime in your Apple ID settings. Lifetime is a one-time purchase. ' +
         'By continuing you agree to our <a href="https://www.livnforge.com/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="https://www.livnforge.com/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.<br>' +
+        (RC.available() ? '<button type="button" id="rcRedeem" class="pw-restore">Have a code? Redeem it</button>' : '') +
         '<button type="button" id="rcRestore" class="pw-restore">Restore purchases</button>';
     }
   }
@@ -3592,9 +3605,23 @@
     if (ok) { if (status) status.textContent = "Restored! 🎉"; __entitled = true; await gateEntry(); }
     else if (status) { status.className = "paywall-status err"; status.textContent = "No active purchase found to restore."; }
   }
+  async function redeemIAP() {
+    const status = document.getElementById("paywallStatus");
+    if (status) { status.className = "paywall-status"; status.textContent = "Opening Apple's redeem screen…"; }
+    let ok;
+    try { ok = await RC.redeemCode(); } catch (e) { ok = false; }
+    if (ok === null) { // not supported on this build — fall back to the App Store redeem page
+      if (status) status.textContent = "";
+      try { window.open("https://apps.apple.com/redeem?ctx=offercodes&id=6776882761", "_blank"); } catch (e) {}
+      return;
+    }
+    if (ok) { if (status) status.textContent = "You're in! 🎉"; __entitled = true; await gateEntry(); }
+    else if (status) { status.className = "paywall-status"; status.textContent = "If you entered a valid code, tap Restore purchases to finish unlocking."; }
+  }
   if (paywallView) paywallView.addEventListener("click", function (e) {
     const card = e.target.closest ? e.target.closest("[data-rcpkg]") : null;
     if (card) { const i = parseInt(card.getAttribute("data-rcpkg"), 10); if (__rcPkgs[i]) buyPackage(__rcPkgs[i]); return; }
+    if (e.target && e.target.id === "rcRedeem") { redeemIAP(); return; }
     if (e.target && e.target.id === "rcRestore") restoreIAP();
   });
   // Show the Stripe billing link on the web only. Inside the native iOS/Android
@@ -5149,9 +5176,14 @@
       if (data && data.soldOut) { showToast("No gift codes left right now."); return; }
       if (data && data.error) { showToast(data.error); return; }
       const code = data.code;
-      const url = data.redeemUrl || ("https://apps.apple.com/redeem?code=" + code);
+      // Subscription OFFER codes must use the ctx=offercodes deep link (with the app id);
+      // the plain ?code= form lands on the wrong screen and is the #1 reason redeems fail.
+      const url = "https://apps.apple.com/redeem?ctx=offercodes&id=6776882761&code=" + encodeURIComponent(code);
       if (data.alreadyClaimed) showToast("Here's the code you already gifted — share it again.");
-      const text = "Here's a free year of LIVN FORGE — a daily faith + fitness journal to help you live on purpose.\n\nCode: " + code + "\nRedeem: " + url + "\nDownload: https://apps.apple.com/app/id6776882761";
+      const text = "Here's a free year of LIVN FORGE — a daily faith + fitness journal to help you live on purpose.\n\n" +
+        "1) Download the app: https://apps.apple.com/app/id6776882761\n" +
+        "2) Open this link on your iPhone to redeem: " + url + "\n   (or in the app, tap \"Have a code? Redeem it\" and enter)\n\n" +
+        "Code: " + code;
       if (navigator.share) { try { await navigator.share({ title: "A free year of LIVN FORGE", text: text }); } catch (e) {} }
       else if (navigator.clipboard && navigator.clipboard.writeText) { try { await navigator.clipboard.writeText(text); showToast("Code copied: " + code); } catch (e) { showToast("Code: " + code); } }
       else { showToast("Code: " + code); }
