@@ -406,8 +406,12 @@
   .pc-req { padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
   .pc-req:last-of-type { border-bottom:none; }
   .prq-body { font-size:14px; line-height:1.45; white-space:pre-wrap; }
-  .prq-meta { font-size:11px; color:var(--muted); margin-top:5px; display:flex; gap:10px; align-items:center; }
-  .prq-pray { background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:3px 10px; font-size:12px; cursor:pointer; font-family:inherit; }
+  .prq-meta { font-size:12px; color:var(--muted); margin-top:8px; display:flex; gap:10px; align-items:center; }
+  .prq-meta .prq-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .prq-actions { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+  .prq-report { display:inline-flex; align-items:center; justify-content:center; background:none; border:none; color:var(--muted); padding:4px; cursor:pointer; }
+  .prq-report:hover { color:var(--gold-light); }
+  .prq-pray { display:inline-flex; align-items:center; gap:5px; background:none; border:1px solid var(--field-border); color:var(--gold-light); border-radius:99px; padding:5px 12px; font-size:12px; cursor:pointer; font-family:inherit; white-space:nowrap; }
   .pc-chat { border-top:1px solid var(--field-border); padding-top:12px; margin-top:12px; }
   .pc-chat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; display:flex; align-items:center; }
   .pc-chat-expand { display:inline-flex; align-items:center; gap:5px; background:rgba(217,169,62,0.14); border:1px solid var(--gold); color:var(--gold-light); font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; padding:5px 11px; border-radius:99px; margin-left:auto; line-height:1; letter-spacing:0.3px; }
@@ -456,8 +460,10 @@
   .eula-agree { background:var(--gold); color:#15161a; border:none; border-radius:12px; font-size:16px; font-weight:700; font-family:inherit; padding:13px; cursor:pointer; }
   .eula-decline { background:none; border:none; color:var(--muted); font-size:13px; font-family:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
   .pc-chat-input { display:flex; gap:8px; align-items:flex-end; }
-  .pc-chat-input textarea { flex:1; min-width:0; box-sizing:border-box; padding:9px 11px; border-radius:9px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; resize:vertical; min-height:38px; }
-  .pc-attach-btn { background:none; border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:0 11px; height:38px; font-size:18px; cursor:pointer; line-height:1; flex:0 0 auto; }
+  .pc-chat-input textarea { flex:1; min-width:0; box-sizing:border-box; padding:10px 13px; border-radius:11px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; line-height:1.4; resize:none; min-height:42px; max-height:130px; overflow-y:auto; }
+  .pc-attach-btn { display:flex; align-items:center; justify-content:center; background:none; border:1px solid var(--field-border); color:var(--muted); border-radius:11px; width:42px; height:42px; padding:0; cursor:pointer; flex:0 0 auto; }
+  .pc-attach-btn:hover { color:var(--gold-light); border-color:var(--gold); }
+  .pc-chat-input .pcc-btn { flex:0 0 auto; align-self:flex-end; height:42px; padding:0 16px; }
   .pc-att { margin-top:6px; }
   .pc-att-img { max-height:110px; max-width:160px; width:auto; height:auto; object-fit:cover; border-radius:10px; display:block; cursor:zoom-in; }
   .img-lightbox { position:fixed; inset:0; background:rgba(0,0,0,0.93); z-index:11000; display:none; align-items:center; justify-content:center; padding:18px; cursor:zoom-out; }
@@ -1418,6 +1424,7 @@
           <button class="danger-btn" id="deleteAccountBtn" type="button">Delete my account</button>
         </div>
 
+        <div class="weekly-banner trial-banner" id="trialBanner" data-tab="today" style="display:none;"></div>
         <div class="weekly-banner finances-banner" id="financesBanner" data-tab="today" style="display:none;"></div>
         <div class="weekly-banner" id="weeklyBanner" data-tab="today" style="display:none;"></div>
         <div class="weekly-banner rate-banner" id="rateBanner" data-tab="today" style="display:none;"></div>
@@ -1694,6 +1701,7 @@
         </div>
         <div class="paywall-status" id="paywallStatus"></div>
         <div class="paywall-note">7 days free, then your selected plan. A card is required to start the trial; cancel anytime before it ends and you won't be charged.</div>
+        <button type="button" class="paywall-signout" id="paywallMaybeLater" style="display:none;">Maybe later — keep using my trial</button>
         <button type="button" class="paywall-signout" id="paywallSignOut">Sign out</button>
       </div>
     </div>
@@ -3457,7 +3465,7 @@
   const buildChooser = document.getElementById("buildChooser");
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
-  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderRateBanner(); renderRewards(); applyAdminUI(); showTab(__activeTab); maybeShowTutorial(); }
+  function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderTrialBanner(); renderRateBanner(); renderRewards(); applyAdminUI(); showTab(__activeTab); maybeShowTutorial(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
 
   // ----- Free 7-day trial (app-controlled, no card) -----
@@ -3533,9 +3541,13 @@
         ? "Your 7-day free trial is up — choose a plan to keep journaling, devotionals, AI reviews and your circles."
         : "Unlock all of LIVN FORGE — journaling, scripture devotionals, AI weekly reviews, the Week in Review, and group leaderboards. Cancel anytime.";
     }
+    // If they still have trial access, let them back out instead of being trapped.
+    const later = document.getElementById("paywallMaybeLater");
+    if (later) later.style.display = inTrial() ? "" : "none";
     document.getElementById("paywallStatus").textContent = "";
     window.scrollTo(0, 0);
   }
+  (function () { var b = document.getElementById("paywallMaybeLater"); if (b) b.addEventListener("click", function () { showLanding(); }); })();
   // Decide where an authenticated user lands: paywall -> build chooser -> landing.
   // Community guidelines / EULA. Bump EULA_V to re-prompt everyone after a change.
   const EULA_V = 1;
@@ -4775,6 +4787,10 @@
     size = size || 22; stroke = stroke || 1.7;
     return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="' + stroke + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
   }
+  // Small thin-line icons used inside circle cards (no emoji — brand rule).
+  const ICON_FLAG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4h12l-2.2 4L17 12H5"/></svg>';
+  const ICON_PRAY = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-6.5-4.3-8.6-7.9C2 9.4 3.6 6.5 6.4 6.5c1.8 0 3 1.1 3.6 2.1.6-1 1.8-2.1 3.6-2.1 2.8 0 4.4 2.9 3 5.6C18.5 15.7 12 20 12 20z"/></svg>';
+  const ICON_CLIP = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7-7l8.5-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.5a1.7 1.7 0 0 1-2.3-2.3l7.9-7.9"/></svg>';
   let pcNewType = "prayer";
 
   let pcOpen = null; // currently-open circle code; null = list view
@@ -4908,10 +4924,11 @@
       }
       const reqHtml = requests.length ? requests.map(function (r) {
         const rMine = (r.email || "").toLowerCase() === me;
-        const reportBtn = rMine ? "" : '<button class="prq-report" data-reportreq="' + r.id + '" data-author="' + escapeHtml(r.email || "") + '" data-code="' + escapeHtml(code) + '" title="Report this request">⚑</button>';
+        const reportBtn = rMine ? "" : '<button class="prq-report" data-reportreq="' + r.id + '" data-author="' + escapeHtml(r.email || "") + '" data-code="' + escapeHtml(code) + '" title="Report this request">' + ICON_FLAG + '</button>';
         return '<div class="pc-req"><div class="prq-body">' + escapeHtml(r.body) + '</div>' +
-          '<div class="prq-meta"><span>' + escapeHtml(r.name || (r.email || "").split("@")[0]) + '</span>' + reportBtn +
-          '<button class="prq-pray ' + (iPrayedReq[r.id] ? "done" : "") + '" data-req="' + r.id + '">🙏 ' + (prayerCounts[r.id] || 0) + ' praying</button></div></div>';
+          '<div class="prq-meta"><span class="prq-name">' + escapeHtml(r.name || (r.email || "").split("@")[0]) + '</span>' +
+          '<span class="prq-actions">' + reportBtn +
+          '<button class="prq-pray ' + (iPrayedReq[r.id] ? "done" : "") + '" data-req="' + r.id + '">' + ICON_PRAY + (prayerCounts[r.id] || 0) + ' praying</button></span></div></div>';
       }).join("") : '<div class="pc-prayed-count">No prayer requests yet — be the first to share one.</div>';
 
       const msgHtml = messages.length ? messages.map(function (m) {
@@ -4944,7 +4961,7 @@
       }).join("") : '<div class="lb-empty">No scores yet — points show up as members journal.</div>';
 
       const prayerBlock = isPrayer ?
-        ('<div class="pc-pray-row"><button class="pcc-btn ' + (iPrayed ? "secondary" : "") + '" data-pray="' + escapeHtml(code) + '">' + (iPrayed ? "✓ You prayed today" : "I prayed today 🙏") + '</button></div>' +
+        ('<div class="pc-pray-row"><button class="pcc-btn ' + (iPrayed ? "secondary" : "") + '" data-pray="' + escapeHtml(code) + '">' + (iPrayed ? "✓ You prayed today" : "I prayed today") + '</button></div>' +
          '<div class="pc-reqs">' + reqHtml +
          '<div class="pc-addreq"><textarea id="pcReqText_' + i + '" placeholder="Share a prayer request with this circle…"></textarea><button class="pcc-btn" data-addreq="' + escapeHtml(code) + '" data-i="' + i + '">Post request</button></div>' +
          '</div>') : "";
@@ -4986,7 +5003,7 @@
         '<div class="pc-chat-label">Circle chat<button class="pc-chat-expand" data-chatopen="' + i + '" title="Open full-screen chat" type="button">⤢ Full screen</button></div>' +
         '<div class="pc-chat-list" id="pcChatList_' + i + '">' + msgHtml + '</div>' +
         '<div class="pc-chat-input"><input type="file" id="pcFile_' + i + '" data-attachcode="' + escapeHtml(code) + '" accept="image/*,application/pdf,.doc,.docx,.txt" style="display:none">' +
-        '<button class="pc-attach-btn" data-attach="' + i + '" title="Attach a photo or file" type="button">📎</button>' +
+        '<button class="pc-attach-btn" data-attach="' + i + '" title="Attach a photo or file" type="button">' + ICON_CLIP + '</button>' +
         '<textarea id="pcMsgText_' + i + '" placeholder="Message your circle…" rows="1"></textarea>' +
         '<button class="pcc-btn" data-sendmsg="' + escapeHtml(code) + '" data-i="' + i + '">Send</button></div></div>' +
         membersBlock +
@@ -5342,6 +5359,15 @@
       const code = btn ? btn.getAttribute("data-sendmsg") : null;
       const body = (ta.value || "").trim();
       if (code && body) { ta.value = ""; ta.style.height = ""; sendCircleMessage(code, body, idx); }
+    }
+  });
+  // Auto-grow the chat + prayer-request boxes as you type, so longer messages
+  // aren't crunched into one clipped line.
+  if (prayerCirclesEl) prayerCirclesEl.addEventListener("input", function (e) {
+    const ta = e.target;
+    if (ta && ta.tagName === "TEXTAREA" && (/^pcMsgText_/.test(ta.id || "") || /^pcReqText_/.test(ta.id || ""))) {
+      ta.style.height = "auto";
+      ta.style.height = Math.min(ta.scrollHeight, 130) + "px";
     }
   });
   // Keep the keyboard up: tapping Send must not steal focus from the message box.
@@ -5989,6 +6015,22 @@
   // ----- Gentle "rate the app" nudge (after a few entries) -----
   const APP_STORE_REVIEW_URL = "https://apps.apple.com/app/id6776882761?action=write-review"; // jumps to Write a Review
   function rateStateKey() { return APP + ":rateState:" + (currentEmail() || "").toLowerCase(); }
+  function renderTrialBanner() {
+    const el = document.getElementById("trialBanner");
+    if (!el) return;
+    const email = (__currentUser && __currentUser.email || "").toLowerCase();
+    const comped = OWNER_EMAILS.includes(email) || COMP_EMAILS.includes(email);
+    // Only during an active free trial, and only for people who'd actually be gated.
+    if (!PAYWALL_ENABLED || comped || !inTrial()) { el.style.display = "none"; return; }
+    const d = trialDaysLeft();
+    const left = d <= 1 ? "Last day of your free trial" : d + " days left in your free trial";
+    el.style.display = "flex";
+    el.innerHTML = '<div class="wb-text"><b>' + left + '</b> — enjoying it? Lock in your plan anytime.</div>' +
+      '<button id="trialUpgrade">See plans</button>';
+  }
+  document.getElementById("trialBanner").addEventListener("click", (e) => {
+    if (e.target.id === "trialUpgrade") { try { showPaywall(); } catch (_e) {} }
+  });
   function renderRateBanner() {
     const el = document.getElementById("rateBanner");
     if (!el) return;
