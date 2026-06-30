@@ -817,6 +817,15 @@
   .bs-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .bs-btn:hover:not(:disabled) { background: var(--gold-light); }
   .bs-status { font-size: 13px; color: var(--muted); min-height: 18px; }
+  /* Bible-in-a-year reading plan card */
+  .bs-plan { background: linear-gradient(135deg, rgba(217,169,62,0.16), rgba(217,169,62,0.05)); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; }
+  .bs-plan-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; color: var(--gold-light); }
+  .bs-plan-ref { font-size: 20px; font-weight: 800; color: var(--text); margin-top: 3px; }
+  .bs-plan-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .bs-plan-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+  .bs-plan-actions .bs-btn { padding: 10px 16px; }
+  .bs-plan-done { background: none; border: none; color: var(--gold-light); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 8px 4px; text-decoration: underline; text-underline-offset: 3px; }
+  .bs-plan.done .bs-plan-ref { opacity: 0.6; }
   .bs-hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
   .bs-passage { background: var(--field); border: 1px solid var(--field-border); border-radius: 10px; padding: 16px; margin-top: 14px; }
   .bs-passage-ref { font-size: 13px; color: var(--gold); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
@@ -2336,6 +2345,42 @@
   ];
   // First 39 books are Old Testament, the rest New Testament (canonical order).
   function testamentOf(i) { return i < 39 ? "OT" : "NT"; }
+
+  // "Bible in a year" plan: the whole Bible in canonical order, ~3 chapters per
+  // reading (about 5–8 minutes), chunked within each book. Finishes in just over a
+  // year. We remember the reader's place so each day picks up where they left off.
+  const BIBLE_PLAN = (function () {
+    const out = [];
+    BIBLE_BOOKS.forEach(function (b) {
+      for (let c = 1; c <= b.c; c += 3) {
+        const end = Math.min(c + 2, b.c);
+        out.push({
+          ref: b.n + " " + c + (end > c ? "-" + end : ""),
+          label: b.n + " " + c + (end > c ? "–" + end : ""),
+          chapters: end - c + 1
+        });
+      }
+    });
+    return out;
+  })();
+  function planMinutes(ch) { return Math.max(3, Math.round(ch * 2.6)); } // ~2.6 min/chapter
+  function planKey() { return APP + ":bibleplan:" + (currentEmail() || "").toLowerCase(); }
+  function getPlanIdx() {
+    let v = 0; try { v = parseInt(localStorage.getItem(planKey()) || "0", 10); } catch (e) {}
+    if (isNaN(v) || v < 0) v = 0;
+    return v % BIBLE_PLAN.length;
+  }
+  function setPlanIdx(i) {
+    const n = ((i % BIBLE_PLAN.length) + BIBLE_PLAN.length) % BIBLE_PLAN.length;
+    try { localStorage.setItem(planKey(), String(n)); } catch (e) {}
+  }
+  function renderBiblePlan() {
+    if (!document.getElementById("bsPlan")) return;
+    const idx = getPlanIdx(), r = BIBLE_PLAN[idx];
+    const ref = document.getElementById("bsPlanRef"); if (ref) ref.textContent = r.label;
+    const meta = document.getElementById("bsPlanMeta");
+    if (meta) meta.textContent = "Day " + (idx + 1) + " of " + BIBLE_PLAN.length + " · about " + planMinutes(r.chapters) + " min";
+  }
   function fillPickerOptions() {
     const bookSel = document.getElementById("bsBook");
     if (!bookSel) return;
@@ -2880,6 +2925,16 @@
       html += `
         <div class="bs-panel">
           <div class="bs-controls">
+            <div class="bs-plan" id="bsPlan">
+              <div class="bs-plan-label">Bible in a year</div>
+              <div class="bs-plan-ref" id="bsPlanRef">—</div>
+              <div class="bs-plan-meta" id="bsPlanMeta"></div>
+              <div class="bs-plan-actions">
+                <button type="button" id="bsPlanRead" class="bs-btn">Read today's passage</button>
+                <button type="button" id="bsPlanDone" class="bs-plan-done">Mark as read →</button>
+              </div>
+            </div>
+            <div class="bs-or">or choose your own</div>
             <div class="bs-row">
               <label for="bsTranslation">Translation</label>
               <select id="bsTranslation">
@@ -3023,6 +3078,23 @@
 
     if (type === "devotional") {
       __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", questions: [], understanding: [], reflection: [] };
+      // Bible-in-a-year plan. If nothing is picked, default to today's reading.
+      renderBiblePlan();
+      var _refEl = document.getElementById("bsReference");
+      if (_refEl && !_refEl.value.trim()) _refEl.value = BIBLE_PLAN[getPlanIdx()].ref;
+      // onclick (not addEventListener) so re-opening the devotional never stacks handlers.
+      var _planRead = document.getElementById("bsPlanRead");
+      if (_planRead) _planRead.onclick = function () {
+        var el = document.getElementById("bsReference"); if (el) el.value = BIBLE_PLAN[getPlanIdx()].ref;
+        loadBiblePassage();
+      };
+      var _planDone = document.getElementById("bsPlanDone");
+      if (_planDone) _planDone.onclick = function () {
+        setPlanIdx(getPlanIdx() + 1);
+        renderBiblePlan();
+        var el = document.getElementById("bsReference"); if (el) el.value = BIBLE_PLAN[getPlanIdx()].ref;
+        if (typeof showToast === "function") showToast("Marked as read — next up: " + BIBLE_PLAN[getPlanIdx()].label);
+      };
       document.getElementById("bsLoadBtn").addEventListener("click", loadBiblePassage);
       document.getElementById("bsGenerateBtn").addEventListener("click", generateDevotionalQuestions);
       document.getElementById("bsReference").addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); loadBiblePassage(); } });
@@ -5393,11 +5465,20 @@
     window.visualViewport.addEventListener("resize", adjustFullChat);
     window.visualViewport.addEventListener("scroll", adjustFullChat);
   }
-  // Inline chat (not full-screen): nudge the focused input into view above the keyboard.
+  // Tapping the message box opens the full-screen chat (clean typing surface with the
+  // input pinned above the keyboard), the way most messaging apps work.
   document.addEventListener("focusin", function (e) {
     const el = e.target;
     if (el && el.id && el.id.indexOf("pcMsgText_") === 0 && !document.querySelector(".pc-chat.chat-full")) {
-      setTimeout(function () { try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (err) {} }, 300);
+      const i = el.id.replace("pcMsgText_", "");
+      const c = document.getElementById("pcChat_" + i);
+      if (c) {
+        c.classList.add("chat-full");
+        document.body.classList.add("chat-open");
+        adjustFullChat();
+        const l = document.getElementById("pcChatList_" + i); if (l) l.scrollTop = l.scrollHeight;
+        setTimeout(adjustFullChat, 120);
+      }
     }
   });
 
