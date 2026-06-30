@@ -1002,7 +1002,12 @@
   .paywall-status.err { color: #f0768a; }
   .paywall-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.5; }
   .paywall-note a { color: var(--gold-light); }
-  .pw-restore { background:none; border:none; color:var(--gold-light); font-family:inherit; font-size:13px; text-decoration:underline; cursor:pointer; padding:8px 0 0; }
+  .pw-restore { display:block; margin:6px auto 0; background:none; border:none; color:var(--gold-light); font-family:inherit; font-size:13px; text-decoration:underline; cursor:pointer; padding:8px 0 0; }
+  /* Prominent "Redeem a code" entry on the paywall — unmissable for gift-code holders */
+  .pw-redeem-cta { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; box-sizing:border-box; margin:0 0 22px; padding:15px 16px; background:rgba(217,169,62,.10); border:1px solid var(--gold); border-radius:14px; color:var(--gold-light); font-family:inherit; font-size:15px; font-weight:800; cursor:pointer; transition:transform .1s ease, background .15s ease; }
+  .pw-redeem-cta:hover { background:rgba(217,169,62,.16); }
+  .pw-redeem-cta:active { transform:scale(.99); }
+  .pw-redeem-cta svg { flex:0 0 auto; }
   .paywall-signout { margin-top: 20px; background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   /* Devotional reflection card (women's build) */
   .reflection-card { background: linear-gradient(135deg, rgba(217,169,62,0.16), rgba(217,169,62,0.04)); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
@@ -3465,7 +3470,14 @@
       if (cards) cards.style.display = "";
       if (note) note.style.display = "";
       if (h2) h2.textContent = "Unlock LIVN FORGE";
-      if (sub) sub.textContent = "Choose your plan — Monthly and Annual start with a 7-day free trial. Already a member from the web? Just sign in; it unlocks automatically.";
+      if (sub) sub.textContent = "Got a free-year gift code? Tap “Redeem a code” below — a code is not a login. Or choose a plan (Monthly & Annual start with a 7-day free trial). Already a member from the web? Just sign in; it unlocks automatically.";
+      // Unmissable redeem entry for gift-code holders — opens Apple's native sheet in-app.
+      if (RC.available() && sub && !document.getElementById("pwRedeemTop")) {
+        var rb = document.createElement("button");
+        rb.type = "button"; rb.id = "pwRedeemTop"; rb.className = "pw-redeem-cta";
+        rb.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12.5V20H4v-7.5"/><path d="M2.5 8h19v4.5h-19z"/><path d="M12 8v12"/><path d="M12 8C9.8 8 8 6.5 8 5s2.2-1.6 4 3z"/><path d="M12 8c2.2 0 4-1.5 4-3s-2.2-1.6-4 3z"/></svg><span>Redeem a code</span>';
+        sub.parentNode.insertBefore(rb, sub.nextSibling);
+      }
       renderNativePlans();
     } else {
       if (cards) cards.style.display = "";
@@ -3578,7 +3590,6 @@
     if (note) {
       note.innerHTML = 'Monthly &amp; Annual auto-renew until canceled — manage or cancel anytime in your Apple ID settings. Lifetime is a one-time purchase. ' +
         'By continuing you agree to our <a href="https://www.livnforge.com/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="https://www.livnforge.com/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.<br>' +
-        (RC.available() ? '<button type="button" id="rcRedeem" class="pw-restore">Have a code? Redeem it</button>' : '') +
         '<button type="button" id="rcRestore" class="pw-restore">Restore purchases</button>';
     }
   }
@@ -3621,7 +3632,7 @@
   if (paywallView) paywallView.addEventListener("click", function (e) {
     const card = e.target.closest ? e.target.closest("[data-rcpkg]") : null;
     if (card) { const i = parseInt(card.getAttribute("data-rcpkg"), 10); if (__rcPkgs[i]) buyPackage(__rcPkgs[i]); return; }
-    if (e.target && e.target.id === "rcRedeem") { redeemIAP(); return; }
+    if (e.target.closest && e.target.closest("#rcRedeem, #pwRedeemTop")) { redeemIAP(); return; }
     if (e.target && e.target.id === "rcRestore") restoreIAP();
   });
   // Show the Stripe billing link on the web only. Inside the native iOS/Android
