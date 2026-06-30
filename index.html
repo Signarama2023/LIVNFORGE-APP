@@ -575,6 +575,15 @@
   .sc-accordion.open .sc-body { max-height:1600px; padding:0 16px 16px; }
   .sc-accordion .sc-body > .sc-desc:first-child { margin-top:0; }
   #deleteAccountSettings.sc-accordion .sc-ico { background:rgba(240,118,138,.14); color:#f0768a; }
+  /* Direct-action settings row (e.g. Redeem a code) — looks like an accordion row but acts on tap */
+  .sc-action-card { display:flex; align-items:center; gap:13px; width:100%; box-sizing:border-box; text-align:left; background:var(--panel); border:1px solid var(--gold); border-radius:14px; padding:13px 16px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text); transition:border-color .15s ease, transform .1s ease, background .15s ease; }
+  .sc-action-card:hover { background:rgba(217,169,62,.08); }
+  .sc-action-card:active { transform:scale(.99); }
+  .sc-action-card .sc-ico { width:36px; height:36px; border-radius:11px; background:rgba(217,169,62,.14); color:var(--gold-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .sc-action-card .sc-actiontext { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+  .sc-action-card .sc-htitle { font-weight:800; font-size:15px; color:var(--gold-light); }
+  .sc-action-card .sc-actionsub { font-size:12.5px; color:var(--muted); }
+  .sc-action-card .sc-caret { color:var(--muted); font-size:20px; line-height:1; flex:0 0 auto; }
   .personal-bests { margin-bottom: 26px; background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 16px 18px; }
   .pb-label { font-size: 11px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
   .pb-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -1311,6 +1320,12 @@
             <button id="signOutBtn">Sign out</button>
           </span>
         </div>
+
+        <button type="button" class="sc-action-card" id="redeemCodeCard" data-tab="settings" style="display:none;">
+          <span class="sc-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12.5V20H4v-7.5"/><path d="M2.5 8h19v4.5h-19z"/><path d="M12 8v12"/><path d="M12 8C9.8 8 8 6.5 8 5s2.2-1.6 4 3z"/><path d="M12 8c2.2 0 4-1.5 4-3s-2.2-1.6-4 3z"/></svg></span>
+          <span class="sc-actiontext"><span class="sc-htitle">Redeem a code</span><span class="sc-actionsub">Have a free-year gift code? Enter it here.</span></span>
+          <span class="sc-caret">›</span>
+        </button>
 
         <div class="settings-card" id="nameSettings" data-tab="settings">
           <div class="sc-title">What should we call you?</div>
@@ -3629,6 +3644,22 @@
     if (ok) { if (status) status.textContent = "You're in! 🎉"; __entitled = true; await gateEntry(); }
     else if (status) { status.className = "paywall-status"; status.textContent = "If you entered a valid code, tap Restore purchases to finish unlocking."; }
   }
+  // Redeem from the Profile/Settings row (for people already past the paywall —
+  // e.g. a monthly member who got a free-year code). Opens Apple's native sheet.
+  async function redeemFromSettings() {
+    if (typeof showToast === "function") showToast("Opening Apple's redeem screen…");
+    let ok;
+    try { ok = await RC.redeemCode(); } catch (e) { ok = false; }
+    if (ok === null) { try { window.open("https://apps.apple.com/redeem?ctx=offercodes&id=6776882761", "_blank"); } catch (e) {} return; }
+    if (ok) { if (typeof showToast === "function") showToast("Code applied — you're unlocked ✓"); __entitled = true; try { await gateEntry(); } catch (e) {} }
+    else if (typeof showToast === "function") { showToast("If your code was valid, it's now applied. Reopen the app if you don't see it."); }
+  }
+  (function initRedeemSetting() {
+    const card = document.getElementById("redeemCodeCard");
+    if (!card) return;
+    if (RC.available()) card.style.display = "";
+    card.addEventListener("click", function () { redeemFromSettings(); });
+  })();
   if (paywallView) paywallView.addEventListener("click", function (e) {
     const card = e.target.closest ? e.target.closest("[data-rcpkg]") : null;
     if (card) { const i = parseInt(card.getAttribute("data-rcpkg"), 10); if (__rcPkgs[i]) buyPackage(__rcPkgs[i]); return; }
