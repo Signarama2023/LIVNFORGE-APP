@@ -2517,7 +2517,13 @@
   }
   let __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", summary: "", keyPoints: [], teacherInsights: [], reflection: [] };
   async function loadBiblePassage() {
-    const refRaw = (document.getElementById("bsReference") || {}).value || "";
+    const refEl = document.getElementById("bsReference");
+    let refRaw = (refEl || {}).value || "";
+    // Nothing picked or typed? Fall back to today's reading-plan passage.
+    if (!refRaw.trim() && typeof BIBLE_PLAN !== "undefined" && BIBLE_PLAN.length) {
+      refRaw = BIBLE_PLAN[getPlanIdx()].ref;
+      if (refEl) refEl.value = refRaw;
+    }
     const translation = (document.getElementById("bsTranslation") || {}).value || "78a9f6124f344018-01";
     const status = document.getElementById("bsStatus");
     if (!refRaw.trim()) { status.textContent = "Type a passage like John 3:16, Romans 8:28-39, or Psalm 23."; return; }
@@ -3146,10 +3152,10 @@
 
     if (type === "devotional") {
       __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", questions: [], understanding: [], reflection: [] };
-      // Bible-in-a-year plan. If nothing is picked, default to today's reading.
+      // Bible reading plan card. We do NOT pre-fill the reference box (that made the
+      // manual picker look broken) — instead "Read today's passage" loads the plan, and
+      // pressing Load with an empty box also falls back to today's reading.
       renderBiblePlan();
-      var _refEl = document.getElementById("bsReference");
-      if (_refEl && !_refEl.value.trim()) _refEl.value = BIBLE_PLAN[getPlanIdx()].ref;
       // onclick (not addEventListener) so re-opening the devotional never stacks handlers.
       var _planRead = document.getElementById("bsPlanRead");
       if (_planRead) _planRead.onclick = function () {
