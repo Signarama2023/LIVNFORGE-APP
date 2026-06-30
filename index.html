@@ -416,7 +416,7 @@
   .pc-chat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px; display:flex; align-items:center; }
   .pc-chat-expand { display:inline-flex; align-items:center; gap:5px; background:rgba(217,169,62,0.14); border:1px solid var(--gold); color:var(--gold-light); font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; padding:5px 11px; border-radius:99px; margin-left:auto; line-height:1; letter-spacing:0.3px; }
   .pc-chat-expand:hover { background:rgba(217,169,62,0.26); }
-  .pc-chat-list { max-height:260px; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; display:flex; flex-direction:column; gap:12px; margin-bottom:10px; padding-right:2px; }
+  .pc-chat-list { max-height:48vh; min-height:200px; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; display:flex; flex-direction:column; gap:12px; margin-bottom:12px; padding:4px 2px; }
   .pc-chat-empty { color:var(--muted); font-size:13px; padding:6px 0; }
   .pc-msg { max-width:80%; padding:10px 14px; border-radius:14px; background:rgba(255,255,255,0.06); border:1px solid var(--field-border); align-self:flex-start; }
   /* Fix #3: full-screen chat view */
@@ -438,7 +438,7 @@
   .pcm-body { font-size:14px; line-height:1.4; white-space:pre-wrap; word-wrap:break-word; }
   /* Moderation controls */
   .pcm-mod { margin-left:auto; display:flex; gap:2px; }
-  .pcm-flag, .pcm-block { background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; line-height:1; padding:0 2px; opacity:0.7; }
+  .pcm-flag, .pcm-block { display:inline-flex; align-items:center; justify-content:center; background:none; border:none; color:var(--muted); cursor:pointer; padding:2px; opacity:0.7; }
   .pcm-flag:hover { color:#f0c674; opacity:1; }
   .pcm-block:hover { color:#f0768a; opacity:1; }
   .prq-report { background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; line-height:1; padding:0 4px; opacity:0.7; }
@@ -461,6 +461,7 @@
   .eula-decline { background:none; border:none; color:var(--muted); font-size:13px; font-family:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
   .pc-chat-input { display:flex; gap:8px; align-items:flex-end; }
   .pc-chat-input textarea { flex:1; min-width:0; box-sizing:border-box; padding:10px 13px; border-radius:11px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; line-height:1.4; resize:none; min-height:42px; max-height:130px; overflow-y:auto; }
+  .pc-chat-input textarea:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 2px rgba(217,169,62,0.18); }
   .pc-attach-btn { display:flex; align-items:center; justify-content:center; background:none; border:1px solid var(--field-border); color:var(--muted); border-radius:11px; width:42px; height:42px; padding:0; cursor:pointer; flex:0 0 auto; }
   .pc-attach-btn:hover { color:var(--gold-light); border-color:var(--gold); }
   .pc-chat-input .pcc-btn { flex:0 0 auto; align-self:flex-end; height:42px; padding:0 16px; }
@@ -4791,6 +4792,8 @@
   const ICON_FLAG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4h12l-2.2 4L17 12H5"/></svg>';
   const ICON_PRAY = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-6.5-4.3-8.6-7.9C2 9.4 3.6 6.5 6.4 6.5c1.8 0 3 1.1 3.6 2.1.6-1 1.8-2.1 3.6-2.1 2.8 0 4.4 2.9 3 5.6C18.5 15.7 12 20 12 20z"/></svg>';
   const ICON_CLIP = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7-7l8.5-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.5a1.7 1.7 0 0 1-2.3-2.3l7.9-7.9"/></svg>';
+  const ICON_FLAG_SM = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4h12l-2.2 4L17 12H5"/></svg>';
+  const ICON_BAN = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>';
   let pcNewType = "prayer";
 
   let pcOpen = null; // currently-open circle code; null = list view
@@ -4944,8 +4947,8 @@
         const bodyHtml = m.body ? '<div class="pcm-body">' + escapeHtml(m.body) + '</div>' : "";
         const modHtml = mine
           ? '<button class="pcm-del" data-delmsg="' + m.id + '" title="Delete" style="margin-left:auto;">&times;</button>'
-          : '<span class="pcm-mod"><button class="pcm-flag" data-reportmsg="' + m.id + '" data-author="' + escapeHtml(m.email || "") + '" data-code="' + escapeHtml(code) + '" title="Report this message">⚑</button>' +
-            '<button class="pcm-block" data-blockuser="' + escapeHtml(m.email || "") + '" data-blockname="' + escapeHtml(m.name || (m.email || "").split("@")[0]) + '" title="Block this member">🚫</button></span>';
+          : '<span class="pcm-mod"><button class="pcm-flag" data-reportmsg="' + m.id + '" data-author="' + escapeHtml(m.email || "") + '" data-code="' + escapeHtml(code) + '" title="Report this message">' + ICON_FLAG_SM + '</button>' +
+            '<button class="pcm-block" data-blockuser="' + escapeHtml(m.email || "") + '" data-blockname="' + escapeHtml(m.name || (m.email || "").split("@")[0]) + '" title="Block this member">' + ICON_BAN + '</button></span>';
         return '<div class="pc-msg ' + (mine ? "mine" : "") + '">' +
           '<div class="pcm-head"><span class="pcm-name">' + escapeHtml(mine ? "You" : (m.name || (m.email || "").split("@")[0])) + '</span>' +
           '<span class="pcm-time">' + fmtMsgTime(m.created_at) + '</span>' +
