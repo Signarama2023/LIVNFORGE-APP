@@ -5539,21 +5539,33 @@
     window.visualViewport.addEventListener("resize", adjustFullChat);
     window.visualViewport.addEventListener("scroll", adjustFullChat);
   }
-  // Tapping the message box opens the full-screen chat (clean typing surface with the
-  // input pinned above the keyboard), the way most messaging apps work.
+  // Tapping the message box opens the full-screen chat, the way most messaging apps work.
+  // Open BEFORE the box takes focus (on mousedown, with the default focus suppressed),
+  // then focus inside the now-fixed container — making a focused input's ancestor
+  // position:fixed mid-keyboard is what made this flaky on iOS.
+  function openFullChat(ta) {
+    if (!ta || document.querySelector(".pc-chat.chat-full")) return false;
+    const i = (ta.id || "").replace("pcMsgText_", "");
+    const c = document.getElementById("pcChat_" + i);
+    if (!c) return false;
+    c.classList.add("chat-full");
+    document.body.classList.add("chat-open");
+    adjustFullChat();
+    const l = document.getElementById("pcChatList_" + i); if (l) l.scrollTop = l.scrollHeight;
+    setTimeout(function () { try { ta.focus(); } catch (e) {} adjustFullChat(); }, 30);
+    return true;
+  }
+  if (prayerCirclesEl) prayerCirclesEl.addEventListener("mousedown", function (e) {
+    const ta = e.target && e.target.closest ? e.target.closest("textarea") : null;
+    if (ta && /^pcMsgText_/.test(ta.id || "") && !document.querySelector(".pc-chat.chat-full")) {
+      e.preventDefault();           // suppress the default focus; we focus after going full-screen
+      openFullChat(ta);
+    }
+  });
+  // Fallback: if the box somehow gets focus without going full-screen, open it.
   document.addEventListener("focusin", function (e) {
     const el = e.target;
-    if (el && el.id && el.id.indexOf("pcMsgText_") === 0 && !document.querySelector(".pc-chat.chat-full")) {
-      const i = el.id.replace("pcMsgText_", "");
-      const c = document.getElementById("pcChat_" + i);
-      if (c) {
-        c.classList.add("chat-full");
-        document.body.classList.add("chat-open");
-        adjustFullChat();
-        const l = document.getElementById("pcChatList_" + i); if (l) l.scrollTop = l.scrollHeight;
-        setTimeout(adjustFullChat, 120);
-      }
-    }
+    if (el && el.id && el.id.indexOf("pcMsgText_") === 0) openFullChat(el);
   });
 
   if (prayerCirclesEl) prayerCirclesEl.addEventListener("click", async function (e) {
