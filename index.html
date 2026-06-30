@@ -180,6 +180,12 @@
     margin-bottom: 12px;
   }
   .signin-body input:focus { outline: none; border-color: var(--gold); }
+  /* Show/hide password toggle */
+  .pw-wrap { position: relative; }
+  .pw-wrap input { padding-right: 46px; }
+  .pw-eye { position: absolute; right: 8px; top: 0; height: calc(100% - 12px); display: flex; align-items: center; justify-content: center; width: 34px; padding: 0; background: none; border: none; color: var(--muted); cursor: pointer; }
+  .pw-eye:hover { color: var(--gold-light); }
+  .pw-eye svg { width: 21px; height: 21px; }
   .auth-error { color: #f0768a; font-size: 13px; min-height: 18px; margin: 2px 0 4px; }
   .auth-switch { margin-top: 16px; font-size: 13px; color: var(--muted); }
   .auth-switch button {
@@ -1231,8 +1237,14 @@
         <h2 id="authTitle">Create your account</h2>
         <p id="authSubtitle">Sign up with an email and password. Your journals, points and streak are saved privately on this device.</p>
         <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
-        <input type="password" id="passwordInput" placeholder="Password (min 6 characters)" autocomplete="current-password">
-        <input type="password" id="passwordConfirm" placeholder="Confirm password" autocomplete="new-password">
+        <div class="pw-wrap" id="pwWrap">
+          <input type="password" id="passwordInput" placeholder="Password (min 6 characters)" autocomplete="current-password">
+          <button type="button" class="pw-eye" data-pwtoggle="passwordInput" aria-label="Show password"></button>
+        </div>
+        <div class="pw-wrap" id="pwConfirmWrap">
+          <input type="password" id="passwordConfirm" placeholder="Confirm password" autocomplete="new-password">
+          <button type="button" class="pw-eye" data-pwtoggle="passwordConfirm" aria-label="Show password"></button>
+        </div>
         <div class="auth-error" id="authError"></div>
         <button class="signin-btn" id="signInBtn">Create account</button>
         <div class="auth-switch"><span id="authSwitchLabel">Already have an account?</span> <button type="button" id="authToggle">Log in</button></div>
@@ -4121,8 +4133,8 @@
       : newPw ? "Choose a new password to finish resetting your account."
       : "Log in to your account.";
     document.getElementById("emailInput").style.display = newPw ? "none" : "block";
-    document.getElementById("passwordInput").style.display = reset ? "none" : "block";
-    document.getElementById("passwordConfirm").style.display = (signup || newPw) ? "block" : "none";
+    document.getElementById("pwWrap").style.display = reset ? "none" : "block";
+    document.getElementById("pwConfirmWrap").style.display = (signup || newPw) ? "block" : "none";
     document.getElementById("passwordInput").setAttribute("autocomplete", (signup || newPw) ? "new-password" : "current-password");
     document.getElementById("passwordInput").setAttribute("placeholder", newPw ? "New password (min 6 characters)" : "Password (min 6 characters)");
     document.getElementById("passwordConfirm").setAttribute("placeholder", newPw ? "Confirm new password" : "Confirm password");
@@ -4146,6 +4158,23 @@
     document.getElementById("passwordInput").value = "";
     document.getElementById("passwordConfirm").value = "";
   });
+  // Show/hide password toggle (eye icon inside each password field).
+  (function initPwToggles() {
+    var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+    var EYEOFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 5.2A10 10 0 0 1 12 5c6.4 0 10 7 10 7a18 18 0 0 1-3.1 4M6.5 6.6A17.6 17.6 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M3 3l18 18"/></svg>';
+    document.querySelectorAll(".pw-eye[data-pwtoggle]").forEach(function (btn) {
+      btn.innerHTML = EYE;
+      btn.addEventListener("click", function () {
+        var inp = document.getElementById(btn.getAttribute("data-pwtoggle"));
+        if (!inp) return;
+        var show = inp.type === "password";
+        inp.type = show ? "text" : "password";
+        btn.innerHTML = show ? EYEOFF : EYE;
+        btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+        try { inp.focus(); } catch (e) {}
+      });
+    });
+  })();
 
   function setUserFromSession(session) {
     const meta = (session.user && session.user.user_metadata) || {};
