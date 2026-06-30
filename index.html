@@ -3460,12 +3460,28 @@
   function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderRateBanner(); renderRewards(); applyAdminUI(); showTab(__activeTab); maybeShowTutorial(); }
   function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
 
+  // ----- Free 7-day trial (app-controlled, no card) -----
+  // Every account gets 7 days of full access from the moment it was created.
+  // Anchored to the server-set auth created_at, so it can't be reset by clearing
+  // local data. After it lapses, the paywall takes over.
+  const TRIAL_DAYS = 7;
+  function trialMsLeft() {
+    const c = __currentUser && __currentUser.created_at;
+    if (!c) return 0;
+    const t = new Date(c).getTime();
+    if (isNaN(t)) return 0;
+    return (t + TRIAL_DAYS * 86400000) - Date.now();
+  }
+  function inTrial() { return trialMsLeft() > 0; }
+  function trialDaysLeft() { return Math.max(0, Math.ceil(trialMsLeft() / 86400000)); }
+
   // ----- Paywall / subscription gate -----
   async function isEntitled() {
     if (!PAYWALL_ENABLED) return true;            // dormant: full access for everyone
     if (!sb || !__currentUser) return false;
     if (OWNER_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // owner free pass
     if (COMP_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // friends & family free access
+    if (inTrial()) return true;                   // everyone gets a free 7-day trial, no card
     if (IN_NATIVE_APP && BETA_OPEN_ACCESS) return true; // beta: all TestFlight testers get full access
     if (IN_NATIVE_APP) { try { if (await RC.isEntitledIAP()) return true; } catch (e) {} } // in-app purchase buyers
     // Ask Stripe (via the edge function) for live status; it also syncs the DB row.
@@ -3493,11 +3509,14 @@
     const note = paywallView.querySelector(".paywall-note");
     const h2 = paywallView.querySelector(".paywall-body h2");
     const sub = paywallView.querySelector(".paywall-body p");
+    // Anyone seeing the paywall has used up their free 7-day trial (the trial grants
+    // access in isEntitled), so speak to that.
+    const trialOver = !!(__currentUser && __currentUser.created_at && trialMsLeft() <= 0);
     if (IN_NATIVE_APP) {
       if (cards) cards.style.display = "";
       if (note) note.style.display = "";
-      if (h2) h2.textContent = "Unlock LIVN FORGE";
-      if (sub) sub.textContent = "Got a free-year gift code? Tap “Redeem a code” below — a code is not a login. Or choose a plan (Monthly & Annual start with a 7-day free trial). Already a member from the web? Just sign in; it unlocks automatically.";
+      if (h2) h2.textContent = trialOver ? "Your free trial has ended" : "Unlock LIVN FORGE";
+      if (sub) sub.textContent = (trialOver ? "Your 7-day free trial is up — choose a plan to keep your journey going. " : "") + "Got a free-year gift code? Tap “Redeem a code” below — a code is not a login. Already a member from the web? Just sign in; it unlocks automatically.";
       // Unmissable redeem entry for gift-code holders — opens Apple's native sheet in-app.
       if (RC.available() && sub && !document.getElementById("pwRedeemTop")) {
         var rb = document.createElement("button");
@@ -3509,8 +3528,10 @@
     } else {
       if (cards) cards.style.display = "";
       if (note) note.style.display = "";
-      if (h2) h2.textContent = "Start your 7-day free trial";
-      if (sub) sub.textContent = "Unlock all of LIVN FORGE — journaling, scripture devotionals, AI weekly reviews, the Week in Review, and group leaderboards. Cancel anytime.";
+      if (h2) h2.textContent = trialOver ? "Your free trial has ended" : "Start your 7-day free trial";
+      if (sub) sub.textContent = trialOver
+        ? "Your 7-day free trial is up — choose a plan to keep journaling, devotionals, AI reviews and your circles."
+        : "Unlock all of LIVN FORGE — journaling, scripture devotionals, AI weekly reviews, the Week in Review, and group leaderboards. Cancel anytime.";
     }
     document.getElementById("paywallStatus").textContent = "";
     window.scrollTo(0, 0);
@@ -4179,7 +4200,7 @@
   function setUserFromSession(session) {
     const meta = (session.user && session.user.user_metadata) || {};
     BUILD = (meta.build === "women" || meta.build === "men") ? meta.build : "men";
-    __currentUser = { id: session.user.id, email: session.user.email, build: meta.build || null, eula_v: meta.eula_v || 0 };
+    __currentUser = { id: session.user.id, email: session.user.email, build: meta.build || null, eula_v: meta.eula_v || 0, created_at: session.user.created_at || null };
   }
   async function finishAuth() {
     const { data: { session } } = await sb.auth.getSession();
