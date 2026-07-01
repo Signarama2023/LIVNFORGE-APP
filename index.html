@@ -497,7 +497,8 @@
   .tut-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:9999; display:none; align-items:center; justify-content:center; padding:24px; }
   .tut-card { background:var(--bg); border:1px solid var(--field-border); border-radius:18px; max-width:380px; width:100%; padding:30px 24px 22px; position:relative; text-align:center; box-shadow:0 16px 50px rgba(0,0,0,0.5); }
   .tut-skip { position:absolute; top:14px; right:16px; background:none; border:none; color:var(--muted); font-size:13px; font-family:inherit; cursor:pointer; }
-  .tut-icon { font-size:48px; margin:6px 0 14px; line-height:1; }
+  .tut-icon { display:flex; justify-content:center; color:var(--gold-light); margin:8px 0 16px; }
+  .tut-icon svg { width:44px; height:44px; }
   .tut-slide h2 { font-size:21px; margin:0 0 10px; }
   .tut-slide p { font-size:15px; color:var(--muted); line-height:1.6; margin:0 0 18px; min-height:84px; }
   .tut-dots { display:flex; gap:6px; justify-content:center; margin:4px 0 18px; }
@@ -3908,32 +3909,42 @@
 
   // ----- First-run welcome tutorial -----
   const TUTORIAL_SLIDES = [
-    { icon: "🔨", title: "Welcome to LIVN FORGE", body: "A daily forge for your faith and discipline. Show up each day, write it down, and live it out." },
-    { icon: "✍️", title: "Journal your way", body: "Seven ways to journal — Free Flow, Guided, Re-Frame, Devotional, Prayer, Fitness, and Gratitude. Every entry earns points." },
-    { icon: "🔥", title: "Build your streak", body: "Stay consistent to grow your day streak, rack up points, and unlock real rewards along the way." },
-    { icon: "📖", title: "Dive into the Word", body: "In Devotionals, pick any passage — Old or New Testament — read it, then answer understanding and reflection questions." },
-    { icon: "✨", title: "Your weekly AI review", body: "Each week, get a faith-focused AI summary of how you showed up: your wins, your patterns, and a word to carry forward." },
-    { icon: "🤝", title: "Circles", body: "Create or join a Circle — Prayer, Team, Victory, Impact or Iron. Chat, encourage each other, and climb a leaderboard together." },
-    { icon: "👑", title: "Rise up", body: "That's it. Start your first entry today, and keep showing up.", last: true }
+    { svg: '<path d="M12 3v18"/><path d="M6.5 8.5h11"/>', title: "Forged in faith. Refined in purpose.", body: "LIVN FORGE helps you build one habit a day — show up, write it down, live it out.", btn: "Get Started", skip: false },
+    { svg: '<path d="M12 6.6C10.3 5.3 8 4.7 4 5.3v12.8c4-.6 6.3 0 8 1.3 1.7-1.3 4-1.9 8-1.3V5.3c-4-.6-6.3 0-8 1.3z"/><path d="M12 6.6v12.8"/>', title: "Start with the Word", body: "Every day opens with a verse to anchor your mindset before anything else happens.", btn: "Next", skip: true },
+    { svg: '<circle cx="12" cy="12" r="9"/><path d="M8.3 12.2l2.5 2.5 4.9-5.3"/>', title: "Five steps. One finished day.", body: "Read Scripture, pray, journal, complete your habit, encourage someone — check them off as you go. Your ring fills up as you finish strong.", btn: "Next", skip: true },
+    { svg: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>', title: "Write it down in minutes", body: "Six short prompts — Win, Challenge, God Moment, Prayer, Lesson, Tomorrow — turn a blank page into a two-minute habit.", btn: "Next", skip: true },
+    { svg: '<path d="M12 3.3l2.4 5.7 6.1.5-4.7 4 1.4 6-5.2-3.2-5.2 3.2 1.4-6-4.7-4 6.1-.5z"/>', title: "Consistency counts", body: "Every entry earns Kingdom Points and builds your streak. Miss a day and the streak resets — so show up daily.", btn: "Next", skip: true },
+    { svg: '<path d="M6 21V4"/><path d="M6 4h11l-2.3 4L17 12H6"/>', title: "Your first mission is waiting", body: "Tap in, complete today's steps, and start your streak.", btn: "Start Today's Mission", skip: false, last: true }
   ];
   let tutIdx = 0;
   function tutKey() { return APP + ":tutseen:" + (currentEmail() || "").toLowerCase(); }
   function renderTutorial() {
     const s = TUTORIAL_SLIDES[tutIdx];
-    document.getElementById("tutSlide").innerHTML = '<div class="tut-icon">' + s.icon + '</div><h2>' + escapeHtml(s.title) + '</h2><p>' + escapeHtml(s.body) + '</p>';
+    document.getElementById("tutSlide").innerHTML =
+      '<div class="tut-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + s.svg + '</svg></div>' +
+      '<h2>' + escapeHtml(s.title) + '</h2><p>' + escapeHtml(s.body) + '</p>';
     document.getElementById("tutDots").innerHTML = TUTORIAL_SLIDES.map(function (_, i) { return '<span class="tut-dot ' + (i === tutIdx ? "active" : "") + '"></span>'; }).join("");
     document.getElementById("tutBack").style.visibility = tutIdx === 0 ? "hidden" : "visible";
-    document.getElementById("tutNext").textContent = TUTORIAL_SLIDES[tutIdx].last ? "Get started" : "Next";
+    document.getElementById("tutNext").textContent = s.btn || "Next";
+    document.getElementById("tutSkip").style.visibility = s.skip ? "visible" : "hidden";
   }
   function openTutorial() { tutIdx = 0; renderTutorial(); document.getElementById("tutorialOverlay").style.display = "flex"; }
   function closeTutorial() { document.getElementById("tutorialOverlay").style.display = "none"; try { localStorage.setItem(tutKey(), "1"); } catch (e) {} }
+  // Final onboarding button: drop straight into today's mission checklist on the Home tab.
+  function startTodaysMission() {
+    try {
+      if (typeof showTab === "function") showTab("today");
+      var jw = document.getElementById("forgeJourney");
+      if (jw) { jw.style.display = "block"; setTimeout(function () { try { jw.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }, 80); }
+    } catch (e) {}
+  }
   function maybeShowTutorial() {
     if (!currentEmail()) return;
     if (document.getElementById("tutorialOverlay").style.display === "flex") return;
     try { if (!localStorage.getItem(tutKey())) openTutorial(); } catch (e) {}
   }
   document.getElementById("tutNext").addEventListener("click", function () {
-    if (TUTORIAL_SLIDES[tutIdx].last) { closeTutorial(); }
+    if (TUTORIAL_SLIDES[tutIdx].last) { closeTutorial(); startTodaysMission(); }
     else { tutIdx = Math.min(tutIdx + 1, TUTORIAL_SLIDES.length - 1); renderTutorial(); }
   });
   document.getElementById("tutBack").addEventListener("click", function () { tutIdx = Math.max(0, tutIdx - 1); renderTutorial(); });
