@@ -2462,14 +2462,15 @@
     const chSel = document.getElementById("bsChapter");
     const chEndSel = document.getElementById("bsChapterEnd");
     const book = BIBLE_BOOKS.find(function(b){ return b.n === bookSel.value; });
+    // Keep the chapter selects always enabled — iOS WKWebView can leave a select
+    // that was toggled from `disabled` untappable until a reflow.
     chSel.innerHTML = '<option value="">Ch</option>';
     if (chEndSel) chEndSel.innerHTML = '<option value="">Ch</option>';
-    if (!book) { chSel.disabled = true; if (chEndSel) chEndSel.disabled = true; updateRefFromPicker(); return; }
-    chSel.disabled = false;
-    if (chEndSel) chEndSel.disabled = false;
-    for (let i = 1; i <= book.c; i++) {
-      const o = document.createElement("option"); o.value = i; o.textContent = i; chSel.appendChild(o);
-      if (chEndSel) { const o2 = document.createElement("option"); o2.value = i; o2.textContent = i; chEndSel.appendChild(o2); }
+    if (book) {
+      for (let i = 1; i <= book.c; i++) {
+        const o = document.createElement("option"); o.value = i; o.textContent = i; chSel.appendChild(o);
+        if (chEndSel) { const o2 = document.createElement("option"); o2.value = i; o2.textContent = i; chEndSel.appendChild(o2); }
+      }
     }
     updateRefFromPicker();
   }
@@ -2520,7 +2521,10 @@
   async function loadBiblePassage() {
     const refEl = document.getElementById("bsReference");
     let refRaw = (refEl || {}).value || "";
-    // Nothing picked or typed? Fall back to today's reading-plan passage.
+    // If the text box is empty, build the reference straight from the picker's current
+    // selections — covers iOS selects where the `change` event never fired to fill it.
+    if (!refRaw.trim()) { updateRefFromPicker(); refRaw = (refEl || {}).value || ""; }
+    // Still nothing picked or typed? Fall back to today's reading-plan passage.
     if (!refRaw.trim() && typeof BIBLE_PLAN !== "undefined" && BIBLE_PLAN.length) {
       refRaw = BIBLE_PLAN[getPlanIdx()].ref;
       if (refEl) refEl.value = refRaw;
@@ -3030,9 +3034,9 @@
               <label>Passage — pick book, chapter(s), verses</label>
               <div class="bs-picker">
                 <select id="bsBook"><option value="">— Book —</option></select>
-                <select id="bsChapter" disabled><option value="">Ch</option></select>
+                <select id="bsChapter"><option value="">Ch</option></select>
                 <span class="bs-dash">–</span>
-                <select id="bsChapterEnd" disabled><option value="">Ch</option></select>
+                <select id="bsChapterEnd"><option value="">Ch</option></select>
                 <input id="bsVerseStart" type="number" min="1" placeholder="v" inputmode="numeric">
                 <span class="bs-dash">–</span>
                 <input id="bsVerseEnd" type="number" min="1" placeholder="v" inputmode="numeric">
