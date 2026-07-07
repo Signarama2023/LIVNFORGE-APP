@@ -5935,7 +5935,7 @@
   }
   // Bump when the weekly-ai-summary edge function (model/prompt/output) changes, so existing
   // cached reviews regenerate against the new code instead of showing the previously-cached text.
-  var AI_SUMMARY_VER = "v2";
+  var AI_SUMMARY_VER = "v3";
   function aiCacheKey(off) { var st = weekStats(off); return APP + ":aisum:" + AI_SUMMARY_VER + ":" + (currentEmail() || "").toLowerCase() + ":" + dayKey(st.start); }
   let __aiGenerating = false;
   function isWeekReviewable(off) {
@@ -5989,7 +5989,8 @@
       var stats = st.list.length + " entries, " + st.points + " points, " + st.days +
         " of 7 days journaled, current streak " + currentStreak() + " days";
       var rangeLabel = labelForOffset(sumOffset) + " (" + fmtRange(st.start, st.end) + ")";
-      var resp = await sb.functions.invoke("weekly-ai-summary", { body: { rangeLabel: rangeLabel, stats: stats, entriesText: entriesText, build: BUILD } });
+      var userName = (typeof getName === "function" ? (getName() || "") : "");
+      var resp = await sb.functions.invoke("weekly-ai-summary", { body: { name: userName, rangeLabel: rangeLabel, stats: stats, entriesText: entriesText, build: BUILD } });
       if (resp.error) throw resp.error;
       var summary = (resp.data && resp.data.summary) || (resp.data && resp.data.error) || "Couldn't generate a summary.";
       localStorage.setItem(aiCacheKey(sumOffset), summary);

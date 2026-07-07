@@ -5,8 +5,9 @@
 // Deploy: Supabase Dashboard -> Edge Functions -> (this function) -> paste this code -> Deploy.
 // Secret: Edge Functions -> Secrets -> ANTHROPIC_API_KEY = <your key>.
 //
-// The client sends { rangeLabel, stats, entriesText, build } where build is
-// "men" or "women" — the tone/framing of the review is chosen from that.
+// The client sends { name, rangeLabel, stats, entriesText, build } where build is
+// "men" or "women" — the tone/framing of the review is chosen from that, and name
+// is the journaler's first name (may be blank).
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
@@ -22,34 +23,33 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// Shared writing philosophy — keeps the review specific, varied, and keepsake-worthy.
+// Shared writing philosophy — a short, positive, shareable weekly recap: a general
+// summary plus a few key points, addressed to the journaler by name.
 const CORE_GUIDANCE =
-  "You are given his/her ACTUAL journal entries and workouts from one week. Your job is to write a weekly " +
-  "review that feels personally written for THIS person and THIS week — something they're glad to read now " +
-  "and meaningful to look back on years from now, like a faithful snapshot of where they were.\n\n" +
-  "HOW TO WRITE IT:\n" +
-  "1. ACTUALLY READ the entries and reflect what was specifically said and done. Name the real moments — the " +
-  "particular workouts logged, the specific struggles and wins they wrote about, the prayers, the reframes, " +
-  "the things they were grateful for, the threads that recurred across the week. Reference their own words and " +
-  "details so they know you read THEIR week, not a template. Generic encouragement that could apply to anyone " +
-  "is a failure.\n" +
-  "2. FIND THE STORY of the week — what it was really about, what they wrestled with, where they grew, what " +
-  "was tender or hard, what they can be genuinely proud of. Surface a pattern or insight they might not have " +
-  "noticed themselves.\n" +
-  "3. POSITIVE SLANT, always: lead them to see the good and the effort; celebrate that they showed up. Name " +
-  "struggles or gaps honestly but briefly and with grace — as the next step of growth, never scolding, " +
-  "guilt-tripping, or heavy. They should finish hopeful and proud.\n" +
-  "4. DO NOT use a fixed template or formula. Let the SHAPE of the review follow the shape of this week — vary " +
-  "your opening, your structure, and your emphasis. Two different weeks must produce two clearly different " +
-  "reviews. Never march through a set checklist (do NOT mechanically cover Faith/Family/Fitness/Finances every " +
-  "time, and do NOT always end with 'here are two goals'). Avoid stock opening lines.\n" +
-  "5. FAITH-ROOTED: point them toward Christ and living on purpose. Where it genuinely fits, you may weave in " +
-  "ONE brief, accurate scripture — but only when it lands naturally, never as a checkbox, and never fabricate " +
-  "or misquote.\n" +
-  "6. Close in a way that fits THIS week — a word to carry forward, and if it's earned, one gentle specific " +
-  "nudge. Let it feel natural, not formulaic.\n\n" +
-  "Be specific and strictly true to the entries — never invent facts that aren't there. Warm and real, not " +
-  "preachy. About 220-320 words. Plain text only — no markdown, headings, or bullet lists.";
+  "You are given the journaler's ACTUAL entries and workouts from one week. Write a SHORT, positive, shareable " +
+  "weekly review — the kind of upbeat recap they'd be glad to read and comfortable screenshotting to share with " +
+  "family or their circle. Their first name is given below as 'Name'; address them by it. If Name is blank, " +
+  "address them warmly (brother, sister, or friend) without inventing a name.\n\n" +
+  "PRODUCE EXACTLY THIS SHAPE:\n" +
+  "1. A brief opening SUMMARY — 2 to 4 sentences, addressed to them by name, capturing the overall shape and " +
+  "spirit of their week with a genuinely positive slant. Give the big picture, not a play-by-play.\n" +
+  "2. Then a short list of 2 to 4 KEY POINTS, each on its own line beginning with the bullet character '• ' — " +
+  "concrete highlights pulled from their REAL entries (a workout, a gratitude, a prayer, a consistent habit, a " +
+  "small win or breakthrough, a theme that recurred). Specific enough to feel like THEIR week, but keep each to " +
+  "one short, upbeat line.\n" +
+  "3. A one-sentence closing encouragement, using their name, that leaves them proud and hopeful.\n\n" +
+  "RULES:\n" +
+  "- POSITIVE and shareable throughout: celebrate that they showed up. This is a highlight reel, not a deep " +
+  "audit — do NOT dwell on gaps or failures, and do NOT expose raw private struggles; if a hard thing comes up, " +
+  "touch it briefly and frame it as growth. Nothing they'd be embarrassed to share.\n" +
+  "- Use their name naturally (in the opening and the close), not in every sentence.\n" +
+  "- Be strictly true to the entries — never invent facts. Keep it general enough to read as a clean recap.\n" +
+  "- FAITH-ROOTED and encouraging; you may weave in ONE brief, accurate scripture ONLY if it lands naturally — " +
+  "never forced, never misquoted.\n" +
+  "- Vary your wording week to week; avoid stock opening lines and formulaic phrasing.\n" +
+  "- Keep it concise: about 120-170 words total.\n" +
+  "- Plain text only. Use real line breaks, and '• ' for the key points. No markdown, no headings, no " +
+  "asterisks, no numbered lists.";
 
 const MEN_PROMPT =
   "You are a wise, warm mentor and brother in Christ writing a weekly review for a man using LIVN FORGE, a " +
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       return json({ error: "Missing ANTHROPIC_API_KEY secret on the function." }, 500);
     }
 
-    const { rangeLabel = "", stats = "", entriesText = "", build = "men" } = await req.json();
+    const { name = "", rangeLabel = "", stats = "", entriesText = "", build = "men" } = await req.json();
 
     if (!entriesText || !entriesText.trim()) {
       return json({ summary: "No journal entries for this week yet — log a few and try again." });
@@ -80,7 +80,9 @@ Deno.serve(async (req) => {
 
     const systemPrompt = build === "women" ? WOMEN_PROMPT : MEN_PROMPT;
 
+    const cleanName = String(name || "").trim().slice(0, 40);
     const userContent =
+      "Name: " + (cleanName || "(not provided)") + "\n" +
       "Week: " + rangeLabel + "\n" +
       "Totals: " + stats + "\n\n" +
       "Journal entries and workouts:\n" + entriesText;
@@ -95,7 +97,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 800,
-        temperature: 0.9, // higher variety so week-to-week reviews don't feel templated
+        temperature: 0.8, // some variety week-to-week, but steady enough to keep the summary + key-points shape
         system: systemPrompt,
         messages: [{ role: "user", content: userContent }],
       }),
