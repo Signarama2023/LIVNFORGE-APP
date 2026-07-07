@@ -5935,7 +5935,7 @@
   }
   // Bump when the weekly-ai-summary edge function (model/prompt/output) changes, so existing
   // cached reviews regenerate against the new code instead of showing the previously-cached text.
-  var AI_SUMMARY_VER = "v3";
+  var AI_SUMMARY_VER = "v4";
   function aiCacheKey(off) { var st = weekStats(off); return APP + ":aisum:" + AI_SUMMARY_VER + ":" + (currentEmail() || "").toLowerCase() + ":" + dayKey(st.start); }
   let __aiGenerating = false;
   function isWeekReviewable(off) {

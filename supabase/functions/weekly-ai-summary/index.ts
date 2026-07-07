@@ -37,7 +37,12 @@ const CORE_GUIDANCE =
   "concrete highlights pulled from their REAL entries (a workout, a gratitude, a prayer, a consistent habit, a " +
   "small win or breakthrough, a theme that recurred). Specific enough to feel like THEIR week, but keep each to " +
   "one short, upbeat line.\n" +
-  "3. A one-sentence closing encouragement, using their name, that leaves them proud and hopeful.\n\n" +
+  "3. Then 1 to 4 REFLECTION QUESTIONS — gentle, open rhetorical questions that invite them to pause and think " +
+  "about their week. Tie them to what actually happened (the themes, wins, or tensions in their entries), and " +
+  "keep them warm, hopeful, and forward-looking — never like homework, a quiz, or an interrogation, and never " +
+  "guilt-inducing. Introduce them with one short lead-in line (e.g. 'A few things to sit with this week:'), then " +
+  "put each question on its own line (not bulleted).\n" +
+  "4. A one-sentence closing encouragement, using their name, that leaves them proud and hopeful.\n\n" +
   "RULES:\n" +
   "- POSITIVE and shareable throughout: celebrate that they showed up. This is a highlight reel, not a deep " +
   "audit — do NOT dwell on gaps or failures, and do NOT expose raw private struggles; if a hard thing comes up, " +
@@ -47,7 +52,7 @@ const CORE_GUIDANCE =
   "- FAITH-ROOTED and encouraging; you may weave in ONE brief, accurate scripture ONLY if it lands naturally — " +
   "never forced, never misquoted.\n" +
   "- Vary your wording week to week; avoid stock opening lines and formulaic phrasing.\n" +
-  "- Keep it concise: about 120-170 words total.\n" +
+  "- Keep it concise: about 140-200 words total, including the questions.\n" +
   "- Plain text only. Use real line breaks, and '• ' for the key points. No markdown, no headings, no " +
   "asterisks, no numbered lists.";
 
