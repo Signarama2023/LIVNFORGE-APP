@@ -37,6 +37,9 @@ const CORE_GUIDANCE =
   "concrete highlights pulled from their REAL entries (a workout, a gratitude, a prayer, a consistent habit, a " +
   "small win or breakthrough, a theme that recurred). Specific enough to feel like THEIR week, but keep each to " +
   "one short, upbeat line.\n" +
+  "   Whenever 'Bible passages read this week' lists any passages, you MUST note what they read in the Word " +
+  "this week — name the actual passages/books — as one of the key points, celebrating their time in Scripture. " +
+  "If it says none were recorded, simply don't mention Bible reading.\n" +
   "3. Then 1 to 4 REFLECTION QUESTIONS — gentle, open rhetorical questions that invite them to pause and think " +
   "about their week. Tie them to what actually happened (the themes, wins, or tensions in their entries), and " +
   "keep them warm, hopeful, and forward-looking — never like homework, a quiz, or an interrogation, and never " +
@@ -77,7 +80,8 @@ Deno.serve(async (req) => {
       return json({ error: "Missing ANTHROPIC_API_KEY secret on the function." }, 500);
     }
 
-    const { name = "", rangeLabel = "", stats = "", entriesText = "", build = "men" } = await req.json();
+    const { name = "", rangeLabel = "", stats = "", entriesText = "", scriptureRead = "", build = "men" } =
+      await req.json();
 
     if (!entriesText || !entriesText.trim()) {
       return json({ summary: "No journal entries for this week yet — log a few and try again." });
@@ -86,10 +90,12 @@ Deno.serve(async (req) => {
     const systemPrompt = build === "women" ? WOMEN_PROMPT : MEN_PROMPT;
 
     const cleanName = String(name || "").trim().slice(0, 40);
+    const cleanScripture = String(scriptureRead || "").trim().slice(0, 500);
     const userContent =
       "Name: " + (cleanName || "(not provided)") + "\n" +
       "Week: " + rangeLabel + "\n" +
-      "Totals: " + stats + "\n\n" +
+      "Totals: " + stats + "\n" +
+      "Bible passages read this week: " + (cleanScripture || "(none recorded)") + "\n\n" +
       "Journal entries and workouts:\n" + entriesText;
 
     const resp = await fetch("https://api.anthropic.com/v1/messages", {

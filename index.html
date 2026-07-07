@@ -4605,6 +4605,11 @@
     if (QUESTIONS[currentType] && QUESTIONS[currentType].morning && QUESTIONS[currentType].evening) {
       answers.unshift({ q: "Time of day", a: currentDaypart === "morning" ? "Morning" : "End of day" });
     }
+    // Note which scripture was read on a devotional entry — persists in answers (JSONB),
+    // shows in the entry, and feeds the weekly review's "what you read this week".
+    if (currentType === "devotional" && __devo && __devo.reference) {
+      answers.unshift({ q: "Scripture read", a: __devo.reference });
+    }
 
     const entry = {
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
@@ -5935,7 +5940,7 @@
   }
   // Bump when the weekly-ai-summary edge function (model/prompt/output) changes, so existing
   // cached reviews regenerate against the new code instead of showing the previously-cached text.
-  var AI_SUMMARY_VER = "v4";
+  var AI_SUMMARY_VER = "v5";
   function aiCacheKey(off) { var st = weekStats(off); return APP + ":aisum:" + AI_SUMMARY_VER + ":" + (currentEmail() || "").toLowerCase() + ":" + dayKey(st.start); }
   let __aiGenerating = false;
   function isWeekReviewable(off) {
@@ -5990,7 +5995,16 @@
         " of 7 days journaled, current streak " + currentStreak() + " days";
       var rangeLabel = labelForOffset(sumOffset) + " (" + fmtRange(st.start, st.end) + ")";
       var userName = (typeof getName === "function" ? (getName() || "") : "");
-      var resp = await sb.functions.invoke("weekly-ai-summary", { body: { name: userName, rangeLabel: rangeLabel, stats: stats, entriesText: entriesText, build: BUILD } });
+      // Distinct scripture passages read this week (from devotional entries), for the review.
+      var _scriptures = [];
+      st.list.forEach(function (e) {
+        if (e.type !== "devotional") return;
+        (e.answers || []).forEach(function (a) {
+          if (a && a.q === "Scripture read" && a.a && _scriptures.indexOf(a.a) < 0) _scriptures.push(a.a);
+        });
+      });
+      var scriptureRead = _scriptures.join("; ");
+      var resp = await sb.functions.invoke("weekly-ai-summary", { body: { name: userName, rangeLabel: rangeLabel, stats: stats, entriesText: entriesText, scriptureRead: scriptureRead, build: BUILD } });
       if (resp.error) throw resp.error;
       var summary = (resp.data && resp.data.summary) || (resp.data && resp.data.error) || "Couldn't generate a summary.";
       localStorage.setItem(aiCacheKey(sumOffset), summary);
