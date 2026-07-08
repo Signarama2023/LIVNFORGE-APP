@@ -4183,7 +4183,8 @@
       '<div class="ch-head"><span class="ch-title">' + escapeHtml(c.title || "21-Day Challenge") + '</span><span class="ch-scope">' + chScopeLabel(c) + '</span></div>' +
       '<div class="ch-sub">' + s.count + (s.count === 1 ? " person" : " people") + ' joined</div>' +
       '<div class="ch-dots">' + dots + '</div>' +
-      '<div class="ch-prog"><b>' + s.days + '</b> of ' + n + ' days</div>' + btn + '</div>';
+      '<div class="ch-prog"><b>' + s.days + '</b> of ' + n + ' days</div>' + btn +
+      '<button class="ch-manage" data-chleave="' + c.id + '">Leave this challenge</button>' + '</div>';
   }
   function chJoinHtml(available, first) {
     var opts = "";
@@ -4215,6 +4216,7 @@
     body.innerHTML = html;
     body.querySelectorAll("[data-chcheckin]").forEach(function (b) { b.addEventListener("click", function () { checkInChallenge(b.getAttribute("data-chcheckin")); }); });
     body.querySelectorAll("[data-chjoin]").forEach(function (b) { b.addEventListener("click", function () { joinChallengeScope(b.getAttribute("data-chjoin"), b.getAttribute("data-chcircle") || null); }); });
+    body.querySelectorAll("[data-chleave]").forEach(function (b) { b.addEventListener("click", function () { leaveChallenge(b.getAttribute("data-chleave")); }); });
     var tog = body.querySelector("[data-chtoggle]"); if (tog) tog.addEventListener("click", function () { __chJoinOpen = true; renderChallenge(); });
   }
   async function joinChallengeScope(scope, circleCode) {
@@ -4245,6 +4247,15 @@
       __chData = null; await renderChallenge();
       if (typeof showToast === "function") showToast("Checked in ✓");
     } catch (e) { if (typeof showToast === "function") showToast("Couldn't check in right now."); }
+  }
+  async function leaveChallenge(chId) {
+    if (!sb || !currentEmail() || !chId) return;
+    if (typeof confirm === "function" && !confirm("Leave this challenge? Your check-ins are kept if you rejoin.")) return;
+    try {
+      await sb.from("challenge_participants").delete().eq("challenge_id", chId).eq("email", currentEmail());
+      __chData = null; __chJoinOpen = false; await renderChallenge();
+      if (typeof showToast === "function") showToast("You left the challenge.");
+    } catch (e) { if (typeof showToast === "function") showToast("Couldn't leave right now."); }
   }
   function renderForge() {
     var g = document.getElementById("forgeGreet");
