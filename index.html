@@ -2814,7 +2814,7 @@
   }
 
   function totalPoints() {
-    return loadEntries().reduce((s, e) => s + (typeof e.points === "number" ? e.points : pointsFor(e.type)), 0) + (typeof __chPoints === "number" ? __chPoints : 0);
+    return loadEntries().reduce((s, e) => s + (typeof e.points === "number" ? e.points : pointsFor(e.type)), 0);
   }
   function dayKey(dt) {
     return dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
@@ -4233,7 +4233,7 @@
         '<div class="ch-item-h"><span class="ch-item-label">' + it.label + '</span><span class="ch-item-pts">+' + it.pts + '</span></div>' +
         '<div class="ch-item-body">' + escapeHtml(day[it.key] || "") + '</div>' +
         (done ? '<div class="ch-item-done">Done ✓</div>'
-              : '<button class="ch-item-btn" data-chitem="' + it.key + '" data-chid="' + c.id + '" data-chday="' + s.currentDay + '" data-chpts="' + it.pts + '">Mark done · +' + it.pts + '</button>') +
+              : '<button class="ch-item-btn" data-chitem="' + it.key + '">Complete · +' + it.pts + '</button>') +
         '</div>';
     }).join("");
     return '<div class="ch-block">' +
@@ -4272,7 +4272,7 @@
     else if (__chJoinOpen) html += joinHtml;
     else if (joinHtml) html += '<button class="ch-manage" data-chtoggle="1">＋ Join another challenge</button>';
     body.innerHTML = html;
-    body.querySelectorAll("[data-chitem]").forEach(function (b) { b.addEventListener("click", function () { checkChallengeItem(b.getAttribute("data-chid"), b.getAttribute("data-chday"), b.getAttribute("data-chitem"), b.getAttribute("data-chpts")); }); });
+    body.querySelectorAll("[data-chitem]").forEach(function (b) { b.addEventListener("click", function () { openChallengeItem(b.getAttribute("data-chitem")); }); });
     body.querySelectorAll("[data-chjoin]").forEach(function (b) { b.addEventListener("click", function () { joinChallengeScope(b.getAttribute("data-chjoin"), b.getAttribute("data-chcircle") || null); }); });
     body.querySelectorAll("[data-chleave]").forEach(function (b) { b.addEventListener("click", function () { leaveChallenge(b.getAttribute("data-chleave")); }); });
     var tog = body.querySelector("[data-chtoggle]"); if (tog) tog.addEventListener("click", function () { __chJoinOpen = true; renderChallenge(); });
@@ -4298,16 +4298,32 @@
       if (typeof showToast === "function") showToast("You're in — start Day 1!");
     } catch (e) { if (typeof showToast === "function") showToast("Couldn't join right now."); }
   }
-  async function checkChallengeItem(chId, dayNumber, item, pts) {
-    if (!sb || !currentEmail() || !chId) return;
-    try {
-      await sb.from("challenge_checkins").upsert({ challenge_id: chId, email: currentEmail(), day_number: +dayNumber, item: item, points: +pts },
-        { onConflict: "challenge_id,email,day_number,item", ignoreDuplicates: true });
-      __chData = null; await renderChallenge();
-      try { var pe = document.getElementById("forgePoints"); if (pe) pe.textContent = (totalPoints() || 0).toLocaleString(); } catch (e) {}
-      try { if (typeof syncToGroup === "function") syncToGroup(true); } catch (e) {}
-      if (typeof showToast === "function") showToast("+" + pts + " · " + item.charAt(0).toUpperCase() + item.slice(1) + " done");
-    } catch (e) { if (typeof showToast === "function") showToast("Couldn't save that right now."); }
+  // Each challenge item maps to the journal type where it's actually completed.
+  var CH_TYPE = { workout: "fitness", reading: "devotional", gratitude: "gratitude", prayer: "prayer" };
+  function openChallengeItem(item) {
+    var t = CH_TYPE[item]; if (!t) return;
+    try { setActiveType(t); showApp(); showWrite(); window.scrollTo(0, 0); } catch (e) {}
+  }
+  // Called after a journal entry saves: tick that item on the current day of every
+  // challenge the user is in. Points come from the real entry — not counted again here.
+  async function markChallengeForType(type) {
+    var item = null;
+    for (var k in CH_TYPE) { if (CH_TYPE[k] === type) { item = k; break; } }
+    if (!item || !sb || !currentEmail()) return;
+    if (!__chData) await loadChallengeData();
+    if (!__chData) return;
+    var joined = __chData.challenges.filter(function (c) { return chStatsFor(c.id).joined; });
+    for (var i = 0; i < joined.length; i++) {
+      var c = joined[i], s = chStatsFor(c.id);
+      if (s.completedDays >= CHALLENGE_PLAN.length || s.doneItems[item]) continue;
+      var pts = 0; CH_ITEMS.forEach(function (x) { if (x.key === item) pts = x.pts; });
+      try {
+        await sb.from("challenge_checkins").upsert(
+          { challenge_id: c.id, email: currentEmail(), day_number: s.currentDay, item: item, points: pts },
+          { onConflict: "challenge_id,email,day_number,item", ignoreDuplicates: true });
+      } catch (e) {}
+    }
+    __chData = null; try { renderChallenge(); } catch (e) {}
   }
   async function leaveChallenge(chId) {
     if (!sb || !currentEmail() || !chId) return;
@@ -4882,6 +4898,7 @@
     updateCount();
     renderScore();
     syncToGroup(true);
+    try { markChallengeForType(currentType); } catch (e) {}
 
     document.getElementById("journalForm").reset();
     document.getElementById("entryDate").value = dayKey(new Date()); // local date, not UTC (fixes evening date drift)
