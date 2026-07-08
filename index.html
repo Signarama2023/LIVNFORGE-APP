@@ -237,6 +237,26 @@
   .forge-stat { flex:1; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:18px 8px; text-align:center; }
   .forge-stat .num { font-size:23px; font-weight:800; color:var(--gold-light); line-height:1; }
   .forge-stat .lbl { font-size:10.5px; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); margin-top:7px; font-weight:700; line-height:1.25; }
+  /* 21-Day Challenge card */
+  .ch-loading { color:var(--muted); font-size:14px; }
+  .ch-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:4px; }
+  .ch-title { font-size:18px; font-weight:800; }
+  .ch-scope { font-size:12px; color:var(--muted); }
+  .ch-sub { font-size:13px; color:var(--muted); margin-bottom:12px; }
+  .ch-dots { display:flex; flex-wrap:wrap; gap:5px; margin:10px 0 12px; }
+  .ch-dot { width:14px; height:14px; border-radius:50%; background:var(--field); border:1px solid var(--field-border); }
+  .ch-dot.done { background:var(--gold); border-color:var(--gold); }
+  .ch-dot.today { box-shadow:0 0 0 2px var(--gold-light); }
+  .ch-prog { font-size:13px; color:var(--muted); margin-bottom:12px; }
+  .ch-prog b { color:var(--gold-light); font-weight:800; }
+  .ch-btn { width:100%; background:var(--gold); color:#1c1402; border:none; font-family:inherit; font-weight:800; font-size:14px; padding:12px; border-radius:99px; cursor:pointer; }
+  .ch-btn:disabled { opacity:.55; cursor:default; }
+  .ch-btn.ghost { background:none; border:1px solid var(--field-border); color:var(--gold); font-weight:700; }
+  .ch-join-label { font-size:13px; color:var(--muted); margin:2px 0 10px; }
+  .ch-join-opts { display:flex; flex-direction:column; gap:8px; }
+  .ch-join-opts .ch-btn { text-align:center; }
+  .ch-manage { display:block; width:100%; margin-top:10px; background:none; border:none; color:var(--muted); font-family:inherit; font-size:12.5px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .ch-done-badge { color:var(--gold-light); font-weight:800; font-size:14px; text-align:center; padding:6px 0; }
   .fqj { display:flex; align-items:center; gap:12px; }
   .fqj input { flex:1; background:var(--field); border:1px solid var(--field-border); border-radius:10px; padding:11px 13px; color:var(--text); font-family:inherit; font-size:14px; }
   .fqj input::placeholder { color:var(--muted); }
@@ -1316,6 +1336,11 @@
             <div class="forge-stat"><div class="num" id="forgePoints">0</div><div class="lbl">Kingdom Points</div></div>
             <div class="forge-stat"><div class="num" id="forgeEntries">0</div><div class="lbl">Entries</div></div>
             <div class="forge-stat"><div class="num" id="forgeStreak">0</div><div class="lbl">Day Streak</div></div>
+          </div>
+
+          <div class="forge-card ch-card" id="challengeCard">
+            <div class="forge-clabel">21-Day Challenge</div>
+            <div id="challengeBody"><div class="ch-loading">Loading…</div></div>
           </div>
 
           <div class="forge-card">
@@ -4104,6 +4129,123 @@
       { title: "Encourage someone", sub: "In a circle", icon: 'M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z', done: encouraged, act: function () { showTab("circles"); window.scrollTo(0, 0); } },
     ];
   }
+  // ===== 21-Day Challenge (tap-to-check-in; public or circle-scoped) =====
+  var __chData = null, __chLoading = false, __chJoinOpen = false;
+  function chToday() { return dayKey(new Date()); }
+  async function loadChallengeData() {
+    if (!sb || !currentEmail()) { __chData = null; return; }
+    try {
+      var codes = (typeof getCircles === "function" ? getCircles() : []) || [];
+      var chRows = [];
+      var pub = await sb.from("challenges").select("*").eq("scope", "public").maybeSingle();
+      if (pub.error) throw pub.error;                    // tables not set up yet -> hide card
+      if (pub.data) chRows.push(pub.data);
+      if (codes.length) {
+        var cc = await sb.from("challenges").select("*").eq("scope", "circle").in("circle_code", codes);
+        if (!cc.error && Array.isArray(cc.data)) chRows = chRows.concat(cc.data);
+      }
+      var ids = chRows.map(function (c) { return c.id; });
+      var parts = [], checks = [], names = {};
+      if (ids.length) {
+        var pr = await sb.from("challenge_participants").select("challenge_id,email").in("challenge_id", ids);
+        if (!pr.error) parts = pr.data || [];
+        var mine = await sb.from("challenge_checkins").select("challenge_id,day").eq("email", currentEmail()).in("challenge_id", ids);
+        if (!mine.error) checks = mine.data || [];
+      }
+      if (codes.length) {
+        var nm = await sb.from("prayer_circles").select("code,name").in("code", codes);
+        if (!nm.error) (nm.data || []).forEach(function (r) { names[r.code] = r.name || r.code; });
+      }
+      __chData = { challenges: chRows, parts: parts, checks: checks, names: names, myEmail: (currentEmail() || "").toLowerCase() };
+    } catch (e) { __chData = null; }
+  }
+  function chStatsFor(id) {
+    var d = __chData; if (!d) return { joined: false, count: 0, days: 0, checkedToday: false };
+    var count = d.parts.filter(function (p) { return p.challenge_id === id; }).length;
+    var joined = d.parts.some(function (p) { return p.challenge_id === id && (p.email || "").toLowerCase() === d.myEmail; });
+    var myDays = {}; d.checks.forEach(function (c) { if (c.challenge_id === id) myDays[c.day] = 1; });
+    return { joined: joined, count: count, days: Math.min(21, Object.keys(myDays).length), checkedToday: !!myDays[chToday()] };
+  }
+  function chScopeLabel(c) {
+    if (c.scope === "public") return "Open to everyone";
+    return "Circle: " + escapeHtml((__chData && __chData.names[c.circle_code]) || c.circle_code);
+  }
+  function chBlockHtml(c) {
+    var s = chStatsFor(c.id), n = c.days || 21, dots = "";
+    for (var i = 1; i <= n; i++) {
+      dots += '<span class="ch-dot' + (i <= s.days ? " done" : "") + (i === s.days + 1 && !s.checkedToday ? " today" : "") + '"></span>';
+    }
+    var btn;
+    if (s.days >= n) btn = '<div class="ch-done-badge">Challenge complete 🎉 · ' + n + ' days</div>';
+    else if (s.checkedToday) btn = '<button class="ch-btn" disabled>Checked in today ✓</button>';
+    else btn = '<button class="ch-btn" data-chcheckin="' + c.id + '">Check in — Day ' + (s.days + 1) + '</button>';
+    return '<div class="ch-block">' +
+      '<div class="ch-head"><span class="ch-title">' + escapeHtml(c.title || "21-Day Challenge") + '</span><span class="ch-scope">' + chScopeLabel(c) + '</span></div>' +
+      '<div class="ch-sub">' + s.count + (s.count === 1 ? " person" : " people") + ' joined</div>' +
+      '<div class="ch-dots">' + dots + '</div>' +
+      '<div class="ch-prog"><b>' + s.days + '</b> of ' + n + ' days</div>' + btn + '</div>';
+  }
+  function chJoinHtml(available, first) {
+    var opts = "";
+    available.forEach(function (c) {
+      var label = c.scope === "public" ? "Anyone on the app" : ("My circle: " + escapeHtml((__chData.names[c.circle_code]) || c.circle_code));
+      opts += '<button class="ch-btn' + (c.scope === "public" ? "" : " ghost") + '" data-chjoin="' + c.scope + '" data-chcircle="' + (c.circle_code || "") + '">Join · ' + label + '</button>';
+    });
+    var codes = (typeof getCircles === "function" ? getCircles() : []) || [];
+    var have = {}; __chData.challenges.forEach(function (c) { if (c.scope === "circle") have[c.circle_code] = 1; });
+    codes.forEach(function (code) {
+      if (!have[code]) opts += '<button class="ch-btn ghost" data-chjoin="circle" data-chcircle="' + code + '">Start for my circle: ' + escapeHtml(__chData.names[code] || code) + '</button>';
+    });
+    if (!opts) return "";
+    return '<div class="ch-join-label">' + (first ? "Join the 21-Day Challenge:" : "Join another:") + '</div><div class="ch-join-opts">' + opts + '</div>';
+  }
+  async function renderChallenge() {
+    var card = document.getElementById("challengeCard"), body = document.getElementById("challengeBody");
+    if (!card || !body) return;
+    if (!__chLoading && !__chData) { __chLoading = true; await loadChallengeData(); __chLoading = false; }
+    if (!__chData) { card.style.display = "none"; return; }
+    card.style.display = "";
+    var joined = __chData.challenges.filter(function (c) { return chStatsFor(c.id).joined; });
+    var available = __chData.challenges.filter(function (c) { return !chStatsFor(c.id).joined; });
+    var joinHtml = chJoinHtml(available, joined.length === 0);
+    var html = joined.map(chBlockHtml).join("");
+    if (joined.length === 0) html += joinHtml;
+    else if (__chJoinOpen) html += joinHtml;
+    else if (joinHtml) html += '<button class="ch-manage" data-chtoggle="1">＋ Join another challenge</button>';
+    body.innerHTML = html;
+    body.querySelectorAll("[data-chcheckin]").forEach(function (b) { b.addEventListener("click", function () { checkInChallenge(b.getAttribute("data-chcheckin")); }); });
+    body.querySelectorAll("[data-chjoin]").forEach(function (b) { b.addEventListener("click", function () { joinChallengeScope(b.getAttribute("data-chjoin"), b.getAttribute("data-chcircle") || null); }); });
+    var tog = body.querySelector("[data-chtoggle]"); if (tog) tog.addEventListener("click", function () { __chJoinOpen = true; renderChallenge(); });
+  }
+  async function joinChallengeScope(scope, circleCode) {
+    if (!sb || !currentEmail()) return;
+    try {
+      var chId = null;
+      if (scope === "public") {
+        var pub = await sb.from("challenges").select("id").eq("scope", "public").maybeSingle();
+        chId = pub.data && pub.data.id;
+      } else {
+        var ex = await sb.from("challenges").select("id").eq("scope", "circle").eq("circle_code", circleCode).maybeSingle();
+        if (ex.data) chId = ex.data.id;
+        else {
+          var ins = await sb.from("challenges").insert({ scope: "circle", circle_code: circleCode, title: "21-Day Challenge", created_by: currentEmail() }).select("id").single();
+          if (ins.error) throw ins.error; chId = ins.data.id;
+        }
+      }
+      if (!chId) return;
+      await sb.from("challenge_participants").upsert({ challenge_id: chId, email: currentEmail(), name: getName() }, { onConflict: "challenge_id,email", ignoreDuplicates: true });
+      __chJoinOpen = false; __chData = null; await renderChallenge();
+      if (typeof showToast === "function") showToast("You're in — check in each day!");
+    } catch (e) { if (typeof showToast === "function") showToast("Couldn't join right now."); }
+  }
+  async function checkInChallenge(chId) {
+    if (!sb || !currentEmail() || !chId) return;
+    try {
+      await sb.from("challenge_checkins").upsert({ challenge_id: chId, email: currentEmail(), day: chToday() }, { onConflict: "challenge_id,email,day", ignoreDuplicates: true });
+      __chData = null; await renderChallenge();
+      if (typeof showToast === "function") showToast("Checked in ✓");
+    } catch (e) { if (typeof showToast === "function") showToast("Couldn't check in right now."); }
+  }
   function renderForge() {
     var g = document.getElementById("forgeGreet");
     if (!g) return;
@@ -4118,6 +4260,7 @@
     var pe = document.getElementById("forgePoints"); if (pe) pe.textContent = (totalPoints() || 0).toLocaleString();
     var en = document.getElementById("forgeEntries"); if (en) en.textContent = loadEntries().length;
     var st = document.getElementById("forgeStreak"); if (st) st.textContent = currentStreak();
+    try { renderChallenge(); } catch (e) {}
     var steps = forgeSteps();
     var done = steps.filter(function (s) { return s.done; }).length;
     var frac = done / steps.length;
