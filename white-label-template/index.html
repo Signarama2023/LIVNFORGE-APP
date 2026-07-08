@@ -2127,10 +2127,14 @@
     revenueCatKey: "YOUR_REVENUECAT_KEY",
     revenueCatEntitlement: "Your Entitlement",
 
-    // ---- Theme accent colors (override the CSS :root defaults at load) ----
+    // ---- Theme colors (override the CSS :root defaults at load). Accent colors
+    //      always; bg/panel/field/fieldBorder/text/muted optional for a full reskin. ----
     theme: {
-      gold: "#c99a3b", goldLight: "#e2bd63", goldHover: "#d8ab4c",
-      accentStart: "#34d399", accentEnd: "#6ee7b7"
+      gold: "#c99a3b",
+      goldLight: "#e2bd63",
+      goldHover: "#d8ab4c",
+      accentStart: "#34d399",
+      accentEnd: "#6ee7b7"
     },
 
     // ---- Devotional "speakers": whose teaching STYLE the insight cards emulate.
@@ -2141,7 +2145,9 @@
       { label: "Pastor Three", style: "Pastor Three" }
     ]
   };
-  // Paint the brand accent colors over the CSS variables.
+  // Paint the brand colors over the CSS variables. Accent colors always; the
+  // background/surface/text tones are optional (set them to match a brand whose
+  // look isn't the default near-black — e.g. a deep-teal church palette).
   try {
     var _root = document.documentElement.style, _t = WHITELABEL.theme || {};
     if (_t.gold) _root.setProperty("--gold", _t.gold);
@@ -2149,6 +2155,12 @@
     if (_t.goldHover) _root.setProperty("--gold-hover", _t.goldHover);
     if (_t.accentStart) _root.setProperty("--accent-start", _t.accentStart);
     if (_t.accentEnd) _root.setProperty("--accent-end", _t.accentEnd);
+    if (_t.bg) _root.setProperty("--bg", _t.bg);
+    if (_t.panel) _root.setProperty("--panel", _t.panel);
+    if (_t.field) _root.setProperty("--field", _t.field);
+    if (_t.fieldBorder) _root.setProperty("--field-border", _t.fieldBorder);
+    if (_t.text) _root.setProperty("--text", _t.text);
+    if (_t.muted) _root.setProperty("--muted", _t.muted);
   } catch (e) {}
 
   // Derived brand object (kept for existing call sites).
