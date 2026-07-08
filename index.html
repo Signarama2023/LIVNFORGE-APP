@@ -2436,6 +2436,27 @@
     const n = ((i % BIBLE_PLAN.length) + BIBLE_PLAN.length) % BIBLE_PLAN.length;
     try { localStorage.setItem(planKey(), String(n)); } catch (e) {}
   }
+  // Dated log of reading-plan passages the user marked as read (local; feeds the weekly review's
+  // "what you read this week" alongside devotional entries).
+  function readLogKey() { return APP + ":readlog:" + (currentEmail() || "").toLowerCase(); }
+  function logPlanRead(ref) {
+    if (!ref) return;
+    try {
+      var arr = JSON.parse(localStorage.getItem(readLogKey()) || "[]");
+      if (!Array.isArray(arr)) arr = [];
+      arr.push({ ref: ref, at: new Date().toISOString() });
+      if (arr.length > 500) arr = arr.slice(-500);
+      localStorage.setItem(readLogKey(), JSON.stringify(arr));
+    } catch (e) {}
+  }
+  function readLogForWeek(start, end) {
+    try {
+      var arr = JSON.parse(localStorage.getItem(readLogKey()) || "[]");
+      if (!Array.isArray(arr)) return [];
+      var s = dayKey(start), e = dayKey(end);
+      return arr.filter(function (x) { var d = x && x.at ? dayKey(new Date(x.at)) : ""; return d >= s && d <= e; });
+    } catch (e) { return []; }
+  }
   function renderBiblePlan() {
     if (!document.getElementById("bsPlan")) return;
     const idx = getPlanIdx(), r = BIBLE_PLAN[idx];
@@ -3174,6 +3195,8 @@
       };
       var _planDone = document.getElementById("bsPlanDone");
       if (_planDone) _planDone.onclick = function () {
+        var justRead = BIBLE_PLAN[getPlanIdx()];
+        if (justRead) logPlanRead(justRead.ref);
         setPlanIdx(getPlanIdx() + 1);
         renderBiblePlan();
         var el = document.getElementById("bsReference"); if (el) el.value = BIBLE_PLAN[getPlanIdx()].ref;
@@ -6002,6 +6025,10 @@
         (e.answers || []).forEach(function (a) {
           if (a && a.q === "Scripture read" && a.a && _scriptures.indexOf(a.a) < 0) _scriptures.push(a.a);
         });
+      });
+      // Reading-plan passages marked as read this week also count.
+      readLogForWeek(st.start, st.end).forEach(function (x) {
+        if (x && x.ref && _scriptures.indexOf(x.ref) < 0) _scriptures.push(x.ref);
       });
       var scriptureRead = _scriptures.join("; ");
       var resp = await sb.functions.invoke("weekly-ai-summary", { body: { name: userName, rangeLabel: rangeLabel, stats: stats, entriesText: entriesText, scriptureRead: scriptureRead, build: BUILD } });
