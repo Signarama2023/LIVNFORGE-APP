@@ -31,12 +31,17 @@ create table if not exists public.challenge_participants (
   primary key (challenge_id, email)
 );
 
+-- One row per completed ITEM (workout/reading/gratitude/prayer) on a given plan
+-- day. Pre-launch schema change: drop the old day-level table if it exists.
+drop table if exists public.challenge_checkins cascade;
 create table if not exists public.challenge_checkins (
   challenge_id uuid not null references public.challenges(id) on delete cascade,
   email        text not null,
-  day          date not null,
+  day_number   int  not null,                       -- 1..21
+  item         text not null,                        -- 'workout' | 'reading' | 'gratitude' | 'prayer'
+  points       int  default 0,
   created_at   timestamptz default now(),
-  primary key (challenge_id, email, day)
+  primary key (challenge_id, email, day_number, item)
 );
 
 -- ---------- Visibility helper ----------

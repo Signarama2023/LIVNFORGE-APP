@@ -257,6 +257,15 @@
   .ch-join-opts .ch-btn { text-align:center; }
   .ch-manage { display:block; width:100%; margin-top:10px; background:none; border:none; color:var(--muted); font-family:inherit; font-size:12.5px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
   .ch-done-badge { color:var(--gold-light); font-weight:800; font-size:14px; text-align:center; padding:6px 0; }
+  .ch-items { display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .ch-item { background:var(--field); border:1px solid var(--field-border); border-radius:12px; padding:12px 14px; }
+  .ch-item.done { opacity:.72; }
+  .ch-item-h { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+  .ch-item-label { font-size:11px; letter-spacing:1.4px; text-transform:uppercase; font-weight:800; color:var(--gold); }
+  .ch-item-pts { font-size:12px; font-weight:800; color:var(--gold-light); }
+  .ch-item-body { font-size:14px; line-height:1.5; color:var(--text); margin-bottom:10px; }
+  .ch-item-btn { width:100%; background:var(--gold); color:#1c1402; border:none; font-family:inherit; font-weight:800; font-size:13.5px; padding:10px; border-radius:99px; cursor:pointer; }
+  .ch-item-done { text-align:center; color:var(--gold-light); font-weight:800; font-size:13px; }
   .fqj { display:flex; align-items:center; gap:12px; }
   .fqj input { flex:1; background:var(--field); border:1px solid var(--field-border); border-radius:10px; padding:11px 13px; color:var(--text); font-family:inherit; font-size:14px; }
   .fqj input::placeholder { color:var(--muted); }
@@ -2805,7 +2814,7 @@
   }
 
   function totalPoints() {
-    return loadEntries().reduce((s, e) => s + (typeof e.points === "number" ? e.points : pointsFor(e.type)), 0);
+    return loadEntries().reduce((s, e) => s + (typeof e.points === "number" ? e.points : pointsFor(e.type)), 0) + (typeof __chPoints === "number" ? __chPoints : 0);
   }
   function dayKey(dt) {
     return dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
@@ -4129,11 +4138,43 @@
       { title: "Encourage someone", sub: "In a circle", icon: 'M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z', done: encouraged, act: function () { showTab("circles"); window.scrollTo(0, 0); } },
     ];
   }
-  // ===== 21-Day Challenge (tap-to-check-in; public or circle-scoped) =====
-  var __chData = null, __chLoading = false, __chJoinOpen = false;
-  function chToday() { return dayKey(new Date()); }
+  // ===== 21-Day Challenge (structured daily plan: workout, reading, gratitude, prayer) =====
+  var __chData = null, __chLoading = false, __chJoinOpen = false, __chPoints = 0;
+  var CH_ITEMS = [
+    { key: "workout",   label: "Workout",   pts: 7  },
+    { key: "reading",   label: "Reading",   pts: 15 },
+    { key: "gratitude", label: "Gratitude", pts: 11 },
+    { key: "prayer",    label: "Prayer",    pts: 13 }
+  ];
+  // The 21-day plan everyone follows. Scripture is given by REFERENCE — read it in your
+  // own Bible or the Devotional tab. Edit any of this freely.
+  var CHALLENGE_PLAN = [
+    { theme: "Day 1 · Begin", workout: "3 rounds — 15 squats, 10 push-ups, 20 sit-ups. Rest as needed.", reading: "Genesis 1:26–31 — you are made in God's image, on purpose.", gratitude: "Name 3 gifts in your life you usually walk right past.", prayer: "Father, thank You for a fresh start. Meet me in these 21 days and make me new." },
+    { theme: "Day 2 · Foundation", workout: "4 rounds — 20 jumping jacks, 10 lunges per leg, 15 sit-ups.", reading: "Matthew 7:24–27 — build your life on the rock.", gratitude: "Thank God for one person who has been solid ground for you.", prayer: "Lord, be my foundation. Let everything I build today stand on You." },
+    { theme: "Day 3 · Identity", workout: "3 rounds — 12 push-ups, 20 squats, 30-second plank.", reading: "Ephesians 1:3–8 — chosen, adopted, and loved before you did anything.", gratitude: "List 3 things about how you're made that you're grateful for.", prayer: "God, remind me who I am in You — not what I do, but whose I am." },
+    { theme: "Day 4 · Strength", workout: "5 rounds — 10 push-ups, 15 squats, 10 sit-ups. Move steady.", reading: "Philippians 4:10–13 — strength for all things through Christ.", gratitude: "Recall a hard season God carried you through. Thank Him for it.", prayer: "Jesus, be my strength in the places I am weak today." },
+    { theme: "Day 5 · Rest & Trust", workout: "Active recovery — a 15-minute walk plus 5 minutes of stretching.", reading: "Matthew 11:28–30 — come to Me and I will give you rest.", gratitude: "Thank God for rest, and that you don't have to earn His love.", prayer: "Father, I lay down my striving. Teach me to rest in You." },
+    { theme: "Day 6 · Discipline", workout: "4 rounds — 15 squats, 12 push-ups, 20 mountain climbers.", reading: "1 Corinthians 9:24–27 — run to win; discipline the body.", gratitude: "Thank God for one discipline that has shaped who you are.", prayer: "Lord, give me the will to keep going when it gets hard." },
+    { theme: "Day 7 · Reflect", workout: "3 rounds — 20 sit-ups, 20 squats, 30-second plank. Easy pace.", reading: "Psalm 1 — the blessing of a rooted life.", gratitude: "Look back over the week — name 3 wins, even small ones.", prayer: "God, thank You for week one. Root me deeper in the next." },
+    { theme: "Day 8 · Renew", workout: "5 rounds — 10 burpees (or step-backs), 15 squats.", reading: "Romans 12:1–2 — be transformed by the renewing of your mind.", gratitude: "Thank God for one way your thinking has changed for the better.", prayer: "Father, renew my mind. Replace old lies with Your truth." },
+    { theme: "Day 9 · Courage", workout: "4 rounds — 12 push-ups, 20 lunges, 20 sit-ups.", reading: "Joshua 1:6–9 — be strong and courageous.", gratitude: "Recall a time you were braver than you felt. Thank God for it.", prayer: "Lord, make me brave. Go before me today." },
+    { theme: "Day 10 · Focus", workout: "3 rounds — 25 squats, 15 push-ups, 40-second plank.", reading: "Hebrews 12:1–2 — fix your eyes on Jesus and run the race.", gratitude: "Thank God for one thing worth keeping your eyes on.", prayer: "Jesus, be my focus. Clear away what pulls me from You." },
+    { theme: "Day 11 · Endure", workout: "6 rounds — 10 push-ups, 15 squats, 10 sit-ups. Short rests.", reading: "James 1:2–4 — perseverance makes you complete.", gratitude: "Thank God for a trial that grew you.", prayer: "Father, give me endurance. Finish the work You started in me." },
+    { theme: "Day 12 · Serve", workout: "4 rounds — 20 jumping jacks, 12 lunges per leg, 15 push-ups.", reading: "Mark 10:42–45 — the Son of Man came to serve.", gratitude: "Thank God for someone who served you well.", prayer: "Lord, show me one person to serve today, and help me do it." },
+    { theme: "Day 13 · Peace", workout: "Active recovery — a 20-minute walk, deep breathing, and stretching.", reading: "Philippians 4:6–7 — peace that guards your heart.", gratitude: "Name 3 things that bring you peace, and thank the Giver.", prayer: "God, trade my anxiety for Your peace. I give You what I'm carrying." },
+    { theme: "Day 14 · Reflect", workout: "3 rounds — 20 squats, 20 sit-ups, 30-second plank.", reading: "Psalm 23 — the Shepherd who leads and restores.", gratitude: "Look back over two weeks — where has God shown up?", prayer: "Shepherd, thank You for leading me this far. Lead me on." },
+    { theme: "Day 15 · Purpose", workout: "5 rounds — 12 push-ups, 20 squats, 10 sit-ups.", reading: "Ephesians 2:8–10 — created for good works prepared for you.", gratitude: "Thank God for a purpose you get to live out.", prayer: "Father, show me the good works You've set before me today." },
+    { theme: "Day 16 · Generosity", workout: "4 rounds — 15 squats, 15 push-ups, 20 mountain climbers.", reading: "2 Corinthians 9:6–8 — God loves a cheerful giver.", gratitude: "Thank God for a time someone was generous with you.", prayer: "Lord, loosen my grip. Make me generous with what You've given." },
+    { theme: "Day 17 · Truth", workout: "3 rounds — 25 squats, 15 push-ups, 45-second plank.", reading: "John 8:31–32 — the truth will set you free.", gratitude: "Thank God for one truth that has set you free.", prayer: "Jesus, You are the truth. Free me where I am still bound." },
+    { theme: "Day 18 · Love", workout: "5 rounds — 10 burpees (or step-backs), 15 squats, 15 sit-ups.", reading: "1 Corinthians 13:4–7 — what love actually looks like.", gratitude: "Name 3 people you love, and thank God for each of them.", prayer: "Father, fill me with Your love until it overflows to others." },
+    { theme: "Day 19 · Hope", workout: "4 rounds — 20 lunges, 12 push-ups, 20 sit-ups.", reading: "Romans 8:18–25 — hope that does not disappoint.", gratitude: "Thank God for a hope you are holding onto.", prayer: "God of hope, anchor me. Let me not lose heart." },
+    { theme: "Day 20 · Surrender", workout: "Active recovery — a 20-minute walk and a full-body stretch.", reading: "Luke 9:23–24 — take up your cross daily and follow.", gratitude: "Thank God for something you were finally able to let go of.", prayer: "Lord, I surrender today to You. Have Your way in me." },
+    { theme: "Day 21 · Forged", workout: "Finisher — 4 rounds: 25 squats, 25 push-ups, 25 sit-ups. Finish strong.", reading: "2 Timothy 4:7 — I have fought the fight and finished the race.", gratitude: "Look back on 21 days — thank God for who you are becoming.", prayer: "Father, thank You for finishing this with me. Send me out forged and faithful." }
+  ];
+  function chPlanDay(n) { return CHALLENGE_PLAN[(n - 1) % CHALLENGE_PLAN.length]; }
+
   async function loadChallengeData() {
-    if (!sb || !currentEmail()) { __chData = null; return; }
+    if (!sb || !currentEmail()) { __chData = null; __chPoints = 0; return; }
     try {
       var codes = (typeof getCircles === "function" ? getCircles() : []) || [];
       var chRows = [];
@@ -4149,7 +4190,7 @@
       if (ids.length) {
         var pr = await sb.from("challenge_participants").select("challenge_id,email").in("challenge_id", ids);
         if (!pr.error) parts = pr.data || [];
-        var mine = await sb.from("challenge_checkins").select("challenge_id,day").eq("email", currentEmail()).in("challenge_id", ids);
+        var mine = await sb.from("challenge_checkins").select("challenge_id,day_number,item,points").eq("email", currentEmail()).in("challenge_id", ids);
         if (!mine.error) checks = mine.data || [];
       }
       if (codes.length) {
@@ -4157,34 +4198,51 @@
         if (!nm.error) (nm.data || []).forEach(function (r) { names[r.code] = r.name || r.code; });
       }
       __chData = { challenges: chRows, parts: parts, checks: checks, names: names, myEmail: (currentEmail() || "").toLowerCase() };
-    } catch (e) { __chData = null; }
+      __chPoints = checks.reduce(function (s, c) { return s + (c.points || 0); }, 0);
+    } catch (e) { __chData = null; __chPoints = 0; }
   }
   function chStatsFor(id) {
-    var d = __chData; if (!d) return { joined: false, count: 0, days: 0, checkedToday: false };
+    var d = __chData; if (!d) return { joined: false, count: 0, completedDays: 0, currentDay: 1, doneItems: {} };
     var count = d.parts.filter(function (p) { return p.challenge_id === id; }).length;
     var joined = d.parts.some(function (p) { return p.challenge_id === id && (p.email || "").toLowerCase() === d.myEmail; });
-    var myDays = {}; d.checks.forEach(function (c) { if (c.challenge_id === id) myDays[c.day] = 1; });
-    return { joined: joined, count: count, days: Math.min(21, Object.keys(myDays).length), checkedToday: !!myDays[chToday()] };
+    var byDay = {};
+    d.checks.forEach(function (c) { if (c.challenge_id === id) { (byDay[c.day_number] = byDay[c.day_number] || {})[c.item] = 1; } });
+    var completed = 0, total = CHALLENGE_PLAN.length;
+    for (var k in byDay) { if (Object.keys(byDay[k]).length >= CH_ITEMS.length) completed++; }
+    completed = Math.min(completed, total);
+    var currentDay = Math.min(total, completed + 1);
+    return { joined: joined, count: count, completedDays: completed, currentDay: currentDay, doneItems: byDay[currentDay] || {} };
   }
   function chScopeLabel(c) {
     if (c.scope === "public") return "Open to everyone";
     return "Circle: " + escapeHtml((__chData && __chData.names[c.circle_code]) || c.circle_code);
   }
   function chBlockHtml(c) {
-    var s = chStatsFor(c.id), n = c.days || 21, dots = "";
-    for (var i = 1; i <= n; i++) {
-      dots += '<span class="ch-dot' + (i <= s.days ? " done" : "") + (i === s.days + 1 && !s.checkedToday ? " today" : "") + '"></span>';
+    var s = chStatsFor(c.id), total = CHALLENGE_PLAN.length;
+    if (s.completedDays >= total) {
+      return '<div class="ch-block"><div class="ch-head"><span class="ch-title">' + escapeHtml(c.title || "21-Day Challenge") + '</span><span class="ch-scope">' + chScopeLabel(c) + '</span></div>' +
+        '<div class="ch-done-badge">Challenge complete 🎉 · all ' + total + ' days</div>' +
+        '<button class="ch-manage" data-chleave="' + c.id + '">Leave this challenge</button></div>';
     }
-    var btn;
-    if (s.days >= n) btn = '<div class="ch-done-badge">Challenge complete 🎉 · ' + n + ' days</div>';
-    else if (s.checkedToday) btn = '<button class="ch-btn" disabled>Checked in today ✓</button>';
-    else btn = '<button class="ch-btn" data-chcheckin="' + c.id + '">Check in — Day ' + (s.days + 1) + '</button>';
+    var day = chPlanDay(s.currentDay), dots = "";
+    for (var i = 1; i <= total; i++) dots += '<span class="ch-dot' + (i <= s.completedDays ? " done" : "") + (i === s.currentDay ? " today" : "") + '"></span>';
+    var doneCount = Object.keys(s.doneItems).length;
+    var cards = CH_ITEMS.map(function (it) {
+      var done = !!s.doneItems[it.key];
+      return '<div class="ch-item' + (done ? " done" : "") + '">' +
+        '<div class="ch-item-h"><span class="ch-item-label">' + it.label + '</span><span class="ch-item-pts">+' + it.pts + '</span></div>' +
+        '<div class="ch-item-body">' + escapeHtml(day[it.key] || "") + '</div>' +
+        (done ? '<div class="ch-item-done">Done ✓</div>'
+              : '<button class="ch-item-btn" data-chitem="' + it.key + '" data-chid="' + c.id + '" data-chday="' + s.currentDay + '" data-chpts="' + it.pts + '">Mark done · +' + it.pts + '</button>') +
+        '</div>';
+    }).join("");
     return '<div class="ch-block">' +
       '<div class="ch-head"><span class="ch-title">' + escapeHtml(c.title || "21-Day Challenge") + '</span><span class="ch-scope">' + chScopeLabel(c) + '</span></div>' +
-      '<div class="ch-sub">' + s.count + (s.count === 1 ? " person" : " people") + ' joined</div>' +
+      '<div class="ch-sub">' + escapeHtml(day.theme || ("Day " + s.currentDay)) + ' · ' + s.count + (s.count === 1 ? " person" : " people") + ' in</div>' +
       '<div class="ch-dots">' + dots + '</div>' +
-      '<div class="ch-prog"><b>' + s.days + '</b> of ' + n + ' days</div>' + btn +
-      '<button class="ch-manage" data-chleave="' + c.id + '">Leave this challenge</button>' + '</div>';
+      '<div class="ch-prog"><b>' + s.completedDays + '</b> of ' + total + ' days · today ' + doneCount + '/' + CH_ITEMS.length + '</div>' +
+      '<div class="ch-items">' + cards + '</div>' +
+      '<button class="ch-manage" data-chleave="' + c.id + '">Leave this challenge</button></div>';
   }
   function chJoinHtml(available, first) {
     var opts = "";
@@ -4214,7 +4272,7 @@
     else if (__chJoinOpen) html += joinHtml;
     else if (joinHtml) html += '<button class="ch-manage" data-chtoggle="1">＋ Join another challenge</button>';
     body.innerHTML = html;
-    body.querySelectorAll("[data-chcheckin]").forEach(function (b) { b.addEventListener("click", function () { checkInChallenge(b.getAttribute("data-chcheckin")); }); });
+    body.querySelectorAll("[data-chitem]").forEach(function (b) { b.addEventListener("click", function () { checkChallengeItem(b.getAttribute("data-chid"), b.getAttribute("data-chday"), b.getAttribute("data-chitem"), b.getAttribute("data-chpts")); }); });
     body.querySelectorAll("[data-chjoin]").forEach(function (b) { b.addEventListener("click", function () { joinChallengeScope(b.getAttribute("data-chjoin"), b.getAttribute("data-chcircle") || null); }); });
     body.querySelectorAll("[data-chleave]").forEach(function (b) { b.addEventListener("click", function () { leaveChallenge(b.getAttribute("data-chleave")); }); });
     var tog = body.querySelector("[data-chtoggle]"); if (tog) tog.addEventListener("click", function () { __chJoinOpen = true; renderChallenge(); });
@@ -4237,26 +4295,30 @@
       if (!chId) return;
       await sb.from("challenge_participants").upsert({ challenge_id: chId, email: currentEmail(), name: getName() }, { onConflict: "challenge_id,email", ignoreDuplicates: true });
       __chJoinOpen = false; __chData = null; await renderChallenge();
-      if (typeof showToast === "function") showToast("You're in — check in each day!");
+      if (typeof showToast === "function") showToast("You're in — start Day 1!");
     } catch (e) { if (typeof showToast === "function") showToast("Couldn't join right now."); }
   }
-  async function checkInChallenge(chId) {
+  async function checkChallengeItem(chId, dayNumber, item, pts) {
     if (!sb || !currentEmail() || !chId) return;
     try {
-      await sb.from("challenge_checkins").upsert({ challenge_id: chId, email: currentEmail(), day: chToday() }, { onConflict: "challenge_id,email,day", ignoreDuplicates: true });
+      await sb.from("challenge_checkins").upsert({ challenge_id: chId, email: currentEmail(), day_number: +dayNumber, item: item, points: +pts },
+        { onConflict: "challenge_id,email,day_number,item", ignoreDuplicates: true });
       __chData = null; await renderChallenge();
-      if (typeof showToast === "function") showToast("Checked in ✓");
-    } catch (e) { if (typeof showToast === "function") showToast("Couldn't check in right now."); }
+      try { var pe = document.getElementById("forgePoints"); if (pe) pe.textContent = (totalPoints() || 0).toLocaleString(); } catch (e) {}
+      try { if (typeof syncToGroup === "function") syncToGroup(true); } catch (e) {}
+      if (typeof showToast === "function") showToast("+" + pts + " · " + item.charAt(0).toUpperCase() + item.slice(1) + " done");
+    } catch (e) { if (typeof showToast === "function") showToast("Couldn't save that right now."); }
   }
   async function leaveChallenge(chId) {
     if (!sb || !currentEmail() || !chId) return;
-    if (typeof confirm === "function" && !confirm("Leave this challenge? Your check-ins are kept if you rejoin.")) return;
+    if (typeof confirm === "function" && !confirm("Leave this challenge? Your progress is kept if you rejoin.")) return;
     try {
       await sb.from("challenge_participants").delete().eq("challenge_id", chId).eq("email", currentEmail());
       __chData = null; __chJoinOpen = false; await renderChallenge();
       if (typeof showToast === "function") showToast("You left the challenge.");
     } catch (e) { if (typeof showToast === "function") showToast("Couldn't leave right now."); }
   }
+
   function renderForge() {
     var g = document.getElementById("forgeGreet");
     if (!g) return;
