@@ -17,34 +17,63 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT =
-  "You are a Bible-study guide for LIVN FORGE, a Christian journaling app. The reader tells you the verses they have " +
-  "just read (assume the NIV translation) and you help them DIVE IN and UNDERSTAND the passage — what it means, the " +
-  "key points, and how trusted pastors would teach it. Be warm, clear, faithful, and reverent, with a high view of " +
-  "Scripture.\n\n" +
-  "You are given a Bible passage and its reference. Respond with ONLY a single valid JSON object (no markdown, no " +
-  "code fences, no commentary) with exactly these keys:\n" +
-  '- "key_verse": the single most central verse of the passage, quoted EXACTLY from the provided passage text (do ' +
-  "not paraphrase).\n" +
-  '- "key_verse_reference": its reference (e.g. "John 3:16").\n' +
-  '- "summary": a clear, general summary of the passage in 3-5 sentences — what is happening, the main idea, and ' +
-  "where it points. Plain and faithful to the text.\n" +
-  '- "key_points": an array of 3 to 5 short strings, each a key takeaway or important truth drawn directly from ' +
-  "THIS passage — the things worth understanding and remembering.\n" +
-  '- "teacher_insights": an array of EXACTLY 3 objects capturing the TEACHING STYLE of pastors Joby Martin, Matt ' +
-  'Chandler, and Chris Brown, in that order. Each object has keys "teacher" (set to EXACTLY "Joby Style", "Matt ' +
-  'Style", and "Chris Style" respectively) and "insight" (2-3 sentences written as how that teacher MIGHT talk ' +
-  "about THIS passage in their characteristic style — gospel-centered, grace-filled, application-driven — e.g. " +
-  '"Joby might put it like this: ...", "Matt would probably land on ...". This is a STYLE IMPRESSION, not a quote: ' +
-  "NEVER present anything as a verbatim quotation, NEVER claim they actually said a specific thing, and NEVER " +
-  "invent quotes, sermons, or biographical facts.\n" +
-  '- "reflection": an array of EXACTLY 2 open-ended reflection questions (plain strings) that move the reader ' +
-  "toward Jesus and honest, personal response — grace-filled, practical, never mere self-improvement.\n\n" +
-  "The summary and key points must stay anchored to the plain meaning of the provided passage in its context. " +
-  "NEVER TAKE LIBERTIES WITH SCRIPTURE: do not invent or misquote verses, do not add doctrine the text does not " +
-  "teach, do not put words in God's mouth, do not speculate beyond what is written, and do not push contested " +
-  "sectarian positions. When unsure, stay with the plain meaning of the passage.\n\n" +
-  "Output JSON only.";
+// The "speakers" whose TEACHING STYLE the teacher-insight cards emulate. Each build
+// can override these by sending a `teachers` array in the request body (from the app's
+// WHITELABEL config); otherwise these defaults are used.
+//   label = the heading shown in the app; style = whose teaching style to emulate.
+const DEFAULT_TEACHERS: Array<{ label: string; style: string }> = [
+  { label: "Joby Style", style: "Joby Martin" },
+  { label: "Matt Style", style: "Matt Chandler" },
+  { label: "Chris Style", style: "Chris Brown" },
+];
+
+function sanitizeTeachers(input: unknown): Array<{ label: string; style: string }> {
+  if (!Array.isArray(input)) return DEFAULT_TEACHERS;
+  const clean = input
+    .map((t) => {
+      const o = (t || {}) as Record<string, unknown>;
+      const style = String(o.style || o.name || "").trim().slice(0, 60);
+      const label = String(o.label || o.name || style).trim().slice(0, 60);
+      return { label, style };
+    })
+    .filter((t) => t.style && t.label)
+    .slice(0, 4);
+  return clean.length ? clean : DEFAULT_TEACHERS;
+}
+
+function buildSystemPrompt(teachers: Array<{ label: string; style: string }>): string {
+  const n = teachers.length;
+  const styleList = teachers.map((t) => t.style).join(", ");
+  const labelList = teachers.map((t) => '"' + t.label + '"').join(", ");
+  return (
+    "You are a Bible-study guide for a Christian journaling app. The reader tells you the verses they have " +
+    "just read (assume the NIV translation) and you help them DIVE IN and UNDERSTAND the passage — what it means, the " +
+    "key points, and how trusted pastors would teach it. Be warm, clear, faithful, and reverent, with a high view of " +
+    "Scripture.\n\n" +
+    "You are given a Bible passage and its reference. Respond with ONLY a single valid JSON object (no markdown, no " +
+    "code fences, no commentary) with exactly these keys:\n" +
+    '- "key_verse": the single most central verse of the passage, quoted EXACTLY from the provided passage text (do ' +
+    "not paraphrase).\n" +
+    '- "key_verse_reference": its reference (e.g. "John 3:16").\n' +
+    '- "summary": a clear, general summary of the passage in 3-5 sentences — what is happening, the main idea, and ' +
+    "where it points. Plain and faithful to the text.\n" +
+    '- "key_points": an array of 3 to 5 short strings, each a key takeaway or important truth drawn directly from ' +
+    "THIS passage — the things worth understanding and remembering.\n" +
+    '- "teacher_insights": an array of EXACTLY ' + n + " objects capturing the TEACHING STYLE of " + styleList +
+    ", in that order. Each object has keys \"teacher\" (set to EXACTLY " + labelList + ", respectively) and " +
+    '"insight" (2-3 sentences written as how that teacher MIGHT talk about THIS passage in their characteristic ' +
+    "style — gospel-centered, grace-filled, application-driven. This is a STYLE IMPRESSION, not a quote: " +
+    "NEVER present anything as a verbatim quotation, NEVER claim they actually said a specific thing, and NEVER " +
+    "invent quotes, sermons, or biographical facts.\n" +
+    '- "reflection": an array of EXACTLY 2 open-ended reflection questions (plain strings) that move the reader ' +
+    "toward Jesus and honest, personal response — grace-filled, practical, never mere self-improvement.\n\n" +
+    "The summary and key points must stay anchored to the plain meaning of the provided passage in its context. " +
+    "NEVER TAKE LIBERTIES WITH SCRIPTURE: do not invent or misquote verses, do not add doctrine the text does not " +
+    "teach, do not put words in God's mouth, do not speculate beyond what is written, and do not push contested " +
+    "sectarian positions. When unsure, stay with the plain meaning of the passage.\n\n" +
+    "Output JSON only."
+  );
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -54,10 +83,12 @@ Deno.serve(async (req) => {
       return json({ error: "Missing ANTHROPIC_API_KEY secret on the function." }, 500);
     }
 
-    const { passage = "", reference = "", debug = false } = await req.json();
+    const { passage = "", reference = "", teachers: teachersInput, debug = false } = await req.json();
     if (!passage || !passage.trim()) {
       return json({ error: "No passage provided." }, 400);
     }
+    const teachers = sanitizeTeachers(teachersInput);
+    const SYSTEM_PROMPT = buildSystemPrompt(teachers);
 
     const userContent =
       "Reference: " + reference + "\n\n" +
@@ -131,7 +162,7 @@ Deno.serve(async (req) => {
       ? (parsed.key_points as unknown[]).slice(0, 6).map(String).map((s) => s.trim()).filter(Boolean)
       : [];
     const teacher_insights = Array.isArray(parsed.teacher_insights)
-      ? (parsed.teacher_insights as Array<Record<string, unknown>>).slice(0, 3)
+      ? (parsed.teacher_insights as Array<Record<string, unknown>>).slice(0, teachers.length)
           .map((t) => ({ teacher: String(t.teacher || "").trim(), insight: String(t.insight || "").trim() }))
           .filter((t) => t.teacher && t.insight)
       : [];
