@@ -264,6 +264,7 @@
   .ch-item-label { font-size:11px; letter-spacing:1.4px; text-transform:uppercase; font-weight:800; color:var(--gold); }
   .ch-item-pts { font-size:12px; font-weight:800; color:var(--gold-light); }
   .ch-item-body { font-size:14px; line-height:1.5; color:var(--text); margin-bottom:10px; }
+  .ch-wname { font-weight:800; font-size:15px; color:var(--text); margin-bottom:3px; }
   .ch-item-btn { width:100%; background:var(--gold); color:#1c1402; border:none; font-family:inherit; font-weight:800; font-size:13.5px; padding:10px; border-radius:99px; cursor:pointer; }
   .ch-item-done { text-align:center; color:var(--gold-light); font-weight:800; font-size:13px; }
   .fqj { display:flex; align-items:center; gap:12px; }
@@ -4196,35 +4197,34 @@
   // ===== 21-Day Challenge (structured daily plan: workout, reading, gratitude, prayer) =====
   var __chData = null, __chLoading = false, __chJoinOpen = false, __chPoints = 0;
   var CH_ITEMS = [
-    { key: "workout",   label: "Workout",   pts: 7  },
-    { key: "reading",   label: "Reading",   pts: 15 },
-    { key: "gratitude", label: "Gratitude", pts: 11 },
-    { key: "prayer",    label: "Prayer",    pts: 13 }
+    { key: "workout", label: "The Workout", pts: 7  },
+    { key: "reading", label: "Reading",     pts: 15 },
+    { key: "prayer",  label: "Prayer",      pts: 13 }
   ];
   // The 21-day plan everyone follows. Scripture is given by REFERENCE — read it in your
   // own Bible or the Devotional tab. Edit any of this freely.
   var CHALLENGE_PLAN = [
-    { theme: "Day 1 · Begin", workout: "3 rounds — 15 squats, 10 push-ups, 20 sit-ups. Rest as needed.", reading: "Genesis 1:26–31 — you are made in God's image, on purpose.", gratitude: "Name 3 gifts in your life you usually walk right past.", prayer: "Father, thank You for a fresh start. Meet me in these 21 days and make me new." },
-    { theme: "Day 2 · Foundation", workout: "4 rounds — 20 jumping jacks, 10 lunges per leg, 15 sit-ups.", reading: "Matthew 7:24–27 — build your life on the rock.", gratitude: "Thank God for one person who has been solid ground for you.", prayer: "Lord, be my foundation. Let everything I build today stand on You." },
-    { theme: "Day 3 · Identity", workout: "3 rounds — 12 push-ups, 20 squats, 30-second plank.", reading: "Ephesians 1:3–8 — chosen, adopted, and loved before you did anything.", gratitude: "List 3 things about how you're made that you're grateful for.", prayer: "God, remind me who I am in You — not what I do, but whose I am." },
-    { theme: "Day 4 · Strength", workout: "5 rounds — 10 push-ups, 15 squats, 10 sit-ups. Move steady.", reading: "Philippians 4:10–13 — strength for all things through Christ.", gratitude: "Recall a hard season God carried you through. Thank Him for it.", prayer: "Jesus, be my strength in the places I am weak today." },
-    { theme: "Day 5 · Rest & Trust", workout: "Active recovery — a 15-minute walk plus 5 minutes of stretching.", reading: "Matthew 11:28–30 — come to Me and I will give you rest.", gratitude: "Thank God for rest, and that you don't have to earn His love.", prayer: "Father, I lay down my striving. Teach me to rest in You." },
-    { theme: "Day 6 · Discipline", workout: "4 rounds — 15 squats, 12 push-ups, 20 mountain climbers.", reading: "1 Corinthians 9:24–27 — run to win; discipline the body.", gratitude: "Thank God for one discipline that has shaped who you are.", prayer: "Lord, give me the will to keep going when it gets hard." },
-    { theme: "Day 7 · Reflect", workout: "3 rounds — 20 sit-ups, 20 squats, 30-second plank. Easy pace.", reading: "Psalm 1 — the blessing of a rooted life.", gratitude: "Look back over the week — name 3 wins, even small ones.", prayer: "God, thank You for week one. Root me deeper in the next." },
-    { theme: "Day 8 · Renew", workout: "5 rounds — 10 burpees (or step-backs), 15 squats.", reading: "Romans 12:1–2 — be transformed by the renewing of your mind.", gratitude: "Thank God for one way your thinking has changed for the better.", prayer: "Father, renew my mind. Replace old lies with Your truth." },
-    { theme: "Day 9 · Courage", workout: "4 rounds — 12 push-ups, 20 lunges, 20 sit-ups.", reading: "Joshua 1:6–9 — be strong and courageous.", gratitude: "Recall a time you were braver than you felt. Thank God for it.", prayer: "Lord, make me brave. Go before me today." },
-    { theme: "Day 10 · Focus", workout: "3 rounds — 25 squats, 15 push-ups, 40-second plank.", reading: "Hebrews 12:1–2 — fix your eyes on Jesus and run the race.", gratitude: "Thank God for one thing worth keeping your eyes on.", prayer: "Jesus, be my focus. Clear away what pulls me from You." },
-    { theme: "Day 11 · Endure", workout: "6 rounds — 10 push-ups, 15 squats, 10 sit-ups. Short rests.", reading: "James 1:2–4 — perseverance makes you complete.", gratitude: "Thank God for a trial that grew you.", prayer: "Father, give me endurance. Finish the work You started in me." },
-    { theme: "Day 12 · Serve", workout: "4 rounds — 20 jumping jacks, 12 lunges per leg, 15 push-ups.", reading: "Mark 10:42–45 — the Son of Man came to serve.", gratitude: "Thank God for someone who served you well.", prayer: "Lord, show me one person to serve today, and help me do it." },
-    { theme: "Day 13 · Peace", workout: "Active recovery — a 20-minute walk, deep breathing, and stretching.", reading: "Philippians 4:6–7 — peace that guards your heart.", gratitude: "Name 3 things that bring you peace, and thank the Giver.", prayer: "God, trade my anxiety for Your peace. I give You what I'm carrying." },
-    { theme: "Day 14 · Reflect", workout: "3 rounds — 20 squats, 20 sit-ups, 30-second plank.", reading: "Psalm 23 — the Shepherd who leads and restores.", gratitude: "Look back over two weeks — where has God shown up?", prayer: "Shepherd, thank You for leading me this far. Lead me on." },
-    { theme: "Day 15 · Purpose", workout: "5 rounds — 12 push-ups, 20 squats, 10 sit-ups.", reading: "Ephesians 2:8–10 — created for good works prepared for you.", gratitude: "Thank God for a purpose you get to live out.", prayer: "Father, show me the good works You've set before me today." },
-    { theme: "Day 16 · Generosity", workout: "4 rounds — 15 squats, 15 push-ups, 20 mountain climbers.", reading: "2 Corinthians 9:6–8 — God loves a cheerful giver.", gratitude: "Thank God for a time someone was generous with you.", prayer: "Lord, loosen my grip. Make me generous with what You've given." },
-    { theme: "Day 17 · Truth", workout: "3 rounds — 25 squats, 15 push-ups, 45-second plank.", reading: "John 8:31–32 — the truth will set you free.", gratitude: "Thank God for one truth that has set you free.", prayer: "Jesus, You are the truth. Free me where I am still bound." },
-    { theme: "Day 18 · Love", workout: "5 rounds — 10 burpees (or step-backs), 15 squats, 15 sit-ups.", reading: "1 Corinthians 13:4–7 — what love actually looks like.", gratitude: "Name 3 people you love, and thank God for each of them.", prayer: "Father, fill me with Your love until it overflows to others." },
-    { theme: "Day 19 · Hope", workout: "4 rounds — 20 lunges, 12 push-ups, 20 sit-ups.", reading: "Romans 8:18–25 — hope that does not disappoint.", gratitude: "Thank God for a hope you are holding onto.", prayer: "God of hope, anchor me. Let me not lose heart." },
-    { theme: "Day 20 · Surrender", workout: "Active recovery — a 20-minute walk and a full-body stretch.", reading: "Luke 9:23–24 — take up your cross daily and follow.", gratitude: "Thank God for something you were finally able to let go of.", prayer: "Lord, I surrender today to You. Have Your way in me." },
-    { theme: "Day 21 · Forged", workout: "Finisher — 4 rounds: 25 squats, 25 push-ups, 25 sit-ups. Finish strong.", reading: "2 Timothy 4:7 — I have fought the fight and finished the race.", gratitude: "Look back on 21 days — thank God for who you are becoming.", prayer: "Father, thank You for finishing this with me. Send me out forged and faithful." }
+    { theme: "Day 1 · Begin", wname: "First Fire", workout: "21-15-9 reps — squats, then push-ups. One descending ladder, start to finish. Light the fire.", reading: "Genesis 1:26–31 — you are made in God's image, on purpose.", prayer: "Father, thank You for a fresh start. Meet me in these 21 days and make me new." },
+    { theme: "Day 2 · Foundation", wname: "The Cornerstone", workout: "3 rounds — hold a 45-second plank, then 20 squats. Build a base that holds under weight.", reading: "Matthew 7:24–27 — build your life on the rock.", prayer: "Lord, be my foundation. Let everything I build today stand on You." },
+    { theme: "Day 3 · Identity", wname: "Namesake", workout: "EMOM for 10 minutes — at the top of every minute do 8 push-ups + 12 squats, rest the remainder.", reading: "Ephesians 1:3–8 — chosen, adopted, and loved before you did anything.", prayer: "God, remind me who I am in You — not what I do, but whose I am." },
+    { theme: "Day 4 · Strength", wname: "Ironside", workout: "5 rounds — 10 push-ups with a slow 3-second lower, then 15 squats. Control every rep.", reading: "Philippians 4:10–13 — strength for all things through Christ.", prayer: "Jesus, be my strength in the places I am weak today." },
+    { theme: "Day 5 · Rest & Trust", wname: "The Stillness", workout: "Recovery — 10 minutes of easy mobility: hips, spine, shoulders, slow breathing. No rush, no reps.", reading: "Matthew 11:28–30 — come to Me and I will give you rest.", prayer: "Father, I lay down my striving. Teach me to rest in You." },
+    { theme: "Day 6 · Discipline", wname: "The Grind", workout: "Tabata squats — 20 seconds hard, 10 seconds rest, 8 rounds (4 minutes). Make every rep honest.", reading: "1 Corinthians 9:24–27 — run to win; discipline the body.", prayer: "Lord, give me the will to keep going when it gets hard." },
+    { theme: "Day 7 · Reflect", wname: "Sabbath Strong", workout: "Easy 3 rounds — 15 sit-ups, a 30-second plank, then a long stretch. Breathe and look back.", reading: "Psalm 1 — the blessing of a rooted life.", prayer: "God, thank You for week one. Root me deeper in the next." },
+    { theme: "Day 8 · Renew", wname: "Second Wind", workout: "21-15-9 reps — sit-ups, then jumping jacks. Fresh legs, fresh mind.", reading: "Romans 12:1–2 — be transformed by the renewing of your mind.", prayer: "Father, renew my mind. Replace old lies with Your truth." },
+    { theme: "Day 9 · Courage", wname: "The Charge", workout: "4 rounds — 10 burpees, chest to floor, stand tall. Do the thing that scares you.", reading: "Joshua 1:6–9 — be strong and courageous.", prayer: "Lord, make me brave. Go before me today." },
+    { theme: "Day 10 · Focus", wname: "Single Mind", workout: "100 squats for time — one movement, full focus. Break when you must, but keep moving.", reading: "Hebrews 12:1–2 — fix your eyes on Jesus and run the race.", prayer: "Jesus, be my focus. Clear away what pulls me from You." },
+    { theme: "Day 11 · Endure", wname: "The Long Road", workout: "10-minute AMRAP — 5 push-ups, 10 squats, 15 sit-ups. As many rounds as you can, steady.", reading: "James 1:2–4 — perseverance makes you complete.", prayer: "Father, give me endurance. Finish the work You started in me." },
+    { theme: "Day 12 · Serve", wname: "Carry the Load", workout: "3 rounds — 20 walking lunges, then 10 push-ups. Build strength you can spend on others.", reading: "Mark 10:42–45 — the Son of Man came to serve.", prayer: "Lord, show me one person to serve today, and help me do it." },
+    { theme: "Day 13 · Peace", wname: "Still Waters", workout: "Recovery — a 15-minute walk, box breathing (in 4, hold 4, out 4, hold 4), and a full stretch.", reading: "Philippians 4:6–7 — peace that guards your heart.", prayer: "God, trade my anxiety for Your peace. I give You what I'm carrying." },
+    { theme: "Day 14 · Reflect", wname: "Halfway Hero", workout: "14 push-ups · 14 squats · 14 sit-ups — for day 14. Go unbroken if you can. You're halfway.", reading: "Psalm 23 — the Shepherd who leads and restores.", prayer: "Shepherd, thank You for leading me this far. Lead me on." },
+    { theme: "Day 15 · Purpose", wname: "Built for This", workout: "EMOM for 12 minutes — odd minutes 10 push-ups, even minutes 15 squats.", reading: "Ephesians 2:8–10 — created for good works prepared for you.", prayer: "Father, show me the good works You've set before me today." },
+    { theme: "Day 16 · Generosity", wname: "Overflow", workout: "4 rounds — 15 squats, then 15 mountain climbers. Pour everything out.", reading: "2 Corinthians 9:6–8 — God loves a cheerful giver.", prayer: "Lord, loosen my grip. Make me generous with what You've given." },
+    { theme: "Day 17 · Truth", wname: "The Reckoning", workout: "21-15-9 reps — push-ups, then walking lunges. Honest reps, full range, no shortcuts.", reading: "John 8:31–32 — the truth will set you free.", prayer: "Jesus, You are the truth. Free me where I am still bound." },
+    { theme: "Day 18 · Love", wname: "Wholehearted", workout: "3 rounds — 20 squats, 20 sit-ups, a 30-second plank. Hold nothing back.", reading: "1 Corinthians 13:4–7 — what love actually looks like.", prayer: "Father, fill me with Your love until it overflows to others." },
+    { theme: "Day 19 · Hope", wname: "Anchor Hold", workout: "Three max-effort plank holds, rest between each — then 30 squats. Hold when it's hard.", reading: "Romans 8:18–25 — hope that does not disappoint.", prayer: "God of hope, anchor me. Let me not lose heart." },
+    { theme: "Day 20 · Surrender", wname: "Let Go", workout: "Recovery — 20 slow squats, 10 slow push-ups, a long full-body stretch, and quiet breath.", reading: "Luke 9:23–24 — take up your cross daily and follow.", prayer: "Lord, I surrender today to You. Have Your way in me." },
+    { theme: "Day 21 · Forged", wname: "The Forge", workout: "The finale — 21 burpees, 21 push-ups, 21 squats, 21 sit-ups. Finish everything you started.", reading: "2 Timothy 4:7 — I have fought the fight and finished the race.", prayer: "Father, thank You for finishing this with me. Send me out forged and faithful." }
   ];
   function chPlanDay(n) { return CHALLENGE_PLAN[(n - 1) % CHALLENGE_PLAN.length]; }
 
@@ -4286,7 +4286,7 @@
       var done = !!s.doneItems[it.key];
       return '<div class="ch-item' + (done ? " done" : "") + '">' +
         '<div class="ch-item-h"><span class="ch-item-label">' + it.label + '</span><span class="ch-item-pts">+' + it.pts + '</span></div>' +
-        '<div class="ch-item-body">' + escapeHtml(day[it.key] || "") + '</div>' +
+        '<div class="ch-item-body">' + ((it.key === "workout" && day.wname) ? '<div class="ch-wname">' + escapeHtml(day.wname) + '</div>' : '') + escapeHtml(day[it.key] || "") + '</div>' +
         (done ? '<div class="ch-item-done">Done ✓</div>'
               : '<button class="ch-item-btn" data-chitem="' + it.key + '">Complete · +' + it.pts + '</button>') +
         '</div>';
@@ -4354,7 +4354,7 @@
     } catch (e) { if (typeof showToast === "function") showToast("Couldn't join right now."); }
   }
   // Each challenge item maps to the journal type where it's actually completed.
-  var CH_TYPE = { workout: "fitness", reading: "devotional", gratitude: "gratitude", prayer: "prayer" };
+  var CH_TYPE = { workout: "fitness", reading: "devotional", prayer: "prayer" };
   function openChallengeItem(item) {
     var t = CH_TYPE[item]; if (!t) return;
     try { setActiveType(t); showApp(); showWrite(); window.scrollTo(0, 0); } catch (e) {}
