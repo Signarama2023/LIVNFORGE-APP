@@ -1348,11 +1348,6 @@
             <div class="forge-stat"><div class="num" id="forgeStreak">0</div><div class="lbl">Day Streak</div></div>
           </div>
 
-          <div class="forge-card ch-card" id="challengeCard">
-            <div class="forge-clabel">21-Day Challenge</div>
-            <div id="challengeBody"><div class="ch-loading">Loading…</div></div>
-          </div>
-
           <div class="forge-card">
             <div class="forge-clabel">Quick journal</div>
             <div class="fqj">
@@ -1561,6 +1556,11 @@
             <div class="jr-week-label">This Week</div>
             <div class="jr-week-bars" id="jrWeekBars"></div>
           </div>
+        </div>
+
+        <div class="forge-card ch-card" id="challengeCard" data-tab="progress">
+          <div class="forge-clabel">Challenges</div>
+          <div id="challengeBody"><div class="ch-loading">Loading…</div></div>
         </div>
 
         <div class="jr-cards" data-tab="progress">
@@ -4349,7 +4349,6 @@
     var pe = document.getElementById("forgePoints"); if (pe) pe.textContent = (totalPoints() || 0).toLocaleString();
     var en = document.getElementById("forgeEntries"); if (en) en.textContent = loadEntries().length;
     var st = document.getElementById("forgeStreak"); if (st) st.textContent = currentStreak();
-    try { renderChallenge(); } catch (e) {}
     var steps = forgeSteps();
     var done = steps.filter(function (s) { return s.done; }).length;
     var frac = done / steps.length;
@@ -4416,6 +4415,7 @@
   }
   function renderJourney() {
     if (!document.getElementById("journeyHome")) return;
+    try { renderChallenge(); } catch (e) {}
     [["faith", ["devotional", "prayer", "gratitude", "reframe", "drift"]],
      ["family", ["family", "reframe", "drift"]],
      ["fitness", ["fitness"]]].forEach(function (p) {
