@@ -4294,7 +4294,7 @@
         '<div class="ch-item-h"><span class="ch-item-label">' + it.label + '</span><span class="ch-item-pts">+' + it.pts + '</span></div>' +
         '<div class="ch-item-body">' + ((it.key === "workout" && day.wname) ? '<div class="ch-wname">' + escapeHtml(day.wname) + '</div>' : '') + escapeHtml(day[it.key] || "") + '</div>' +
         (done ? '<div class="ch-item-done">Done ✓</div>'
-              : '<button class="ch-item-btn" data-chitem="' + it.key + '">Complete · +' + it.pts + '</button>') +
+              : '<button class="ch-item-btn" data-chitem="' + it.key + '" data-chday="' + s.currentDay + '">Complete · +' + it.pts + '</button>') +
         '</div>';
     }).join("");
     return '<div class="ch-block">' +
@@ -4333,7 +4333,7 @@
     else if (__chJoinOpen) html += joinHtml;
     else if (joinHtml) html += '<button class="ch-manage" data-chtoggle="1">＋ Join another challenge</button>';
     body.innerHTML = html;
-    body.querySelectorAll("[data-chitem]").forEach(function (b) { b.addEventListener("click", function () { openChallengeItem(b.getAttribute("data-chitem")); }); });
+    body.querySelectorAll("[data-chitem]").forEach(function (b) { b.addEventListener("click", function () { openChallengeItem(b.getAttribute("data-chitem"), b.getAttribute("data-chday")); }); });
     body.querySelectorAll("[data-chjoin]").forEach(function (b) { b.addEventListener("click", function () { joinChallengeScope(b.getAttribute("data-chjoin"), b.getAttribute("data-chcircle") || null); }); });
     body.querySelectorAll("[data-chleave]").forEach(function (b) { b.addEventListener("click", function () { leaveChallenge(b.getAttribute("data-chleave")); }); });
     var tog = body.querySelector("[data-chtoggle]"); if (tog) tog.addEventListener("click", function () { __chJoinOpen = true; renderChallenge(); });
@@ -4361,9 +4361,30 @@
   }
   // Each challenge item maps to the journal type where it's actually completed.
   var CH_TYPE = { workout: "fitness", reading: "devotional", prayer: "prayer" };
-  function openChallengeItem(item) {
+  // Pull the loadable scripture reference out of a reading string ("Genesis 1:26–31 — focus")
+  // and normalize dashes so the passage parser accepts it.
+  function chExtractRef(reading) {
+    if (!reading) return "";
+    var ref = String(reading).split(" — ")[0].trim();
+    return ref.replace(/[–—]/g, "-");
+  }
+  function openChallengeItem(item, dayNumber) {
     var t = CH_TYPE[item]; if (!t) return;
-    try { setActiveType(t); showApp(); showWrite(); window.scrollTo(0, 0); } catch (e) {}
+    var day = chPlanDay(parseInt(dayNumber, 10) || 1);
+    try { setActiveType(t); showApp(); showWrite(); window.scrollTo(0, 0); } catch (e) { return; }
+    // Auto-load the day's content into the form so it's a natural hand-off, not a re-entry.
+    setTimeout(function () {
+      try {
+        if (item === "reading") {
+          var ref = chExtractRef(day.reading), refEl = document.getElementById("bsReference");
+          if (refEl && ref) { refEl.value = ref; refEl.dataset.manual = "1"; if (typeof loadBiblePassage === "function") loadBiblePassage(); }
+        } else if (item === "prayer") {
+          var pq = document.getElementById("q0"); if (pq && !pq.value) pq.value = day.prayer || "";
+        } else if (item === "workout") {
+          var wq = document.getElementById("q0"); if (wq && !wq.value) wq.value = (day.wname ? day.wname + " — " : "") + (day.workout || "");
+        }
+      } catch (e) {}
+    }, 80);
   }
   // Called after a journal entry saves: tick that item on the current day of every
   // challenge the user is in. Points come from the real entry — not counted again here.
