@@ -1376,6 +1376,7 @@
                 <div class="mtitle">Forge your day</div>
                 <div class="msub">Complete each step to finish strong.</div>
                 <button class="mbtn" id="forgeStartBtn" type="button">Start journey →</button>
+                <button class="mbtn" id="forgeChBtn" type="button" style="display:none; background:transparent; border:1.5px solid var(--gold); color:var(--gold-light);">Get back to your 21-Day Challenge →</button>
               </div>
               <div class="mring">
                 <svg viewBox="0 0 82 82"><circle class="bg" cx="41" cy="41" r="34"></circle><circle class="fg" id="forgeMRing" cx="41" cy="41" r="34" stroke-dasharray="214" stroke-dashoffset="214"></circle></svg>
@@ -1614,7 +1615,17 @@
           <div id="goalsBody"><div class="gl-empty">Loading…</div></div>
         </div>
 
-        <div class="forge-card ch-card" id="challengeCard" data-tab="progress">
+        <div class="jr-cards" data-tab="progress" style="margin-bottom:0;">
+          <button class="jr-card" id="chCta" style="display:none;">
+            <span class="jr-card-ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+            </span>
+            <span class="jr-card-text"><span class="jr-card-title">21-Day Challenge</span><span class="jr-card-sub" id="chCtaSub">Tap to open</span></span>
+            <span class="jr-card-arrow" id="chCtaArrow">›</span>
+          </button>
+        </div>
+
+        <div class="forge-card ch-card" id="challengeCard" data-tab="progress" style="display:none;">
           <div class="forge-clabel">Challenges</div>
           <div id="challengeBody"><div class="ch-loading">Loading…</div></div>
         </div>
@@ -4196,7 +4207,7 @@
     ];
   }
   // ===== 21-Day Challenge (structured daily plan: workout, reading, gratitude, prayer) =====
-  var __chData = null, __chLoading = false, __chJoinOpen = false, __chPoints = 0;
+  var __chData = null, __chLoading = false, __chJoinOpen = false, __chPoints = 0, __chOpen = false;
   var CH_ITEMS = [
     { key: "workout", label: "The Workout", pts: 7  },
     { key: "reading", label: "Reading",     pts: 15 },
@@ -4314,13 +4325,67 @@
     if (!opts) return "";
     return '<div class="ch-join-label">' + (first ? "Join the 21-Day Challenge:" : "Join another:") + '</div><div class="ch-join-opts">' + opts + '</div>';
   }
+  // Today tab: "Get back to your 21-Day Challenge" under the mission button —
+  // only when the user has actually joined a challenge. Kicks off the challenge
+  // data load if it hasn't happened yet (the Today tab shows before Journey).
+  function updateForgeChallengeBtn() {
+    var b = document.getElementById("forgeChBtn");
+    if (!b) return;
+    if (!__chData) {
+      b.style.display = "none";
+      if (!__chLoading && sb && currentEmail()) {
+        __chLoading = true;
+        loadChallengeData().then(function () { __chLoading = false; if (__chData) updateForgeChallengeBtn(); });
+      }
+      return;
+    }
+    var joined = __chData.challenges.filter(function (c) { return chStatsFor(c.id).joined; });
+    if (!joined.length) { b.style.display = "none"; return; }
+    var s = chStatsFor(joined[0].id);
+    b.style.display = "block";
+    b.textContent = s.completedDays >= CHALLENGE_PLAN.length
+      ? "Your 21-Day Challenge — complete 🎉"
+      : "Get back to your 21-Day Challenge · Day " + s.currentDay + " →";
+  }
+  function openChallengeCard() {
+    __chOpen = true;
+    Promise.resolve(renderChallenge()).then(function () {
+      var c = document.getElementById("challengeCard");
+      if (c) setTimeout(function () { c.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
+    });
+  }
+  (function initChCta() {
+    var cta = document.getElementById("chCta");
+    if (cta) cta.addEventListener("click", function () {
+      if (__chOpen) { __chOpen = false; renderChallenge(); }
+      else openChallengeCard();
+    });
+  })();
   async function renderChallenge() {
     var card = document.getElementById("challengeCard"), body = document.getElementById("challengeBody");
     if (!card || !body) return;
     if (!__chLoading && !__chData) { __chLoading = true; await loadChallengeData(); __chLoading = false; }
-    if (!__chData) { card.style.display = "none"; return; }
-    card.style.display = "";
+    var cta = document.getElementById("chCta");
+    if (!__chData) { card.style.display = "none"; if (cta) cta.style.display = "none"; return; }
+    // The card itself is collapsed behind the "21-Day Challenge" button; it only
+    // shows once the button is tapped.
+    card.style.display = __chOpen ? "" : "none";
     var joined = __chData.challenges.filter(function (c) { return chStatsFor(c.id).joined; });
+    if (cta) {
+      cta.style.display = "";
+      var sub = document.getElementById("chCtaSub");
+      if (sub) {
+        if (joined.length) {
+          var s0 = chStatsFor(joined[0].id);
+          sub.textContent = s0.completedDays >= CHALLENGE_PLAN.length
+            ? "Complete 🎉 · all " + CHALLENGE_PLAN.length + " days"
+            : "Day " + s0.currentDay + " · " + s0.completedDays + " of " + CHALLENGE_PLAN.length + " days done";
+        } else sub.textContent = "Join — anyone can start today";
+      }
+      var ar = document.getElementById("chCtaArrow"); if (ar) ar.textContent = __chOpen ? "⌄" : "›";
+    }
+    updateForgeChallengeBtn();
+    if (!__chOpen) return;
     var available = __chData.challenges.filter(function (c) { return !chStatsFor(c.id).joined; });
     var joinHtml = chJoinHtml(available, joined.length === 0);
     var html = joined.map(chBlockHtml).join("");
@@ -4434,6 +4499,7 @@
     var mp = document.getElementById("forgeMPct"); if (mp) mp.textContent = Math.round(frac * 100) + "%";
     var startBtn = document.getElementById("forgeStartBtn");
     if (startBtn) startBtn.textContent = done === 0 ? "Start journey →" : (done === steps.length ? "Forge complete ✓" : "Continue journey →");
+    if (typeof updateForgeChallengeBtn === "function") updateForgeChallengeBtn();
     var jw = document.getElementById("forgeJourney");
     if (jw) {
       var nextIx = steps.findIndex(function (s) { return !s.done; });
@@ -4459,6 +4525,11 @@
     if (sb2) sb2.addEventListener("click", function () {
       var jw = document.getElementById("forgeJourney");
       if (jw) { jw.style.display = "block"; jw.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    });
+    var cb = document.getElementById("forgeChBtn");
+    if (cb) cb.addEventListener("click", function () {
+      showTab("progress");
+      if (typeof openChallengeCard === "function") openChallengeCard();
     });
     function openQj() { setActiveType("freeflow"); showApp(); showWrite(); window.scrollTo(0, 0); }
     var qb = document.getElementById("forgeQjBtn"); if (qb) qb.addEventListener("click", openQj);
