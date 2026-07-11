@@ -1625,9 +1625,11 @@
           </button>
         </div>
 
-        <div class="forge-card ch-card" id="challengeCard" data-tab="progress" style="display:none;">
-          <div class="forge-clabel">Challenges</div>
-          <div id="challengeBody"><div class="ch-loading">Loading…</div></div>
+        <div class="rw-modal" id="chModal">
+          <div class="rw-modal-inner" id="challengeCard" style="max-width:520px;">
+            <div class="forge-clabel" style="display:flex; align-items:center; justify-content:space-between;">Challenges <button type="button" id="chModalClose" aria-label="Close" style="background:none; border:none; color:var(--muted); font-size:24px; line-height:1; cursor:pointer; font-family:inherit; padding:0 2px;">×</button></div>
+            <div id="challengeBody"><div class="ch-loading">Loading…</div></div>
+          </div>
         </div>
 
         <div class="jr-cards" data-tab="progress">
@@ -4349,27 +4351,31 @@
   }
   function openChallengeCard() {
     __chOpen = true;
-    Promise.resolve(renderChallenge()).then(function () {
-      var c = document.getElementById("challengeCard");
-      if (c) setTimeout(function () { c.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
-    });
+    renderChallenge();
+  }
+  function chCloseModal() {
+    __chOpen = false;
+    var m = document.getElementById("chModal");
+    if (m) m.style.display = "none";
   }
   (function initChCta() {
     var cta = document.getElementById("chCta");
-    if (cta) cta.addEventListener("click", function () {
-      if (__chOpen) { __chOpen = false; renderChallenge(); }
-      else openChallengeCard();
-    });
+    if (cta) cta.addEventListener("click", openChallengeCard);
+    var m = document.getElementById("chModal");
+    if (m) m.addEventListener("click", function (e) { if (e.target === m) chCloseModal(); });
+    var x = document.getElementById("chModalClose");
+    if (x) x.addEventListener("click", chCloseModal);
   })();
   async function renderChallenge() {
     var card = document.getElementById("challengeCard"), body = document.getElementById("challengeBody");
     if (!card || !body) return;
     if (!__chLoading && !__chData) { __chLoading = true; await loadChallengeData(); __chLoading = false; }
     var cta = document.getElementById("chCta");
-    if (!__chData) { card.style.display = "none"; if (cta) cta.style.display = "none"; return; }
-    // The card itself is collapsed behind the "21-Day Challenge" button; it only
-    // shows once the button is tapped.
-    card.style.display = __chOpen ? "" : "none";
+    var modal = document.getElementById("chModal");
+    if (!__chData) { if (modal) modal.style.display = "none"; if (cta) cta.style.display = "none"; return; }
+    // The challenge lives in a pop-up: tapping the button opens it, closing it
+    // leaves nothing open on the tab.
+    if (modal) modal.style.display = __chOpen ? "flex" : "none";
     var joined = __chData.challenges.filter(function (c) { return chStatsFor(c.id).joined; });
     if (cta) {
       cta.style.display = "";
@@ -4382,7 +4388,6 @@
             : "Day " + s0.currentDay + " · " + s0.completedDays + " of " + CHALLENGE_PLAN.length + " days done";
         } else sub.textContent = "Join — anyone can start today";
       }
-      var ar = document.getElementById("chCtaArrow"); if (ar) ar.textContent = __chOpen ? "⌄" : "›";
     }
     updateForgeChallengeBtn();
     if (!__chOpen) return;
@@ -4393,7 +4398,7 @@
     else if (__chJoinOpen) html += joinHtml;
     else if (joinHtml) html += '<button class="ch-manage" data-chtoggle="1">＋ Join another challenge</button>';
     body.innerHTML = html;
-    body.querySelectorAll("[data-chitem]").forEach(function (b) { b.addEventListener("click", function () { openChallengeItem(b.getAttribute("data-chitem"), b.getAttribute("data-chday")); }); });
+    body.querySelectorAll("[data-chitem]").forEach(function (b) { b.addEventListener("click", function () { chCloseModal(); openChallengeItem(b.getAttribute("data-chitem"), b.getAttribute("data-chday")); }); });
     body.querySelectorAll("[data-chjoin]").forEach(function (b) { b.addEventListener("click", function () { joinChallengeScope(b.getAttribute("data-chjoin"), b.getAttribute("data-chcircle") || null); }); });
     body.querySelectorAll("[data-chleave]").forEach(function (b) { b.addEventListener("click", function () { leaveChallenge(b.getAttribute("data-chleave")); }); });
     var tog = body.querySelector("[data-chtoggle]"); if (tog) tog.addEventListener("click", function () { __chJoinOpen = true; renderChallenge(); });
@@ -4528,7 +4533,6 @@
     });
     var cb = document.getElementById("forgeChBtn");
     if (cb) cb.addEventListener("click", function () {
-      showTab("progress");
       if (typeof openChallengeCard === "function") openChallengeCard();
     });
     function openQj() { setActiveType("freeflow"); showApp(); showWrite(); window.scrollTo(0, 0); }
