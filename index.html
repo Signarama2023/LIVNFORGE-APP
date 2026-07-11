@@ -1267,6 +1267,48 @@
   .da-confirm:not(:disabled):hover { opacity: .9; }
   .da-status { font-size: 13px; line-height: 1.5; margin-top: 12px; color: var(--muted); min-height: 1px; }
   .da-status.err { color: #e05a47; }
+  /* ===== Goals (weekly / monthly / yearly with AI plan) ===== */
+  .gl-list { display:flex; flex-direction:column; gap:10px; }
+  .gl-goal { width:100%; text-align:left; background:var(--field); border:1px solid var(--field-border); border-radius:12px; padding:12px 14px; color:var(--text); font-family:inherit; cursor:pointer; }
+  .gl-goal-top { display:flex; align-items:center; gap:8px; }
+  .gl-goal-title { font-weight:700; font-size:15px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gl-goal.done .gl-goal-title { text-decoration:line-through; opacity:0.7; }
+  .gl-chip { flex:none; font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--gold-light); background:rgba(217,169,62,0.14); border:1px solid rgba(217,169,62,0.35); border-radius:999px; padding:2px 9px; }
+  .gl-chip.gl-done { color:var(--accent-start); background:rgba(52,211,153,0.12); border-color:rgba(52,211,153,0.4); }
+  .gl-bar { height:6px; border-radius:99px; background:rgba(255,255,255,0.09); margin-top:9px; overflow:hidden; }
+  body[data-build="women"] .gl-bar { background:rgba(0,0,0,0.08); }
+  .gl-bar > span { display:block; height:100%; border-radius:99px; background:linear-gradient(90deg, var(--gold), var(--gold-light)); transition:width 0.3s; }
+  .gl-goal-sub { font-size:12px; color:var(--muted); margin-top:6px; }
+  .gl-row { display:flex; align-items:flex-start; gap:11px; padding:9px 0; cursor:pointer; }
+  .gl-row + .gl-row { border-top:1px solid var(--field-border); }
+  .gl-box { flex:none; width:22px; height:22px; margin-top:1px; border-radius:7px; border:2px solid var(--field-border); display:flex; align-items:center; justify-content:center; color:#0c0d10; }
+  .gl-row.checked .gl-box { background:linear-gradient(135deg, var(--accent-start), var(--accent-end)); border-color:transparent; }
+  .gl-row .gl-row-t { font-size:14px; line-height:1.4; }
+  .gl-row.checked .gl-row-t { text-decoration:line-through; color:var(--muted); }
+  .gl-row .gl-row-s { font-size:12px; color:var(--muted); }
+  .gl-goal-label { font-size:12px; font-weight:700; color:var(--gold-light); margin:12px 0 2px; }
+  .gl-goal-label:first-child { margin-top:0; }
+  .gl-add { width:100%; margin-top:12px; padding:12px; border-radius:11px; border:1px dashed var(--field-border); background:transparent; color:var(--gold-light); font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+  .gl-empty { font-size:13px; color:var(--muted); line-height:1.5; }
+  .gl-seg { display:flex; gap:8px; margin:8px 0 14px; }
+  .gl-seg button { flex:1; padding:10px 4px; border-radius:10px; border:1px solid var(--field-border); background:var(--field); color:var(--muted); font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+  .gl-seg button.on { color:#0c0d10; background:linear-gradient(135deg, var(--gold), var(--gold-light)); border-color:transparent; }
+  .gl-field { width:100%; box-sizing:border-box; background:var(--field); border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:11px 13px; font-family:inherit; font-size:16px; margin-bottom:10px; }
+  textarea.gl-field { resize:vertical; min-height:64px; }
+  .gl-hint { font-size:12px; color:var(--muted); margin:0 0 8px; }
+  .gl-ms { display:flex; gap:10px; align-items:flex-start; margin-bottom:8px; }
+  .gl-ms-lbl { flex:none; width:86px; font-size:11px; font-weight:700; color:var(--gold-light); padding-top:12px; line-height:1.3; }
+  .gl-ms input { flex:1; margin-bottom:0; }
+  .gl-note { font-size:13px; color:var(--gold-light); background:rgba(217,169,62,0.1); border:1px solid rgba(217,169,62,0.3); border-radius:10px; padding:10px 12px; margin-bottom:12px; line-height:1.45; }
+  .gl-err { color:#f28b82; font-size:13px; margin:8px 0; }
+  .gl-actions { display:flex; gap:10px; margin-top:16px; }
+  .gl-actions button { flex:1; padding:12px; border-radius:10px; font-weight:700; font-family:inherit; font-size:14px; cursor:pointer; border:1px solid var(--field-border); background:var(--field); color:var(--text); }
+  .gl-actions button.primary { background:linear-gradient(135deg, var(--gold), var(--gold-light)); color:#0c0d10; border-color:transparent; }
+  .gl-actions button:disabled { opacity:0.55; cursor:default; }
+  .gl-danger { display:block; width:100%; margin-top:10px; padding:10px; border:none; background:transparent; color:#f28b82; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  .gl-spin { text-align:center; color:var(--muted); font-size:14px; padding:26px 0; }
+  .gl-spin .flame { font-size:28px; display:block; margin-bottom:10px; animation:glPulse 1.1s ease-in-out infinite; }
+  @keyframes glPulse { 0%,100% { transform:scale(1); opacity:0.75; } 50% { transform:scale(1.18); opacity:1; } }
 </style>
 </head>
 <body>
@@ -1346,6 +1388,11 @@
             <div class="forge-stat"><div class="num" id="forgePoints">0</div><div class="lbl">Kingdom Points</div></div>
             <div class="forge-stat"><div class="num" id="forgeEntries">0</div><div class="lbl">Entries</div></div>
             <div class="forge-stat"><div class="num" id="forgeStreak">0</div><div class="lbl">Day Streak</div></div>
+          </div>
+
+          <div class="forge-card" id="goalsTodayCard" style="display:none;">
+            <div class="forge-clabel">Today's goal steps <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.5"/></svg></div>
+            <div id="goalsTodayBody"></div>
           </div>
 
           <div class="forge-card">
@@ -1482,6 +1529,10 @@
 
         <div class="rewards-card" id="rewardsCard" data-tab="rewards" style="display:none;"></div>
 
+        <div class="rw-modal" id="goalModal">
+          <div class="rw-modal-inner" id="goalModalInner"></div>
+        </div>
+
         <div class="rw-modal" id="claimModal">
           <div class="rw-modal-inner">
             <h3 id="claimTitle">Claim your reward</h3>
@@ -1561,6 +1612,11 @@
         <div class="forge-card ch-card" id="challengeCard" data-tab="progress">
           <div class="forge-clabel">Challenges</div>
           <div id="challengeBody"><div class="ch-loading">Loading…</div></div>
+        </div>
+
+        <div class="forge-card ch-card" id="goalsCard" data-tab="progress">
+          <div class="forge-clabel">Goals</div>
+          <div id="goalsBody"><div class="gl-empty">Loading…</div></div>
         </div>
 
         <div class="jr-cards" data-tab="progress">
@@ -4674,6 +4730,7 @@
     setAuthError("");
     await migrateLocalEntriesIfNeeded();
     await fetchEntriesFromCloud();
+    fetchGoalsFromCloud();
     hydrateCirclesFromCloud();
     renderQuestions(currentType);
     updateCount();
@@ -6574,8 +6631,8 @@
     try {
       if (name === "rewards") renderRewards();
       if (name === "circles") { if (typeof renderCircles === "function") renderCircles(); if (typeof migrateGroupsToCircles === "function") migrateGroupsToCircles(); }
-      if (name === "progress") { renderScore(); if (typeof renderJourney === "function") renderJourney(); }
-      if (name === "today") { if (typeof renderForge === "function") renderForge(); if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
+      if (name === "progress") { renderScore(); if (typeof renderJourney === "function") renderJourney(); if (typeof renderGoalsCard === "function") renderGoalsCard(); }
+      if (name === "today") { if (typeof renderForge === "function") renderForge(); if (typeof renderGoalsToday === "function") renderGoalsToday(); if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
       if (name === "settings") { if (typeof renderProfile === "function") renderProfile(); if (typeof renderBlockedList === "function") renderBlockedList(); }
     } catch (e) {}
     window.scrollTo(0, 0);
@@ -6994,6 +7051,386 @@
     return { wireUI, load };
   })();
 
+  // ===== Goals — weekly / monthly / yearly goals with an AI-built plan =====
+  // A goal's plan (milestones + recurring daily actions) is drafted by the
+  // goal-planner edge function, reviewed/edited by the user, then stored on the
+  // goal row. Check-offs live in the row's `checks` JSONB. Goals are cloud-only
+  // (same trust model as entries): private to the signed-in user via RLS.
+  let __goals = [];
+  let __goalsLoaded = false;
+
+  async function fetchGoalsFromCloud() {
+    if (!__currentUser || !sb) { __goals = []; __goalsLoaded = false; return; }
+    try {
+      const { data, error } = await sb.from("goals").select("*")
+        .eq("user_id", __currentUser.id)
+        .neq("status", "archived")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      __goals = data || [];
+      __goalsLoaded = true;
+    } catch (err) { console.error("loadGoals failed:", err); __goalsLoaded = true; } // fall through to the empty state rather than a stuck "Loading…"
+    renderGoalsToday();
+    renderGoalsCard();
+  }
+
+  function glActive() { return __goals.filter(function (g) { return g.status === "active"; }); }
+  function glPlan(g) { return (g && g.plan) || {}; }
+  function glChecks(g) {
+    if (!g.checks || typeof g.checks !== "object") g.checks = {};
+    if (!g.checks.milestones) g.checks.milestones = {};
+    if (!g.checks.daily) g.checks.daily = {};
+    return g.checks;
+  }
+  function glProgress(g) {
+    const ms = glPlan(g).milestones || [];
+    if (!ms.length) return g.status === "completed" ? 1 : 0;
+    const ck = glChecks(g).milestones;
+    return ms.filter(function (m) { return ck[m.key]; }).length / ms.length;
+  }
+  function glTfChip(tf) { return tf === "weekly" ? "7-day" : (tf === "monthly" ? "4-week" : "1-year"); }
+  function glAddDays(iso, n) {
+    const p = iso.split("-").map(Number);
+    return dayKey(new Date(p[0], p[1] - 1, p[2] + n));
+  }
+  // The milestone that applies to today (yearly -> this month, monthly -> this week, weekly -> today).
+  function glCurrentMilestone(g) {
+    const ms = glPlan(g).milestones || [];
+    const todayK = dayKey(new Date());
+    if (g.timeframe === "weekly") return ms.find(function (m) { return m.key === todayK; }) || null;
+    if (g.timeframe === "monthly") {
+      const start = new Date(g.start_date + "T12:00:00");
+      const idx = Math.max(0, Math.min(3, Math.floor((Date.now() - start.getTime()) / (7 * 86400000))));
+      return ms[idx] || null;
+    }
+    return ms.find(function (m) { return m.key === todayK.slice(0, 7); }) || null;
+  }
+  async function glPersist(g, fields) {
+    try {
+      const { error } = await sb.from("goals").update(fields).eq("id", g.id);
+      if (error) throw error;
+    } catch (err) { console.error("goal save failed:", err); }
+  }
+  function glToggleMilestone(g, key) {
+    const ck = glChecks(g);
+    if (ck.milestones[key]) delete ck.milestones[key];
+    else ck.milestones[key] = new Date().toISOString();
+    glPersist(g, { checks: ck });
+    renderGoalsToday(); renderGoalsCard();
+    if (GL.mode === "detail") glRenderModal();
+  }
+  function glToggleDaily(g, id) {
+    const ck = glChecks(g);
+    const todayK = dayKey(new Date());
+    const arr = ck.daily[todayK] || (ck.daily[todayK] = []);
+    const ix = arr.indexOf(id);
+    if (ix >= 0) arr.splice(ix, 1); else arr.push(id);
+    glPersist(g, { checks: ck });
+    renderGoalsToday();
+  }
+
+  // ---- Today tab: today's check-offs across all active goals ----
+  function renderGoalsToday() {
+    const card = document.getElementById("goalsTodayCard");
+    const body = document.getElementById("goalsTodayBody");
+    if (!card || !body) return;
+    const todayK = dayKey(new Date());
+    let html = "";
+    glActive().forEach(function (g) {
+      const ck = glChecks(g);
+      const cur = glCurrentMilestone(g);
+      let rows = "";
+      if (g.timeframe === "weekly") {
+        if (cur) {
+          const on = !!ck.milestones[cur.key];
+          rows += '<div class="gl-row' + (on ? " checked" : "") + '" data-glms="' + g.id + "|" + cur.key + '">' +
+            '<span class="gl-box">' + (on ? glCheckSvg() : "") + '</span>' +
+            '<div><div class="gl-row-t">' + escapeHtml(cur.title) + '</div>' +
+            (cur.detail ? '<div class="gl-row-s">' + escapeHtml(cur.detail) + '</div>' : "") + '</div></div>';
+        }
+      } else {
+        const done = ck.daily[todayK] || [];
+        (glPlan(g).daily || []).forEach(function (d) {
+          const on = done.indexOf(d.id) >= 0;
+          rows += '<div class="gl-row' + (on ? " checked" : "") + '" data-gldaily="' + g.id + "|" + d.id + '">' +
+            '<span class="gl-box">' + (on ? glCheckSvg() : "") + '</span>' +
+            '<div class="gl-row-t">' + escapeHtml(d.title) + '</div></div>';
+        });
+      }
+      if (!rows) return;
+      html += '<div class="gl-goal-label">' + escapeHtml(g.title) +
+        (cur && g.timeframe !== "weekly" ? ' <span style="font-weight:400;color:var(--muted);">— ' + escapeHtml(cur.label) + ": " + escapeHtml(cur.title) + '</span>' : "") +
+        '</div>' + rows;
+    });
+    card.style.display = html ? "" : "none";
+    body.innerHTML = html;
+    body.querySelectorAll("[data-glms]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        const p = el.getAttribute("data-glms").split("|");
+        const g = __goals.find(function (x) { return x.id === p[0]; });
+        if (g) glToggleMilestone(g, p[1]);
+      });
+    });
+    body.querySelectorAll("[data-gldaily]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        const p = el.getAttribute("data-gldaily").split("|");
+        const g = __goals.find(function (x) { return x.id === p[0]; });
+        if (g) glToggleDaily(g, p[1]);
+      });
+    });
+  }
+  function glCheckSvg() {
+    return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  }
+
+  // ---- Progress tab: goals list card ----
+  function renderGoalsCard() {
+    const body = document.getElementById("goalsBody");
+    if (!body) return;
+    let html = "";
+    if (!__goalsLoaded && !__goals.length) {
+      html = '<div class="gl-empty">Loading…</div>';
+    } else if (!__goals.length) {
+      html = '<div class="gl-empty">Set a goal for the week, the month, or the year — and let AI break it into daily steps you can check off.</div>';
+    } else {
+      html = '<div class="gl-list">' + __goals.map(function (g) {
+        const pct = Math.round(glProgress(g) * 100);
+        const doneCount = (glPlan(g).milestones || []).filter(function (m) { return glChecks(g).milestones[m.key]; }).length;
+        const total = (glPlan(g).milestones || []).length;
+        const completed = g.status === "completed";
+        return '<button type="button" class="gl-goal' + (completed ? " done" : "") + '" data-glopen="' + g.id + '">' +
+          '<div class="gl-goal-top"><span class="gl-goal-title">' + escapeHtml(g.title) + '</span>' +
+          '<span class="gl-chip' + (completed ? " gl-done" : "") + '">' + (completed ? "Done ✓" : glTfChip(g.timeframe)) + '</span></div>' +
+          '<div class="gl-bar"><span style="width:' + pct + '%"></span></div>' +
+          '<div class="gl-goal-sub">' + doneCount + " of " + total + " milestones · " + pct + "%</div>" +
+          '</button>';
+      }).join("") + '</div>';
+    }
+    html += '<button type="button" class="gl-add" id="glAddBtn">+ New goal</button>';
+    body.innerHTML = html;
+    body.querySelectorAll("[data-glopen]").forEach(function (el) {
+      el.addEventListener("click", function () { glOpenDetail(el.getAttribute("data-glopen")); });
+    });
+    const add = document.getElementById("glAddBtn");
+    if (add) add.addEventListener("click", glOpenCreate);
+  }
+
+  // ---- Modal: create flow + goal detail ----
+  const GL = { mode: null, step: "form", draft: null, goalId: null, loading: false, error: "" };
+
+  function glOpenCreate() {
+    GL.mode = "create"; GL.step = "form"; GL.error = ""; GL.loading = false;
+    GL.draft = { title: "", why: "", timeframe: "weekly", plan: null };
+    glRenderModal();
+    document.getElementById("goalModal").style.display = "flex";
+  }
+  function glOpenDetail(id) {
+    GL.mode = "detail"; GL.goalId = id; GL.error = "";
+    glRenderModal();
+    document.getElementById("goalModal").style.display = "flex";
+  }
+  function glCloseModal() {
+    document.getElementById("goalModal").style.display = "none";
+    GL.mode = null;
+  }
+
+  function glRenderModal() {
+    const box = document.getElementById("goalModalInner");
+    if (!box) return;
+    if (GL.mode === "create") glRenderCreate(box);
+    else if (GL.mode === "detail") glRenderDetail(box);
+  }
+
+  function glRenderCreate(box) {
+    const d = GL.draft;
+    if (GL.loading) {
+      box.innerHTML = '<div class="gl-spin"><span class="flame">🔨</span>Forging your plan…<br><span style="font-size:12px;">Breaking your goal into ' +
+        (d.timeframe === "weekly" ? "daily steps" : (d.timeframe === "monthly" ? "weekly milestones" : "monthly milestones")) + '</span></div>';
+      return;
+    }
+    if (GL.step === "form") {
+      box.innerHTML =
+        '<h3>New goal</h3>' +
+        '<p class="gl-hint">What do you want to achieve?</p>' +
+        '<input class="gl-field" id="glTitle" maxlength="140" placeholder="e.g. Read the whole New Testament" value="' + escapeHtml(d.title) + '">' +
+        '<p class="gl-hint">Why does it matter to you? (optional — helps the AI build a better plan)</p>' +
+        '<textarea class="gl-field" id="glWhy" maxlength="400" rows="2" placeholder="e.g. I want God\'s word shaping my decisions">' + escapeHtml(d.why) + '</textarea>' +
+        '<p class="gl-hint">Timeframe</p>' +
+        '<div class="gl-seg">' +
+          ["weekly", "monthly", "yearly"].map(function (tf) {
+            return '<button type="button" data-gltf="' + tf + '"' + (d.timeframe === tf ? ' class="on"' : "") + '>' +
+              (tf === "weekly" ? "Week" : tf === "monthly" ? "Month" : "Year") + '</button>';
+          }).join("") +
+        '</div>' +
+        '<p class="gl-hint">' + (d.timeframe === "weekly"
+          ? "A 7-day goal — AI plans one concrete step for each day."
+          : d.timeframe === "monthly"
+            ? "A 4-week goal — AI plans a milestone per week plus small daily actions."
+            : "A 12-month goal — AI plans a milestone per month plus small daily actions.") + '</p>' +
+        (GL.error ? '<div class="gl-err">' + escapeHtml(GL.error) + '</div>' : "") +
+        '<div class="gl-actions"><button type="button" id="glCancel">Cancel</button>' +
+        '<button type="button" class="primary" id="glBuild">Build my plan →</button></div>';
+      const t = document.getElementById("glTitle"), w = document.getElementById("glWhy");
+      t.addEventListener("input", function () { d.title = t.value; });
+      w.addEventListener("input", function () { d.why = w.value; });
+      box.querySelectorAll("[data-gltf]").forEach(function (b) {
+        b.addEventListener("click", function () { d.timeframe = b.getAttribute("data-gltf"); glRenderModal(); });
+      });
+      document.getElementById("glCancel").addEventListener("click", glCloseModal);
+      document.getElementById("glBuild").addEventListener("click", glBuildPlan);
+      return;
+    }
+    // step "plan" — review & edit what the AI drafted
+    const plan = d.plan || { milestones: [], daily: [], note: "" };
+    box.innerHTML =
+      '<h3>' + escapeHtml(d.title) + '</h3>' +
+      (plan.note ? '<div class="gl-note">' + escapeHtml(plan.note) + '</div>' : "") +
+      '<p class="gl-hint">Here\'s your plan — edit anything before saving.</p>' +
+      plan.milestones.map(function (m, i) {
+        return '<div class="gl-ms"><span class="gl-ms-lbl">' + escapeHtml(m.label) + '</span>' +
+          '<input class="gl-field" data-glmsedit="' + i + '" maxlength="140" value="' + escapeHtml(m.title) + '"></div>';
+      }).join("") +
+      (d.timeframe !== "weekly"
+        ? '<p class="gl-hint" style="margin-top:14px;"><b>Daily actions</b> — small habits you\'ll check off each day (clear one to drop it):</p>' +
+          plan.daily.map(function (x, i) {
+            return '<input class="gl-field" data-gldedit="' + i + '" maxlength="120" value="' + escapeHtml(x.title) + '">';
+          }).join("")
+        : "") +
+      (GL.error ? '<div class="gl-err">' + escapeHtml(GL.error) + '</div>' : "") +
+      '<div class="gl-actions"><button type="button" id="glBack">← Back</button>' +
+      '<button type="button" id="glRegen">Regenerate</button>' +
+      '<button type="button" class="primary" id="glSave">Save goal ✓</button></div>';
+    document.getElementById("glBack").addEventListener("click", function () { GL.step = "form"; GL.error = ""; glRenderModal(); });
+    document.getElementById("glRegen").addEventListener("click", glBuildPlan);
+    document.getElementById("glSave").addEventListener("click", glSaveGoal);
+  }
+
+  async function glBuildPlan() {
+    const d = GL.draft;
+    if (!d.title.trim()) { GL.error = "Give your goal a name first."; glRenderModal(); return; }
+    if (!(await ensureAiAck())) { GL.error = "Goal plans use AI. You can continue once you've reviewed the AI notice."; glRenderModal(); return; }
+    GL.loading = true; GL.error = ""; glRenderModal();
+    try {
+      const { data, error } = await sb.functions.invoke("goal-planner", {
+        body: {
+          title: d.title.trim(), why: d.why.trim(), timeframe: d.timeframe,
+          startDate: dayKey(new Date()),
+          name: (typeof getName === "function" && getName()) || "", build: BUILD,
+        },
+      });
+      if (error || !data || data.error) throw new Error((data && data.error) || "AI error");
+      if (!(data.milestones && data.milestones.length)) throw new Error("No plan returned");
+      d.plan = data;
+      GL.step = "plan";
+    } catch (e) {
+      GL.error = "Something went wrong building your plan. Check your connection and try again.";
+    } finally {
+      GL.loading = false;
+      glRenderModal();
+    }
+  }
+
+  async function glSaveGoal() {
+    const d = GL.draft, box = document.getElementById("goalModalInner");
+    // Pull any edits out of the inputs
+    box.querySelectorAll("[data-glmsedit]").forEach(function (inp) {
+      const m = d.plan.milestones[+inp.getAttribute("data-glmsedit")];
+      if (m) m.title = inp.value.trim() || m.title;
+    });
+    const daily = [];
+    box.querySelectorAll("[data-gldedit]").forEach(function (inp) {
+      const v = inp.value.trim();
+      if (v) daily.push({ id: "d" + (daily.length + 1), title: v });
+    });
+    d.plan.daily = d.timeframe === "weekly" ? [] : daily;
+    const startK = dayKey(new Date());
+    const span = d.timeframe === "weekly" ? 6 : (d.timeframe === "monthly" ? 27 : 364);
+    const row = {
+      user_id: __currentUser.id, email: __currentUser.email,
+      title: d.title.trim(), why: d.why.trim() || null,
+      timeframe: d.timeframe, start_date: startK, target_date: glAddDays(startK, span),
+      plan: d.plan, checks: {}, status: "active",
+    };
+    try {
+      const { data, error } = await sb.from("goals").insert(row).select().single();
+      if (error) throw error;
+      __goals.push(data);
+      glCloseModal();
+      renderGoalsToday(); renderGoalsCard();
+    } catch (err) {
+      console.error("goal insert failed:", err);
+      GL.error = "Couldn't save your goal. Check your connection and try again.";
+      glRenderModal();
+    }
+  }
+
+  function glRenderDetail(box) {
+    const g = __goals.find(function (x) { return x.id === GL.goalId; });
+    if (!g) { glCloseModal(); return; }
+    const ck = glChecks(g);
+    const pct = Math.round(glProgress(g) * 100);
+    const completed = g.status === "completed";
+    const fmt = function (iso) {
+      const p = iso.split("-").map(Number);
+      return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    };
+    box.innerHTML =
+      '<div class="gl-goal-top"><h3 style="flex:1;margin:0;">' + escapeHtml(g.title) + '</h3>' +
+      '<span class="gl-chip' + (completed ? " gl-done" : "") + '">' + (completed ? "Done ✓" : glTfChip(g.timeframe)) + '</span></div>' +
+      (g.why ? '<p class="gl-hint" style="margin-top:8px;">' + escapeHtml(g.why) + '</p>' : "") +
+      '<p class="gl-hint" style="margin-top:4px;">' + fmt(g.start_date) + " → " + fmt(g.target_date) + '</p>' +
+      '<div class="gl-bar"><span style="width:' + pct + '%"></span></div>' +
+      '<div class="gl-goal-sub" style="margin-bottom:10px;">' + pct + '% of milestones</div>' +
+      (glPlan(g).milestones || []).map(function (m) {
+        const on = !!ck.milestones[m.key];
+        return '<div class="gl-row' + (on ? " checked" : "") + '" data-glms2="' + m.key + '">' +
+          '<span class="gl-box">' + (on ? glCheckSvg() : "") + '</span>' +
+          '<div><div class="gl-row-t"><b>' + escapeHtml(m.label) + '</b> — ' + escapeHtml(m.title) + '</div>' +
+          (m.detail ? '<div class="gl-row-s">' + escapeHtml(m.detail) + '</div>' : "") + '</div></div>';
+      }).join("") +
+      ((glPlan(g).daily || []).length
+        ? '<p class="gl-hint" style="margin-top:12px;"><b>Daily actions</b> — check these off each day on the Today tab:</p>' +
+          (glPlan(g).daily || []).map(function (x) { return '<div class="gl-row" style="cursor:default;"><span style="color:var(--gold-light);">•</span><div class="gl-row-t">' + escapeHtml(x.title) + '</div></div>'; }).join("")
+        : "") +
+      '<div class="gl-actions">' +
+      '<button type="button" id="glDetClose">Close</button>' +
+      (completed
+        ? '<button type="button" id="glReopen">Reopen goal</button>'
+        : '<button type="button" class="primary" id="glComplete">Mark complete 🏆</button>') +
+      '</div>' +
+      '<button type="button" class="gl-danger" id="glDelete">Delete this goal</button>';
+    box.querySelectorAll("[data-glms2]").forEach(function (el) {
+      el.addEventListener("click", function () { glToggleMilestone(g, el.getAttribute("data-glms2")); });
+    });
+    document.getElementById("glDetClose").addEventListener("click", glCloseModal);
+    const comp = document.getElementById("glComplete");
+    if (comp) comp.addEventListener("click", function () {
+      g.status = "completed"; g.completed_at = new Date().toISOString();
+      glPersist(g, { status: "completed", completed_at: g.completed_at });
+      glRenderModal(); renderGoalsToday(); renderGoalsCard();
+    });
+    const reop = document.getElementById("glReopen");
+    if (reop) reop.addEventListener("click", function () {
+      g.status = "active"; g.completed_at = null;
+      glPersist(g, { status: "active", completed_at: null });
+      glRenderModal(); renderGoalsToday(); renderGoalsCard();
+    });
+    document.getElementById("glDelete").addEventListener("click", async function () {
+      if (!window.confirm("Delete this goal and its plan? This can't be undone.")) return;
+      try {
+        const { error } = await sb.from("goals").delete().eq("id", g.id);
+        if (error) throw error;
+        __goals = __goals.filter(function (x) { return x.id !== g.id; });
+        glCloseModal(); renderGoalsToday(); renderGoalsCard();
+      } catch (err) { console.error("goal delete failed:", err); }
+    });
+  }
+
+  (function initGoals() {
+    const m = document.getElementById("goalModal");
+    if (m) m.addEventListener("click", function (e) { if (e.target === m) glCloseModal(); });
+  })();
+
   (async function boot() {
     if (!sb) { showSignIn(); return; }
     // Detect password-reset redirect (Supabase puts type=recovery in the URL hash)
@@ -7011,6 +7448,7 @@
         }
         await migrateLocalEntriesIfNeeded();
         await fetchEntriesFromCloud();
+        fetchGoalsFromCloud();
         hydrateCirclesFromCloud();
         updateCount();
         renderQuestions(currentType);
