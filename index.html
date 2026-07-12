@@ -7584,18 +7584,17 @@
     } catch (err) { console.error("end covenant failed:", err); }
   }
 
-  // ---- Today tab takeover ----
+  // ---- Today tab: the Marriage Forge leads the day ----
+  // The forge card sits ABOVE Today's Mission; the standard journey items stay
+  // available below it.
   function renderMarriageToday() {
     var card = document.getElementById("mfTodayCard");
-    var mission = document.getElementById("missionCard");
     if (!card) return;
     var active = mfActiveForMe();
     if (!active) {
       card.style.display = "none"; card.dataset.mfkey = "";
-      if (mission) mission.style.display = "";
       return;
     }
-    if (mission) mission.style.display = "none";
     card.style.display = "";
     var meDone = mfDoneCount(mfMe());
     var day = mfCurrentDay(mfMe());
