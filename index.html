@@ -7357,7 +7357,7 @@
     return v;
   }
 
-  var __mf = null, __mfDays = [], __mfLoaded = false, __mfInviteOpen = false;
+  var __mf = null, __mfDays = [], __mfLoaded = false, __mfInviteOpen = false, __mfOpenToday = false;
   function mfMe() { return ((__currentUser && __currentUser.email) || "").toLowerCase(); }
   function mfIsInviter() { return !!(__mf && (__mf.a_email || "").toLowerCase() === mfMe()); }
   function mfSpouseEmail() { return mfIsInviter() ? __mf.b_email : __mf.a_email; }
@@ -7486,8 +7486,10 @@
     var b5 = document.getElementById("mfAcceptBtn"); if (b5) b5.addEventListener("click", mfAccept);
     var b6 = document.getElementById("mfDeclineBtn"); if (b6) b6.addEventListener("click", mfDecline);
     var b7 = document.getElementById("mfGoToday"); if (b7) b7.addEventListener("click", function () {
-      showTab("today");
+      __mfOpenToday = true;
       var c = document.getElementById("mfTodayCard");
+      if (c) c.dataset.mfkey = "";
+      showTab("today");
       if (c) setTimeout(function () { c.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
     });
     var b8 = document.getElementById("mfEndBtn"); if (b8) b8.addEventListener("click", function () { mfEndCovenant("End the forge and erase its progress? Journal entries stay in your journal, and your Marriage Circle chat stays in Circles. This can't be undone."); });
@@ -7580,7 +7582,7 @@
     var day = mfCurrentDay(mfMe());
     var finished = meDone >= 40;
     var didToday = mfDidToday();
-    var key = day + ":" + (finished ? "f" : didToday ? "d" : "o") + ":" + (mfSpouseJoined() ? "j" : "s") + ":" + (typeof BUILD !== "undefined" ? BUILD : "") + ":" + (__mf.circle_code || "");
+    var key = day + ":" + (finished ? "f" : didToday ? "d" : __mfOpenToday ? "e" : "o") + ":" + (mfSpouseJoined() ? "j" : "s") + ":" + (typeof BUILD !== "undefined" ? BUILD : "") + ":" + (__mf.circle_code || "");
     if (card.dataset.mfkey === key) return; // don't wipe half-typed reflections on re-render
     card.dataset.mfkey = key;
     var plan = mfDay(day);
@@ -7594,6 +7596,11 @@
     } else if (didToday) {
       html += '<div class="mf-done-badge">Day ' + meDone + ' complete ✓</div>' +
         '<p class="mf-principle" style="text-align:center;">The fire is banked. Day ' + Math.min(40, meDone + 1) + ' opens tomorrow.</p>' + mfSpouseNoteHtml(meDone) + chatBtn;
+    } else if (!__mfOpenToday) {
+      // Collapsed: today's day waits until they're ready to give it real attention.
+      html += '<div class="mf-day-title">' + escapeHtml(plan.t) + '</div>' +
+        '<p class="mf-principle" style="margin-bottom:14px;">Today\'s dare is ready — open it when you can give it your attention.</p>' +
+        '<button type="button" class="mf-btn" id="mfOpenBtn">Open today\'s forge 🔥</button>';
     } else {
       html += '<div class="mf-day-title">' + escapeHtml(plan.t) + '</div>' +
         '<p class="mf-principle">' + escapeHtml(plan.p) + '</p>' +
@@ -7607,11 +7614,16 @@
           : '<div class="mf-wlbl"><b>To your spouse</b> — saved for them; they’ll see it when they join the forge.</div>') +
         '<textarea class="mf-ta" id="mfToSpouse"></textarea>' +
         '<div style="height:12px;"></div>' +
-        '<button type="button" class="mf-btn" id="mfSaveDay">Seal Day ' + day + ' ✓</button>' + chatBtn;
+        '<button type="button" class="mf-btn" id="mfSaveDay">Seal Day ' + day + ' ✓</button>' + chatBtn +
+        '<button type="button" class="mf-cancel" id="mfLaterBtn">Close — I\'ll come back today</button>';
     }
     card.innerHTML = html;
     var cbtn = document.getElementById("mfChatBtn");
     if (cbtn) cbtn.addEventListener("click", mfOpenCircle);
+    var obtn = document.getElementById("mfOpenBtn");
+    if (obtn) obtn.addEventListener("click", function () { __mfOpenToday = true; card.dataset.mfkey = ""; renderMarriageToday(); });
+    var lbtn = document.getElementById("mfLaterBtn");
+    if (lbtn) lbtn.addEventListener("click", function () { __mfOpenToday = false; card.dataset.mfkey = ""; renderMarriageToday(); });
     var chk = document.getElementById("mfDareCheck");
     if (chk) chk.addEventListener("click", function () {
       var box = document.getElementById("mfDareBox");
@@ -7670,6 +7682,7 @@
           if (typeof renderScore === "function") try { renderScore(); } catch (e) {}
         } catch (e) { console.error("marriage journal save failed:", e); }
       }
+      __mfOpenToday = false;
       renderMarriageToday(); renderMarriageCard();
       if (typeof showToast === "function") showToast("Day " + day + " sealed. 🔥");
     } catch (err) {
