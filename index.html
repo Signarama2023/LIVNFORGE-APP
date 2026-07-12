@@ -1510,6 +1510,10 @@
             <input id="compEmail" type="email" placeholder="email@example.com" autocapitalize="off" style="flex:1; min-width:160px; background:var(--field); border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:10px 12px; font-family:inherit; font-size:14px;">
             <button class="invite-btn primary" id="compGrantBtn" type="button">Grant lifetime</button>
           </div>
+          <div id="compShareRow" style="display:none; margin-top:10px;">
+            <p class="sc-desc" id="compShareMsg" style="color:var(--accent-start); margin:0 0 8px;"></p>
+            <div class="invite-actions"><button class="invite-btn primary" id="compShareBtn" type="button">Text them the invite</button></div>
+          </div>
           <div id="compList" class="sc-desc" style="margin-top:10px;"></div>
         </div>
 
@@ -6011,30 +6015,47 @@
       });
     } catch (e) { box.textContent = ""; }
   }
+  var __lastCompEmail = "";
+  function compInviteText(email) {
+    return "🔥 You've got a FREE LIFETIME membership to LIVN FORGE — a daily faith + fitness journal to help you live on purpose.\n\n" +
+      "1) Download the app: https://apps.apple.com/app/id6776882761\n" +
+      "2) Create your account with this exact email: " + email + "\n\n" +
+      "That's it. Your access is already attached to that email — no code, nothing to redeem.";
+  }
   async function grantComp() {
     const inp = document.getElementById("compEmail");
     const btn = document.getElementById("compGrantBtn");
     const email = ((inp && inp.value) || "").trim().toLowerCase();
+    if (inp) inp.blur(); // drop the iOS keyboard so toasts and the share row are visible
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { if (typeof showToast === "function") showToast("Enter a valid email."); return; }
     if (btn) { btn.disabled = true; btn.textContent = "Granting…"; }
     try {
       const { error } = await sb.rpc("admin_add_comp", { p_email: email, p_note: "lifetime" });
       if (error) throw error;
       if (inp) inp.value = "";
+      __lastCompEmail = email;
+      // iOS only opens a share sheet on a fresh tap — so show a button instead of
+      // auto-sharing (the await above already spent the tap's user-activation).
+      const row = document.getElementById("compShareRow");
+      const msg = document.getElementById("compShareMsg");
+      if (msg) msg.textContent = "✓ " + email + " has lifetime access.";
+      if (row) row.style.display = "";
       refreshCompList();
-      // Ready-to-text message: access is attached to the email — nothing to redeem.
-      const text = "🔥 You've got a FREE LIFETIME membership to LIVN FORGE — a daily faith + fitness journal to help you live on purpose.\n\n" +
-        "1) Download the app: https://apps.apple.com/app/id6776882761\n" +
-        "2) Create your account with this exact email: " + email + "\n\n" +
-        "That's it. Your access is already attached to that email — no code, nothing to redeem.";
-      if (navigator.share) { try { await navigator.share({ title: "A lifetime of LIVN FORGE", text: text }); } catch (e) {} }
-      else if (navigator.clipboard && navigator.clipboard.writeText) { try { await navigator.clipboard.writeText(text); if (typeof showToast === "function") showToast("Lifetime granted — message copied to send."); } catch (e) {} }
       if (typeof showToast === "function") showToast(email + " has lifetime access.");
     } catch (err) {
       console.error("grant comp failed:", err);
-      if (typeof showToast === "function") showToast("Couldn't grant access — run comps.sql in Supabase first?");
+      if (typeof showToast === "function") showToast("Couldn't grant access: " + ((err && err.message) || "unknown error"));
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = "Grant lifetime"; }
+    }
+  }
+  function shareCompInvite() {
+    if (!__lastCompEmail) return;
+    const text = compInviteText(__lastCompEmail);
+    // Called directly from a tap, so navigator.share is allowed here.
+    if (navigator.share) { navigator.share({ title: "A lifetime of LIVN FORGE", text: text }).catch(function () {}); }
+    else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { if (typeof showToast === "function") showToast("Invite copied — paste it into a text."); }).catch(function () {});
     }
   }
   (function initGiftButtons() {
@@ -6046,6 +6067,8 @@
     if (allowBtn) allowBtn.addEventListener("click", adminAllowGifter);
     const compBtn = document.getElementById("compGrantBtn");
     if (compBtn) compBtn.addEventListener("click", grantComp);
+    const compShare = document.getElementById("compShareBtn");
+    if (compShare) compShare.addEventListener("click", shareCompInvite);
   })();
   async function leaveCircle(code) {
     if (!sb) return;
