@@ -44,7 +44,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if lower(auth.jwt() ->> 'email') <> 'markbailey1@me.com' then
+  if coalesce(lower(auth.jwt() ->> 'email'), '') <> 'markbailey1@me.com' then
     raise exception 'Admin only.';
   end if;
   insert into public.comp_members (email, note, added_by)
@@ -63,7 +63,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if lower(auth.jwt() ->> 'email') <> 'markbailey1@me.com' then
+  if coalesce(lower(auth.jwt() ->> 'email'), '') <> 'markbailey1@me.com' then
     raise exception 'Admin only.';
   end if;
   delete from public.comp_members where email = lower(trim(p_email));
@@ -80,7 +80,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if lower(auth.jwt() ->> 'email') <> 'markbailey1@me.com' then
+  if coalesce(lower(auth.jwt() ->> 'email'), '') <> 'markbailey1@me.com' then
     raise exception 'Admin only.';
   end if;
   return query select c.email, c.note, c.created_at from public.comp_members c order by c.created_at desc;
