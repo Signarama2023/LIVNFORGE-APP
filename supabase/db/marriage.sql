@@ -1,8 +1,10 @@
 -- Daily Forge / LIVN FORGE — Forge Your Marriage.
--- A covenant between exactly two people. One spouse invites the other by email;
--- the marriage activates only when the invited spouse accepts (both committed).
--- While active, the 40-Day Marriage Forge takes over the daily experience: each
--- day the member checks off the dare and may leave a note to their spouse.
+-- A covenant with room for one or two: the creator's forge starts immediately —
+-- solo if they choose (b_email null) — and the spouse can be invited and join
+-- at ANY time (committed_at marks when they accepted). While active, the 40-Day
+-- Marriage Forge takes over the daily experience: each day the member checks
+-- off the dare and may leave a note to their spouse (saved even before the
+-- spouse joins).
 --
 -- PRIVACY MODEL: dare check-offs and notes-to-spouse are visible to BOTH
 -- members. Private reflections are NOT here — they are saved as normal journal
@@ -17,7 +19,7 @@
 create table if not exists public.marriages (
   id           uuid primary key default gen_random_uuid(),
   a_email      text not null,   -- inviter (lowercased by the app)
-  b_email      text not null,   -- invited spouse (lowercased by the app)
+  b_email      text,            -- invited spouse (lowercased by the app; null = forging solo)
   a_name       text,
   b_name       text,
   status       text not null default 'pending' check (status in ('pending','active')),
@@ -87,6 +89,25 @@ as $$
 $$;
 grant execute on function public.has_marriage_entitlement() to authenticated;
 
+-- ---------- Decline an invitation ----------
+-- The invited spouse can't null their own b_email through the member UPDATE
+-- policy (the new row would no longer include them, failing WITH CHECK), so
+-- this SECURITY DEFINER function frees their slot — only before they've
+-- joined, and only their own slot. The inviter's forge is untouched.
+create or replace function public.marriage_decline(p_id uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.marriages
+     set b_email = null, b_name = null, committed_at = null
+   where id = p_id
+     and committed_at is null
+     and lower(b_email) = lower(auth.jwt() ->> 'email');
+$$;
+grant execute on function public.marriage_decline(uuid) to authenticated;
+
 -- ---------- RLS: marriages ----------
 alter table public.marriages enable row level security;
 
@@ -96,12 +117,13 @@ create policy "marriage member select" on public.marriages
     lower(auth.jwt() ->> 'email') in (lower(a_email), lower(b_email))
   );
 
--- Only the inviter may create, only as themselves, only as a pending invite.
+-- Only the creator may insert, only as themselves. 'active' from day one — the
+-- creator's forge doesn't wait on the spouse.
 drop policy if exists "marriage inviter insert" on public.marriages;
 create policy "marriage inviter insert" on public.marriages
   for insert with check (
     lower(a_email) = lower(auth.jwt() ->> 'email')
-    and status = 'pending'
+    and status in ('pending','active')
   );
 
 -- Either member may update (the invited spouse accepts; either can update names).

@@ -7267,7 +7267,12 @@
   function mfMe() { return ((__currentUser && __currentUser.email) || "").toLowerCase(); }
   function mfIsInviter() { return !!(__mf && (__mf.a_email || "").toLowerCase() === mfMe()); }
   function mfSpouseEmail() { return mfIsInviter() ? __mf.b_email : __mf.a_email; }
-  function mfSpouseName() { var n = mfIsInviter() ? __mf.b_name : __mf.a_name; return n || mfSpouseEmail(); }
+  function mfSpouseName() { var n = mfIsInviter() ? __mf.b_name : __mf.a_name; return n || mfSpouseEmail() || "your spouse"; }
+  // The spouse has actually joined (accepted) — before that the inviter forges alone.
+  function mfSpouseJoined() { return !!(__mf && __mf.b_email && __mf.committed_at); }
+  // The forge is live for ME: the inviter forges from day one whether or not the
+  // spouse ever joins; the invited spouse is in only after accepting.
+  function mfActiveForMe() { return !!(__mf && __mf.status === "active" && (mfIsInviter() || __mf.committed_at)); }
   function mfRowsFor(email) { return __mfDays.filter(function (r) { return (r.email || "").toLowerCase() === (email || "").toLowerCase() && r.dare_done; }); }
   function mfDoneCount(email) { return mfRowsFor(email).length; }
   function mfCurrentDay(email) { return Math.min(40, mfDoneCount(email) + 1); }
@@ -7303,72 +7308,116 @@
       html = '<div class="gl-empty">Loading…</div>';
     } else if (!__mf && !__mfInviteOpen) {
       html = '<p class="mf-vow">A husband and a wife. Forty days. One fire.</p>' +
-        '<p class="mf-lede">The Marriage Forge becomes your daily forge: each day a principle, a scripture, and one dare toward your spouse — with a private journal and a note only they can see. When you choose this path, it is the path.</p>' +
-        '<button type="button" class="mf-btn" id="mfBeginBtn">Begin the covenant</button>';
+        '<p class="mf-lede">The Marriage Forge becomes your daily forge: each day a principle, a scripture, and one dare toward your spouse — with a private journal and a note only they can see. Begin alone or invite your spouse — they can join you any time. When you choose this path, it is the path.</p>' +
+        '<button type="button" class="mf-btn" id="mfBeginBtn">Begin the forge</button>';
     } else if (!__mf && __mfInviteOpen) {
-      html = '<p class="mf-lede">Invite your spouse by the email they use for LIVN FORGE. The forge begins the day they accept — and one subscription covers you both.</p>' +
-        '<input class="gl-field" id="mfInviteEmail" type="email" autocapitalize="off" placeholder="spouse@email.com">' +
-        '<button type="button" class="mf-btn" id="mfInviteSend">Send the invitation</button>' +
+      html = '<p class="mf-lede">Invite your spouse by the email they use for LIVN FORGE — or begin on your own and invite them whenever you’re ready. Your forge starts today either way, and one subscription covers you both.</p>' +
+        '<input class="gl-field" id="mfInviteEmail" type="email" autocapitalize="off" placeholder="spouse@email.com (optional)">' +
+        '<button type="button" class="mf-btn" id="mfInviteSend">Invite & begin</button>' +
+        '<div style="height:8px;"></div>' +
+        '<button type="button" class="mf-btn ghost" id="mfSoloBegin">Begin on my own for now</button>' +
         '<button type="button" class="mf-cancel" id="mfInviteCancel">Not now</button>';
-    } else if (__mf.status === "pending" && mfIsInviter()) {
-      html = '<p class="mf-lede">Your covenant invitation is waiting for <b>' + escapeHtml(mfSpouseEmail()) + '</b>. The forge lights the day they accept.</p>' +
-        '<button type="button" class="mf-cancel" id="mfCancelInvite">Withdraw the invitation</button>';
-    } else if (__mf.status === "pending") {
+    } else if (!mfIsInviter() && !__mf.committed_at) {
       html = '<p class="mf-vow">' + escapeHtml(__mf.a_name || __mf.a_email) + ' has asked you to forge your marriage.</p>' +
-        '<p class="mf-lede">Forty days. One dare a day toward each other. A private journal for you, a daily note for them. When you accept, the Marriage Forge becomes your daily mission — for both of you.</p>' +
+        '<p class="mf-lede">Forty days. One dare a day toward each other. A private journal for you, a daily note for them. When you accept, the Marriage Forge becomes your daily mission too — starting at Day 1, at your own pace.</p>' +
         '<button type="button" class="mf-btn" id="mfAcceptBtn">Accept & commit</button>' +
         '<button type="button" class="mf-cancel" id="mfDeclineBtn">Decline</button>';
     } else {
-      var meDone = mfDoneCount(mfMe()), spDone = mfDoneCount(mfSpouseEmail());
-      var forged = meDone >= 40 && spDone >= 40;
-      html = (forged ? '<div class="mf-done-badge">FORGED — all 40 days, both of you 🎉</div>' : '') +
+      var meDone = mfDoneCount(mfMe());
+      var joined = mfSpouseJoined();
+      var spDone = joined ? mfDoneCount(mfSpouseEmail()) : 0;
+      var forged = meDone >= 40 && (!joined || spDone >= 40);
+      html = (forged ? '<div class="mf-done-badge">FORGED — all 40 days 🎉</div>' : '') +
         '<div class="mf-pair">' +
         '<div class="mf-person"><div class="mf-p-top"><span>You</span><span class="mf-p-day">' + (meDone >= 40 ? "40 of 40 ✓" : "Day " + mfCurrentDay(mfMe()) + " · " + meDone + " of 40") + '</span></div><div class="mf-bar"><span style="width:' + Math.round(meDone / 40 * 100) + '%"></span></div></div>' +
-        '<div class="mf-person"><div class="mf-p-top"><span>' + escapeHtml(mfSpouseName()) + '</span><span class="mf-p-day">' + (spDone >= 40 ? "40 of 40 ✓" : "Day " + mfCurrentDay(mfSpouseEmail()) + " · " + spDone + " of 40") + '</span></div><div class="mf-bar"><span style="width:' + Math.round(spDone / 40 * 100) + '%"></span></div></div>' +
-        '</div>' +
-        (forged ? '' : '<button type="button" class="mf-btn ghost" id="mfGoToday">Go to today’s forge</button>') +
-        '<button type="button" class="mf-cancel" id="mfEndBtn">End the covenant</button>';
+        (joined
+          ? '<div class="mf-person"><div class="mf-p-top"><span>' + escapeHtml(mfSpouseName()) + '</span><span class="mf-p-day">' + (spDone >= 40 ? "40 of 40 ✓" : "Day " + mfCurrentDay(mfSpouseEmail()) + " · " + spDone + " of 40") + '</span></div><div class="mf-bar"><span style="width:' + Math.round(spDone / 40 * 100) + '%"></span></div></div>'
+          : '') +
+        '</div>';
+      if (!joined && __mf.b_email) {
+        html += '<p class="mf-lede">Your invitation is waiting for <b>' + escapeHtml(mfSpouseEmail()) + '</b> — they can join any time. You’re forging in the meantime, and your notes are saved for them.</p>' +
+          '<button type="button" class="mf-cancel" id="mfWithdrawBtn">Withdraw the invitation</button>';
+      } else if (!joined) {
+        html += '<p class="mf-lede">You’re forging on your own. Invite your spouse whenever you’re ready — your notes to them are already being saved.</p>' +
+          '<input class="gl-field" id="mfInviteEmail" type="email" autocapitalize="off" placeholder="spouse@email.com">' +
+          '<button type="button" class="mf-btn ghost" id="mfInviteSend">Invite your spouse</button>';
+      }
+      html += (forged ? '' : '<div style="height:8px;"></div><button type="button" class="mf-btn ghost" id="mfGoToday">Go to today’s forge</button>') +
+        '<button type="button" class="mf-cancel" id="mfEndBtn">End the forge</button>';
     }
     body.innerHTML = html;
     var b1 = document.getElementById("mfBeginBtn"); if (b1) b1.addEventListener("click", function () { __mfInviteOpen = true; renderMarriageCard(); });
     var b2 = document.getElementById("mfInviteCancel"); if (b2) b2.addEventListener("click", function () { __mfInviteOpen = false; renderMarriageCard(); });
     var b3 = document.getElementById("mfInviteSend"); if (b3) b3.addEventListener("click", mfSendInvite);
-    var b4 = document.getElementById("mfCancelInvite"); if (b4) b4.addEventListener("click", function () { mfEndCovenant("Withdraw this invitation?"); });
+    var b3b = document.getElementById("mfSoloBegin"); if (b3b) b3b.addEventListener("click", function () { mfBegin(null); });
+    var b4 = document.getElementById("mfWithdrawBtn"); if (b4) b4.addEventListener("click", mfWithdrawInvite);
     var b5 = document.getElementById("mfAcceptBtn"); if (b5) b5.addEventListener("click", mfAccept);
-    var b6 = document.getElementById("mfDeclineBtn"); if (b6) b6.addEventListener("click", function () { mfEndCovenant("Decline this invitation?"); });
+    var b6 = document.getElementById("mfDeclineBtn"); if (b6) b6.addEventListener("click", mfDecline);
     var b7 = document.getElementById("mfGoToday"); if (b7) b7.addEventListener("click", function () {
       showTab("today");
       var c = document.getElementById("mfTodayCard");
       if (c) setTimeout(function () { c.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
     });
-    var b8 = document.getElementById("mfEndBtn"); if (b8) b8.addEventListener("click", function () { mfEndCovenant("End the covenant and erase the forge? Journal entries stay in each of your journals. This can't be undone."); });
+    var b8 = document.getElementById("mfEndBtn"); if (b8) b8.addEventListener("click", function () { mfEndCovenant("End the forge and erase its progress? Journal entries stay in your journal. This can't be undone."); });
+  }
+  // Start the forge — solo (email null) or with an invitation out. Either way the
+  // caller's 40 days begin today.
+  async function mfBegin(email) {
+    try {
+      const { data, error } = await sb.from("marriages").insert({
+        a_email: mfMe(), b_email: email || null,
+        a_name: (typeof getName === "function" && getName()) || null,
+        status: "active", start_date: dayKey(new Date()),
+      }).select().single();
+      if (error) throw error;
+      __mf = data; __mfInviteOpen = false;
+      renderMarriageCard(); renderMarriageToday();
+      if (typeof showToast === "function") showToast(email ? "The forge is lit — invitation sent to " + email + ". Day 1 is on your Today tab. 🔥" : "The forge is lit. Day 1 is on your Today tab. 🔥");
+    } catch (err) { console.error("begin forge failed:", err); if (typeof showToast === "function") showToast("Couldn't start right now."); }
   }
   async function mfSendInvite() {
     var inp = document.getElementById("mfInviteEmail");
     var email = ((inp && inp.value) || "").trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { if (typeof showToast === "function") showToast("Enter your spouse's email."); return; }
     if (email === mfMe()) { if (typeof showToast === "function") showToast("That's your own email."); return; }
+    if (!__mf) { mfBegin(email); return; }
     try {
-      const { data, error } = await sb.from("marriages").insert({
-        a_email: mfMe(), b_email: email,
-        a_name: (typeof getName === "function" && getName()) || null,
-        status: "pending",
-      }).select().single();
+      const { error } = await sb.from("marriages").update({ b_email: email, b_name: null, committed_at: null }).eq("id", __mf.id);
       if (error) throw error;
-      __mf = data; __mfInviteOpen = false;
+      __mf.b_email = email; __mf.b_name = null; __mf.committed_at = null;
       renderMarriageCard();
       if (typeof showToast === "function") showToast("Invitation sent. Tell " + email + " to check their Journey tab.");
     } catch (err) { console.error("invite failed:", err); if (typeof showToast === "function") showToast("Couldn't send the invitation."); }
   }
+  async function mfWithdrawInvite() {
+    if (!window.confirm("Withdraw the invitation? Your own forge keeps going.")) return;
+    try {
+      const { error } = await sb.from("marriages").update({ b_email: null, b_name: null, committed_at: null }).eq("id", __mf.id);
+      if (error) throw error;
+      __mf.b_email = null; __mf.b_name = null; __mf.committed_at = null;
+      renderMarriageCard();
+    } catch (err) { console.error("withdraw failed:", err); }
+  }
   async function mfAccept() {
     try {
-      var fields = { status: "active", b_name: (typeof getName === "function" && getName()) || null, committed_at: new Date().toISOString(), start_date: dayKey(new Date()) };
+      var fields = { status: "active", b_name: (typeof getName === "function" && getName()) || null, committed_at: new Date().toISOString() };
       const { error } = await sb.from("marriages").update(fields).eq("id", __mf.id);
       if (error) throw error;
       Object.assign(__mf, fields);
       renderMarriageCard(); renderMarriageToday();
       if (typeof showToast === "function") showToast("The forge is lit. Day 1 is on your Today tab. 🔥");
     } catch (err) { console.error("accept failed:", err); if (typeof showToast === "function") showToast("Couldn't accept right now."); }
+  }
+  async function mfDecline() {
+    if (!window.confirm("Decline this invitation?")) return;
+    try {
+      // SECURITY DEFINER function: removes only the caller's own b_email slot,
+      // leaving the inviter's forge untouched.
+      const { error } = await sb.rpc("marriage_decline", { p_id: __mf.id });
+      if (error) throw error;
+      __mf = null; __mfDays = [];
+      renderMarriageCard(); renderMarriageToday();
+    } catch (err) { console.error("decline failed:", err); }
   }
   async function mfEndCovenant(msg) {
     if (!window.confirm(msg)) return;
@@ -7385,7 +7434,7 @@
     var card = document.getElementById("mfTodayCard");
     var mission = document.getElementById("missionCard");
     if (!card) return;
-    var active = __mf && __mf.status === "active";
+    var active = mfActiveForMe();
     if (!active) {
       card.style.display = "none"; card.dataset.mfkey = "";
       if (mission) mission.style.display = "";
@@ -7397,7 +7446,7 @@
     var day = mfCurrentDay(mfMe());
     var finished = meDone >= 40;
     var didToday = mfDidToday();
-    var key = day + ":" + (finished ? "f" : didToday ? "d" : "o");
+    var key = day + ":" + (finished ? "f" : didToday ? "d" : "o") + ":" + (mfSpouseJoined() ? "j" : "s");
     if (card.dataset.mfkey === key) return; // don't wipe half-typed reflections on re-render
     card.dataset.mfkey = key;
     var plan = MF_PLAN[day - 1];
@@ -7416,7 +7465,9 @@
         '<div class="mf-check" id="mfDareCheck"><span class="gl-box" id="mfDareBox"></span><span class="mf-check-t">I did the dare</span></div>' +
         '<div class="mf-wlbl"><b>To yourself</b> — private, saved to your journal. ' + escapeHtml(plan.j) + '</div>' +
         '<textarea class="mf-ta" id="mfPrivate"></textarea>' +
-        '<div class="mf-wlbl"><b>To ' + escapeHtml(mfSpouseName()) + '</b> — they’ll see this note.</div>' +
+        (mfSpouseJoined()
+          ? '<div class="mf-wlbl"><b>To ' + escapeHtml(mfSpouseName()) + '</b> — they’ll see this note.</div>'
+          : '<div class="mf-wlbl"><b>To your spouse</b> — saved for them; they’ll see it when they join the forge.</div>') +
         '<textarea class="mf-ta" id="mfToSpouse"></textarea>' +
         '<div style="height:12px;"></div>' +
         '<button type="button" class="mf-btn" id="mfSaveDay">Seal Day ' + day + ' ✓</button>';
