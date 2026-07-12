@@ -7394,33 +7394,22 @@
     mfEnsureCircle(); // both in the forge -> make sure the Marriage Circle exists and I'm in it
   }
 
-  // When both spouses are in the forge, they get a private Marriage Circle chat
-  // — auto-created once, joined by each member on their own device (members can
-  // only insert themselves under circle RLS). The code is stored on the
-  // marriage row; a conditional update + re-read settles the create race.
+  // When both spouses are in the forge, they get a private Marriage Circle chat.
+  // One SECURITY DEFINER RPC (marriage_setup_circle) creates the circle and adds
+  // BOTH spouses as members atomically — neither has to open the app first.
+  // Idempotent, so calling from either device is safe.
   async function mfEnsureCircle() {
     if (!__mf || __mf.status !== "active" || !mfSpouseJoined() || !sb || !__currentUser) return;
     try {
-      var code = __mf.circle_code;
-      if (!code) {
-        code = "MF-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-        await sb.from("prayer_circles").insert({
-          code: code, name: "Marriage Forge", type: "prayer",
-          focus: "Forging our marriage — 40 days, one fire.",
-          created_by: currentEmail(),
-        });
-        const { error } = await sb.from("marriages").update({ circle_code: code }).eq("id", __mf.id).is("circle_code", null);
-        if (error) throw error;
-        const { data } = await sb.from("marriages").select("circle_code").eq("id", __mf.id).single();
-        if (data && data.circle_code) code = data.circle_code; // spouse may have won the race
-        __mf.circle_code = code;
+      var hadCode = __mf.circle_code;
+      const { data, error } = await sb.rpc("marriage_setup_circle", { p_id: __mf.id });
+      if (error) throw error;
+      if (data) __mf.circle_code = data;
+      if (typeof addCircleCode === "function" && __mf.circle_code) addCircleCode(__mf.circle_code);
+      if (!hadCode && __mf.circle_code) {
+        renderMarriageToday(); renderMarriageCard();
+        if (typeof renderCircles === "function") { try { renderCircles(); } catch (e) {} }
       }
-      await sb.from("prayer_circle_members").upsert(
-        { code: code, email: currentEmail(), name: (typeof getName === "function" && getName()) || "" },
-        { onConflict: "code,email", ignoreDuplicates: true }
-      );
-      if (typeof addCircleCode === "function") addCircleCode(code);
-      renderMarriageToday(); renderMarriageCard();
     } catch (e) { console.error("marriage circle setup failed:", e); }
   }
   function mfOpenCircle() {

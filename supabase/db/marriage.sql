@@ -92,6 +92,52 @@ as $$
 $$;
 grant execute on function public.has_marriage_entitlement() to authenticated;
 
+-- ---------- Marriage Circle: create + add BOTH spouses atomically ----------
+-- SECURITY DEFINER so it can insert the OTHER spouse into prayer_circle_members
+-- (member RLS only lets users insert themselves). Idempotent: safe to call from
+-- both devices; returns the circle code either way. Caller must be a member of
+-- the marriage and both spouses must be committed.
+create or replace function public.marriage_setup_circle(p_id uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  m record;
+  v_code text;
+begin
+  select * into m from public.marriages
+   where id = p_id
+     and coalesce(lower(auth.jwt() ->> 'email'), '') in (lower(a_email), lower(coalesce(b_email, '')));
+  if m.id is null then
+    raise exception 'Not your marriage.';
+  end if;
+  if m.status <> 'active' or m.b_email is null or m.committed_at is null then
+    raise exception 'Both spouses must be in the forge.';
+  end if;
+
+  if m.circle_code is not null then
+    v_code := m.circle_code;
+  else
+    v_code := 'MF-' || upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
+    insert into public.prayer_circles (code, name, focus, type, created_by)
+    values (v_code, 'Marriage Forge', 'Forging our marriage — 40 days, one fire.', 'prayer', lower(m.a_email))
+    on conflict (code) do nothing;
+    update public.marriages set circle_code = v_code where id = p_id and circle_code is null;
+    select circle_code into v_code from public.marriages where id = p_id; -- settle any race
+  end if;
+
+  -- Both spouses become members immediately — neither has to open the app first.
+  insert into public.prayer_circle_members (code, email, name)
+  values (v_code, lower(m.a_email), m.a_name), (v_code, lower(m.b_email), m.b_name)
+  on conflict (code, email) do nothing;
+
+  return v_code;
+end;
+$$;
+grant execute on function public.marriage_setup_circle(uuid) to authenticated;
+
 -- ---------- Decline an invitation ----------
 -- The invited spouse can't null their own b_email through the member UPDATE
 -- policy (the new row would no longer include them, failing WITH CHECK), so
