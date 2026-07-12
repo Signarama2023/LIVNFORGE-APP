@@ -1306,6 +1306,37 @@
   .gl-actions button.primary { background:linear-gradient(135deg, var(--gold), var(--gold-light)); color:#0c0d10; border-color:transparent; }
   .gl-actions button:disabled { opacity:0.55; cursor:default; }
   .gl-danger { display:block; width:100%; margin-top:10px; padding:10px; border:none; background:transparent; color:#f28b82; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  /* ===== Forge Your Marriage ===== */
+  .mf-lede { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0 0 12px; }
+  .mf-vow { font-size: 15px; line-height: 1.55; font-style: italic; color: var(--gold-light); margin: 0 0 12px; }
+  .mf-btn { width: 100%; padding: 13px; border-radius: 11px; border: none; background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #0c0d10; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+  .mf-btn.ghost { background: transparent; border: 1.5px solid var(--gold); color: var(--gold-light); }
+  .mf-btn:disabled { opacity: 0.55; cursor: default; }
+  .mf-cancel { display: block; width: 100%; margin-top: 10px; padding: 9px; border: none; background: transparent; color: var(--muted); font-family: inherit; font-size: 13px; cursor: pointer; }
+  .mf-pair { display: flex; flex-direction: column; gap: 12px; margin: 14px 0; }
+  .mf-person .mf-p-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 700; }
+  .mf-person .mf-p-day { color: var(--gold-light); font-variant-numeric: tabular-nums; }
+  .mf-day-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-light); margin-bottom: 6px; }
+  .mf-day-title { font-size: 22px; font-weight: 800; margin: 0 0 8px; }
+  .mf-principle { font-size: 15px; line-height: 1.55; margin: 0 0 12px; }
+  .mf-scripture { background: rgba(217,169,62,0.10); border: 1px solid rgba(217,169,62,0.30); border-radius: 10px; padding: 11px 13px; font-size: 13.5px; line-height: 1.5; color: var(--muted); margin-bottom: 12px; }
+  .mf-scripture b { color: var(--gold-light); }
+  .mf-dare { border-left: 3px solid var(--gold); padding: 2px 0 2px 12px; margin: 0 0 14px; }
+  .mf-dare .mf-dare-lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--gold-light); }
+  .mf-dare .mf-dare-txt { font-size: 15px; font-weight: 650; line-height: 1.5; margin-top: 3px; }
+  .mf-check { display: flex; align-items: center; gap: 11px; padding: 11px 0; cursor: pointer; }
+  .mf-check .gl-box { width: 24px; height: 24px; }
+  .mf-check .mf-check-t { font-size: 15px; font-weight: 700; }
+  .mf-wlbl { font-size: 12px; font-weight: 700; color: var(--muted); margin: 12px 0 5px; }
+  .mf-wlbl b { color: var(--text); }
+  textarea.mf-ta { width: 100%; box-sizing: border-box; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 10px; padding: 11px 13px; font-family: inherit; font-size: 16px; min-height: 72px; resize: vertical; }
+  .mf-done-badge { text-align: center; font-size: 15px; font-weight: 800; color: var(--accent-start); padding: 8px 0 2px; }
+  .mf-spouse-note { background: var(--field); border: 1px solid var(--field-border); border-radius: 12px; padding: 13px 15px; margin-top: 12px; }
+  .mf-spouse-note .mf-sn-from { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--gold-light); margin-bottom: 5px; }
+  .mf-spouse-note .mf-sn-body { font-size: 14.5px; line-height: 1.55; font-style: italic; }
+  .mf-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,0.09); overflow: hidden; margin-top: 5px; }
+  body[data-build="women"] .mf-bar { background: rgba(0,0,0,0.08); }
+  .mf-bar > span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.3s; }
   /* Journal-type chooser (from the "Write one journal entry" mission step) */
   .jt-opt { display:block; width:100%; text-align:left; background:var(--field); border:1px solid var(--field-border); border-radius:12px; padding:12px 14px; color:var(--text); font-family:inherit; cursor:pointer; margin-bottom:8px; }
   .jt-opt .jt-name { display:block; font-weight:700; font-size:15px; }
@@ -1374,7 +1405,9 @@
             <div class="fv-ref" id="forgeVerseRef"></div>
           </div>
 
-          <div class="forge-card accent">
+          <div class="forge-card accent" id="mfTodayCard" style="display:none;"></div>
+
+          <div class="forge-card accent" id="missionCard">
             <div class="fmission">
               <div class="m-l">
                 <div class="forge-clabel" style="margin-bottom:6px;">Today's mission</div>
@@ -1617,6 +1650,11 @@
             <div class="jr-week-label">This Week</div>
             <div class="jr-week-bars" id="jrWeekBars"></div>
           </div>
+        </div>
+
+        <div class="forge-card ch-card" id="marriageCard" data-tab="progress">
+          <div class="forge-clabel">Forge Your Marriage</div>
+          <div id="marriageBody"><div class="gl-empty">Loading…</div></div>
         </div>
 
         <div class="forge-card ch-card" id="goalsCard" data-tab="progress">
@@ -3793,6 +3831,8 @@
     if (inTrial()) return true;                   // everyone gets a free 7-day trial, no card
     if (IN_NATIVE_APP && BETA_OPEN_ACCESS) return true; // beta: all TestFlight testers get full access
     if (IN_NATIVE_APP) { try { if (await RC.isEntitledIAP()) return true; } catch (e) {} } // in-app purchase buyers
+    // Spouse rides free: an active marriage partner's live subscription covers both.
+    try { const { data } = await sb.rpc("has_marriage_entitlement"); if (data === true) return true; } catch (e) {}
     // Ask Stripe (via the edge function) for live status; it also syncs the DB row.
     // (Web subscribers stay entitled inside the app too — no double charge.)
     try {
@@ -4848,6 +4888,7 @@
     await migrateLocalEntriesIfNeeded();
     await fetchEntriesFromCloud();
     fetchGoalsFromCloud();
+    fetchMarriageFromCloud();
     hydrateCirclesFromCloud();
     renderQuestions(currentType);
     updateCount();
@@ -6752,8 +6793,8 @@
     try {
       if (name === "rewards") renderRewards();
       if (name === "circles") { if (typeof renderCircles === "function") renderCircles(); if (typeof migrateGroupsToCircles === "function") migrateGroupsToCircles(); }
-      if (name === "progress") { renderScore(); if (typeof renderJourney === "function") renderJourney(); if (typeof renderGoalsCard === "function") renderGoalsCard(); }
-      if (name === "today") { if (typeof renderForge === "function") renderForge(); if (typeof renderGoalsToday === "function") renderGoalsToday(); if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
+      if (name === "progress") { renderScore(); if (typeof renderJourney === "function") renderJourney(); if (typeof renderMarriageCard === "function") renderMarriageCard(); if (typeof renderGoalsCard === "function") renderGoalsCard(); }
+      if (name === "today") { if (typeof renderForge === "function") renderForge(); if (typeof renderMarriageToday === "function") renderMarriageToday(); if (typeof renderGoalsToday === "function") renderGoalsToday(); if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
       if (name === "settings") { if (typeof renderProfile === "function") renderProfile(); if (typeof renderBlockedList === "function") renderBlockedList(); }
     } catch (e) {}
     window.scrollTo(0, 0);
@@ -7172,6 +7213,271 @@
     return { wireUI, load };
   })();
 
+  // ===== Forge Your Marriage — a covenant between two, and the 40-Day Marriage Forge =====
+  // While the covenant is active, the Marriage Forge IS the daily mission: the
+  // Today mission card is replaced by the day's principle, scripture, and dare,
+  // with a dare check-off and two writings — a private reflection (saved to the
+  // user's own journal, never shared) and a note to the spouse (shared).
+  // Original content — format inspired by the classic 40-day marriage challenge
+  // pattern; every principle, dare, and prompt is ours (see MARRIAGE-FORGE.md).
+  var MF_PLAN = [
+    { t: "Light the Forge", p: "Nothing is forged by accident. Forty days of intention starts with saying it out loud.", sr: "Ecclesiastes 4:9–12", s: "Two are better than one; a cord of three strands is not quickly broken.", d: "Tell your spouse you're starting 40 days of intentionally forging your marriage — and ask them to hold you to it.", j: "What do you want your marriage to look like on Day 40? Write it down — Day 40 will ask you to read this." },
+    { t: "Guard the Coals", p: "Words either bank a fire or scatter it. One careless sentence can undo a warm week.", sr: "Proverbs 18:21", s: "The tongue holds the power of life and death.", d: "All day: no criticism, no sarcasm, no correcting your spouse. Speak only what builds, or hold it.", j: "What did you almost say today — and what did you say instead?" },
+    { t: "Full Attention", p: "Presence is the rarest gift in your house. Attention is love made visible.", sr: "James 1:19", s: "Quick to listen, slow to speak.", d: "Give your spouse 15 undistracted minutes. Phone in another room, eyes up. Ask “How are you — really?” and only listen.", j: "What did you hear that you'd been missing?" },
+    { t: "First Words", p: "The first minutes of the day set the temperature of the whole house.", sr: "Psalm 143:8", s: "Let the morning bring word of Your unfailing love.", d: "Make your first words to your spouse today warm on purpose — a greeting, a compliment, a thank-you — before any logistics or requests.", j: "How did the temperature of your home change today?" },
+    { t: "Small Kindling", p: "Big fires are kept alive by small sticks. Grand gestures are rare; kindling is daily.", sr: "Galatians 5:13", s: "Serve one another humbly in love.", d: "Do one small, unasked act of service — their coffee, their chore, gas in their car — and don't point it out.", j: "What small thing does your spouse do regularly that you've stopped noticing?" },
+    { t: "Slow Burn", p: "Patience isn't slowness of love — it's love refusing to boil over.", sr: "1 Corinthians 13:4", s: "Love is patient, love is kind.", d: "Every time irritation with your spouse rises today, pause, breathe once, and answer gently — every time.", j: "Where does your impatience with your spouse really come from — them, or the load you're carrying?" },
+    { t: "Bank the Fire", r: 1, p: "Even a forge rests. Banked coals stay hot for tomorrow's work.", sr: "Psalm 46:10", s: "Be still, and know that I am God.", d: "Take a 20-minute walk or sit together — no screens, no agenda. Each share one thing you appreciated about the other this week.", j: "What surprised you about week one?" },
+    { t: "Bear the Heat", p: "You can't forge for someone whose load you won't touch.", sr: "Galatians 6:2", s: "Carry each other's burdens.", d: "Ask your spouse: “What's the heaviest thing on you right now?” Then take a real piece of it onto yourself today.", j: "When did the burdens in your house stop being automatically shared?" },
+    { t: "The Unseen Work", p: "The strongest welds are the ones nobody sees. Serve where only God is watching.", sr: "Matthew 6:3–4", s: "Give in secret, and your Father who sees in secret will reward you.", d: "Do something for your spouse today that they will never trace back to you.", j: "How does it feel to serve without collecting the credit?" },
+    { t: "Strike the Iron", p: "Good intentions cool fast. The iron is hot now.", sr: "Proverbs 3:27–28", s: "Do not withhold good... do not say “come back tomorrow.”", d: "That thing you've been meaning to do for your spouse — the repair, the call, the errand, the conversation — do it today.", j: "What else have you been postponing in your marriage, and what's the real reason?" },
+    { t: "Their Language", p: "Love isn't received in the form that's easiest for you to give — it's received in the form they hear.", sr: "Philippians 2:3–4", s: "Value others above yourselves, looking to their interests.", d: "Do one loving act today in the form your spouse most receives — words, help, time, touch, or a gift — even if it's not your native language.", j: "How does your spouse most naturally receive love? How do you? Are you speaking past each other?" },
+    { t: "Speak Them Well", p: "Your spouse's reputation in every room you enter is partly your craftsmanship.", sr: "Proverbs 31:28–29", s: "Her husband praises her: “you surpass them all.”", d: "Praise your spouse to someone else today — a friend, a parent, your kids — specifically and sincerely. Bonus if it gets back to them.", j: "What do other people know about your spouse from your mouth?" },
+    { t: "The Strong Back", p: "The King of kings picked up a towel. Strength in marriage looks like the low task done gladly.", sr: "John 13:14–15", s: "I have washed your feet... do as I have done for you.", d: "Take your spouse's most-dreaded task today and do it start to finish.", j: "What does serving like Jesus look like in socks-on-the-floor, dishes-in-the-sink terms in your house?" },
+    { t: "Rest & Reward", r: 1, p: "Delight is not a luxury of marriage. It's maintenance.", sr: "Proverbs 5:18", s: "Rejoice in the spouse of your youth.", d: "Do something purely fun together today — zero productivity allowed. You pick it together.", j: "When did you last laugh together — hard? What got you there?" },
+    { t: "Controlled Heat", p: "Heat is part of forging — untended, it destroys; controlled, it strengthens.", sr: "Ephesians 4:26–27", s: "In your anger do not sin; don't let the sun go down on it.", d: "Settle every irritation before bed tonight: name it gently, or drop it honestly. Nothing goes underground.", j: "Which conflicts in your house tend to go underground instead of getting resolved?" },
+    { t: "Drop the Ledger", p: "A record of wrongs is a weapon you're saving. Love disarms on purpose.", sr: "1 Corinthians 13:5", s: "Love keeps no record of wrongs.", d: "Pick one old grievance you still revisit. Retire it formally — write it on paper, pray over it, and tear it up.", j: "What has carrying that record cost you? What might dropping it cost your pride?" },
+    { t: "First to the Anvil", p: "Reconciliation belongs to whoever moves first. Go first.", sr: "Matthew 5:23–24", s: "Leave your gift at the altar; first be reconciled.", d: "Apologize today for something real — no “but,” no explanation stapled to it. Just the apology.", j: "Why is going first so hard for you?" },
+    { t: "The Quench", p: "Forgiveness is the water that keeps hot steel from cracking.", sr: "Colossians 3:13", s: "Forgive as the Lord forgave you.", d: "Say the words “I forgive you” to your spouse for something — or ask them, “Is there anything you need me to forgive?”", j: "Is there a forgiveness you've spoken but not yet meant? What would it take to mean it?" },
+    { t: "Under Pressure", p: "Anyone is gentle when it's easy. Tempered steel is proven under pressure.", sr: "Proverbs 15:1", s: "A gentle answer turns away wrath.", d: "The next time you're provoked today — by anyone — answer with deliberate softness, and let your spouse witness it.", j: "Who taught you how to fight? Is their way working for your marriage?" },
+    { t: "Reinforce the Weld", p: "You cannot pray sincerely for someone and stay hard toward them.", sr: "Job 42:10", s: "The Lord restored Job after he prayed for his friends.", d: "Pray for your spouse by name for ten full minutes — their burdens and their dreams, not their faults.", j: "How did praying for them change how you saw them today?" },
+    { t: "Inspect the Blade", r: 1, p: "A smith inspects his own work. Examination isn't shame — it's craftsmanship.", sr: "2 Corinthians 13:5", s: "Examine yourselves.", d: "Ask your spouse: “What's one thing I do that wounds you?” Then say only “Thank you for telling me.” No defense.", j: "What did they say? What will you do about it?" },
+    { t: "One Piece of Steel", p: "A weld isn't two pieces held together — it's one piece that can't remember being two.", sr: "Genesis 2:24", s: "The two become one flesh.", d: "Find one thing still labeled “mine and yours” in your life — money, plans, friends, a room — and make it “ours” today.", j: "Where are you still living like two singles under one roof?" },
+    { t: "Shared Blueprint", p: "Two people can't forge one thing without one drawing.", sr: "Amos 3:3", s: "Can two walk together unless they have agreed to do so?", d: "Dream together for 20 minutes — one year out, five years out. Write down three shared hopes where you'll both see them.", j: "Which shared hope stirs you most? What's the first step toward it?" },
+    { t: "Pray as One", p: "Praying together is the most exposed you will ever be with your clothes on. That's why it welds so deep.", sr: "Matthew 18:19–20", s: "Where two agree, He is there with them.", d: "Pray out loud together tonight — even two minutes. Hold hands. Take turns. Amen.", j: "Why does praying together feel more vulnerable than almost anything else?" },
+    { t: "The Locked Door", p: "Every forge has walls. What's sacred must also be protected.", sr: "Song of Songs 2:15", s: "Catch the little foxes that ruin the vineyard.", d: "Together, name one “little fox” nibbling your marriage — a screen, a schedule, a comparison, an old flame's follow — and shut its door today.", j: "What gets your best attention that should never outrank your spouse?" },
+    { t: "Body & Warmth", p: "God designed marriage with a fireplace in it. Tend it without agenda.", sr: "1 Corinthians 7:3–5", s: "Belong to one another; do not deprive each other.", d: "Initiate affection today with no goal beyond closeness — hold, kiss, linger. Warmth for its own sake.", j: "What does physical closeness communicate between you that words can't?" },
+    { t: "In the Same Boat", p: "The problem is the enemy. Your spouse is the crew.", sr: "Ecclesiastes 4:12", s: "Though one may be overpowered, two can defend themselves.", d: "Pick one current stressor — money, a kid, a deadline, a house issue — and make a battle plan against it together, shoulder to shoulder.", j: "When did you last genuinely feel like teammates? What made it feel that way?" },
+    { t: "Keep the Home Fire", r: 1, p: "A house is where a marriage lives. Bless the place that holds the fire.", sr: "Joshua 24:15", s: "As for me and my house, we will serve the Lord.", d: "Do one small thing together to bless your home — reset a neglected corner, frame a photo, put a verse on the wall.", j: "What do you want people to feel when they walk into your home? What do you feel?" },
+    { t: "First Love", p: "The story of how it started is fuel for how it continues. Retell it.", sr: "Revelation 2:4–5", s: "Return to the love you had at first.", d: "Tell your spouse the story of the moment you knew — with details. Where you were, what they wore, what it did to you.", j: "Write the story down the way you'd want your grandchildren to read it." },
+    { t: "The Study of Them", p: "Your spouse is deep water. Curiosity is how love keeps drawing it up.", sr: "Proverbs 20:5", s: "The purposes of a heart are deep waters; one with insight draws them out.", d: "Tonight, ask your spouse three questions you've never asked — or haven't asked in years. Fears, dreams, favorites. Dig.", j: "What did you learn about the person you thought you fully knew?" },
+    { t: "Public Honor", p: "Honor isn't a feeling — it's a display. Let them be seen the way you see them.", sr: "1 Peter 3:7 · Song of Songs 4:7", s: "Live with honor; “you are altogether beautiful.”", d: "Take your spouse somewhere they're visibly honored — the date they'd pick, and dress like it matters. If tonight's impossible, book it today for this week.", j: "When did dating each other stop being automatic — and what restarted tonight?" },
+    { t: "Written in Steel", p: "Spoken words warm; written words last.", sr: "Proverbs 25:11", s: "A word fitly spoken is like apples of gold in settings of silver.", d: "Write your spouse a real letter — what you see in them, what you'd choose again — then hand it to them tonight and stay while they read it.", j: "Copy one line from your letter here, and say why it's true." },
+    { t: "Grateful Inventory", p: "Gratitude spoken out loud is polish on the blade. Unspoken, it tarnishes.", sr: "1 Thessalonians 5:18", s: "Give thanks in all circumstances.", d: "Send your spouse three specific thank-you messages spread through the day — morning, midday, night.", j: "List ten things about your spouse you're grateful for. Don't stop until you hit ten." },
+    { t: "Cover Them", p: "Love never uses its inside knowledge as ammunition or entertainment.", sr: "1 Peter 4:8", s: "Love covers over a multitude of sins.", d: "Retire one joke, story, or complaint about your spouse that you bring out in company. Permanently.", j: "Does your spouse feel safer or smaller in a room because of how you talk? Be honest." },
+    { t: "Sharpen & Shine", r: 1, p: "Iron sharpens iron — a marriage should make both people more, not less.", sr: "Proverbs 27:17", s: "As iron sharpens iron, so one person sharpens another.", d: "Each of you name one way you want to grow in the next year — and one way you'll help the other get there.", j: "What has this fire burned off of you in the last five weeks?" },
+    { t: "The Unbreakable Vow", p: "A contract protects you from each other. A covenant binds you to each other. You made a covenant.", sr: "Malachi 2:14–15 · Matthew 19:6", s: "The Lord is witness to the covenant; let no one separate.", d: "Find your wedding vows and re-read them together tonight. Can't find them? Write down what you remember promising.", j: "Which vow costs you the most right now? Which one has carried you?" },
+    { t: "Renew the Vow", p: "The vows you made were for a person who no longer fully exists — you've both grown. Vow again, on purpose, for this season.", sr: "Ruth 1:16–17", s: "Where you go I will go; your people will be my people.", d: "Write one new vow for the next season of your marriage and speak it to your spouse face to face.", j: "Your new vow — and why now?" },
+    { t: "The Third Strand", p: "Two strands fray. The cord that holds is braided with a third. Build God into the rhythm, not the emergencies.", sr: "Ecclesiastes 4:12", s: "A cord of three strands is not quickly broken.", d: "Choose one rhythm you'll keep after Day 40 — weekly prayer together, a monthly date, a nightly check-in — and put it in the calendar right now.", j: "Which rhythm will actually hold heat in your real life — and what will try to steal it?" },
+    { t: "Pass the Flame", p: "A forged marriage isn't just for you. Somebody is watching yours to learn what's possible.", sr: "John 13:35", s: "By this everyone will know: your love.", d: "Encourage another couple today. Send the word, make the invite, share one thing these 40 days taught you.", j: "Who taught you marriage by how they lived? Who might be learning from yours?" },
+    { t: "Forged", p: "What's been forged isn't finished — it's ready. Ready for use, ready for weather, ready for years.", sr: "Philippians 1:6", s: "He who began a good work in you will carry it on to completion.", d: "Celebrate together tonight. Retell the best dare, toast each other, and thank God out loud for what He's forging.", j: "Read your Day 1 entry — the marriage you said you wanted. What's changed in 40 days? What's next?" }
+  ];
+
+  var __mf = null, __mfDays = [], __mfLoaded = false, __mfInviteOpen = false;
+  function mfMe() { return ((__currentUser && __currentUser.email) || "").toLowerCase(); }
+  function mfIsInviter() { return !!(__mf && (__mf.a_email || "").toLowerCase() === mfMe()); }
+  function mfSpouseEmail() { return mfIsInviter() ? __mf.b_email : __mf.a_email; }
+  function mfSpouseName() { var n = mfIsInviter() ? __mf.b_name : __mf.a_name; return n || mfSpouseEmail(); }
+  function mfRowsFor(email) { return __mfDays.filter(function (r) { return (r.email || "").toLowerCase() === (email || "").toLowerCase() && r.dare_done; }); }
+  function mfDoneCount(email) { return mfRowsFor(email).length; }
+  function mfCurrentDay(email) { return Math.min(40, mfDoneCount(email) + 1); }
+  function mfDidToday() {
+    var t = dayKey(new Date());
+    return mfRowsFor(mfMe()).some(function (r) { return r.created_at && dayKey(new Date(r.created_at)) === t; });
+  }
+
+  async function fetchMarriageFromCloud() {
+    if (!__currentUser || !sb) { __mf = null; __mfDays = []; __mfLoaded = false; return; }
+    try {
+      // RLS returns only marriages the signed-in user belongs to.
+      const { data, error } = await sb.from("marriages").select("*").order("invited_at", { ascending: false }).limit(1);
+      if (error) throw error;
+      __mf = (data && data[0]) || null;
+      if (__mf) {
+        const { data: days, error: e2 } = await sb.from("marriage_days").select("*").eq("marriage_id", __mf.id);
+        if (e2) throw e2;
+        __mfDays = days || [];
+      } else { __mfDays = []; }
+      __mfLoaded = true;
+    } catch (err) { console.error("loadMarriage failed:", err); __mfLoaded = true; }
+    renderMarriageCard();
+    renderMarriageToday();
+  }
+
+  // ---- Journey tab hub ----
+  function renderMarriageCard() {
+    var body = document.getElementById("marriageBody");
+    if (!body) return;
+    var html = "";
+    if (!__mfLoaded) {
+      html = '<div class="gl-empty">Loading…</div>';
+    } else if (!__mf && !__mfInviteOpen) {
+      html = '<p class="mf-vow">A husband and a wife. Forty days. One fire.</p>' +
+        '<p class="mf-lede">The Marriage Forge becomes your daily forge: each day a principle, a scripture, and one dare toward your spouse — with a private journal and a note only they can see. When you choose this path, it is the path.</p>' +
+        '<button type="button" class="mf-btn" id="mfBeginBtn">Begin the covenant</button>';
+    } else if (!__mf && __mfInviteOpen) {
+      html = '<p class="mf-lede">Invite your spouse by the email they use for LIVN FORGE. The forge begins the day they accept — and one subscription covers you both.</p>' +
+        '<input class="gl-field" id="mfInviteEmail" type="email" autocapitalize="off" placeholder="spouse@email.com">' +
+        '<button type="button" class="mf-btn" id="mfInviteSend">Send the invitation</button>' +
+        '<button type="button" class="mf-cancel" id="mfInviteCancel">Not now</button>';
+    } else if (__mf.status === "pending" && mfIsInviter()) {
+      html = '<p class="mf-lede">Your covenant invitation is waiting for <b>' + escapeHtml(mfSpouseEmail()) + '</b>. The forge lights the day they accept.</p>' +
+        '<button type="button" class="mf-cancel" id="mfCancelInvite">Withdraw the invitation</button>';
+    } else if (__mf.status === "pending") {
+      html = '<p class="mf-vow">' + escapeHtml(__mf.a_name || __mf.a_email) + ' has asked you to forge your marriage.</p>' +
+        '<p class="mf-lede">Forty days. One dare a day toward each other. A private journal for you, a daily note for them. When you accept, the Marriage Forge becomes your daily mission — for both of you.</p>' +
+        '<button type="button" class="mf-btn" id="mfAcceptBtn">Accept & commit</button>' +
+        '<button type="button" class="mf-cancel" id="mfDeclineBtn">Decline</button>';
+    } else {
+      var meDone = mfDoneCount(mfMe()), spDone = mfDoneCount(mfSpouseEmail());
+      var forged = meDone >= 40 && spDone >= 40;
+      html = (forged ? '<div class="mf-done-badge">FORGED — all 40 days, both of you 🎉</div>' : '') +
+        '<div class="mf-pair">' +
+        '<div class="mf-person"><div class="mf-p-top"><span>You</span><span class="mf-p-day">' + (meDone >= 40 ? "40 of 40 ✓" : "Day " + mfCurrentDay(mfMe()) + " · " + meDone + " of 40") + '</span></div><div class="mf-bar"><span style="width:' + Math.round(meDone / 40 * 100) + '%"></span></div></div>' +
+        '<div class="mf-person"><div class="mf-p-top"><span>' + escapeHtml(mfSpouseName()) + '</span><span class="mf-p-day">' + (spDone >= 40 ? "40 of 40 ✓" : "Day " + mfCurrentDay(mfSpouseEmail()) + " · " + spDone + " of 40") + '</span></div><div class="mf-bar"><span style="width:' + Math.round(spDone / 40 * 100) + '%"></span></div></div>' +
+        '</div>' +
+        (forged ? '' : '<button type="button" class="mf-btn ghost" id="mfGoToday">Go to today’s forge</button>') +
+        '<button type="button" class="mf-cancel" id="mfEndBtn">End the covenant</button>';
+    }
+    body.innerHTML = html;
+    var b1 = document.getElementById("mfBeginBtn"); if (b1) b1.addEventListener("click", function () { __mfInviteOpen = true; renderMarriageCard(); });
+    var b2 = document.getElementById("mfInviteCancel"); if (b2) b2.addEventListener("click", function () { __mfInviteOpen = false; renderMarriageCard(); });
+    var b3 = document.getElementById("mfInviteSend"); if (b3) b3.addEventListener("click", mfSendInvite);
+    var b4 = document.getElementById("mfCancelInvite"); if (b4) b4.addEventListener("click", function () { mfEndCovenant("Withdraw this invitation?"); });
+    var b5 = document.getElementById("mfAcceptBtn"); if (b5) b5.addEventListener("click", mfAccept);
+    var b6 = document.getElementById("mfDeclineBtn"); if (b6) b6.addEventListener("click", function () { mfEndCovenant("Decline this invitation?"); });
+    var b7 = document.getElementById("mfGoToday"); if (b7) b7.addEventListener("click", function () {
+      showTab("today");
+      var c = document.getElementById("mfTodayCard");
+      if (c) setTimeout(function () { c.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
+    });
+    var b8 = document.getElementById("mfEndBtn"); if (b8) b8.addEventListener("click", function () { mfEndCovenant("End the covenant and erase the forge? Journal entries stay in each of your journals. This can't be undone."); });
+  }
+  async function mfSendInvite() {
+    var inp = document.getElementById("mfInviteEmail");
+    var email = ((inp && inp.value) || "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { if (typeof showToast === "function") showToast("Enter your spouse's email."); return; }
+    if (email === mfMe()) { if (typeof showToast === "function") showToast("That's your own email."); return; }
+    try {
+      const { data, error } = await sb.from("marriages").insert({
+        a_email: mfMe(), b_email: email,
+        a_name: (typeof getName === "function" && getName()) || null,
+        status: "pending",
+      }).select().single();
+      if (error) throw error;
+      __mf = data; __mfInviteOpen = false;
+      renderMarriageCard();
+      if (typeof showToast === "function") showToast("Invitation sent. Tell " + email + " to check their Journey tab.");
+    } catch (err) { console.error("invite failed:", err); if (typeof showToast === "function") showToast("Couldn't send the invitation."); }
+  }
+  async function mfAccept() {
+    try {
+      var fields = { status: "active", b_name: (typeof getName === "function" && getName()) || null, committed_at: new Date().toISOString(), start_date: dayKey(new Date()) };
+      const { error } = await sb.from("marriages").update(fields).eq("id", __mf.id);
+      if (error) throw error;
+      Object.assign(__mf, fields);
+      renderMarriageCard(); renderMarriageToday();
+      if (typeof showToast === "function") showToast("The forge is lit. Day 1 is on your Today tab. 🔥");
+    } catch (err) { console.error("accept failed:", err); if (typeof showToast === "function") showToast("Couldn't accept right now."); }
+  }
+  async function mfEndCovenant(msg) {
+    if (!window.confirm(msg)) return;
+    try {
+      const { error } = await sb.from("marriages").delete().eq("id", __mf.id);
+      if (error) throw error;
+      __mf = null; __mfDays = [];
+      renderMarriageCard(); renderMarriageToday();
+    } catch (err) { console.error("end covenant failed:", err); }
+  }
+
+  // ---- Today tab takeover ----
+  function renderMarriageToday() {
+    var card = document.getElementById("mfTodayCard");
+    var mission = document.getElementById("missionCard");
+    if (!card) return;
+    var active = __mf && __mf.status === "active";
+    if (!active) {
+      card.style.display = "none"; card.dataset.mfkey = "";
+      if (mission) mission.style.display = "";
+      return;
+    }
+    if (mission) mission.style.display = "none";
+    card.style.display = "";
+    var meDone = mfDoneCount(mfMe());
+    var day = mfCurrentDay(mfMe());
+    var finished = meDone >= 40;
+    var didToday = mfDidToday();
+    var key = day + ":" + (finished ? "f" : didToday ? "d" : "o");
+    if (card.dataset.mfkey === key) return; // don't wipe half-typed reflections on re-render
+    card.dataset.mfkey = key;
+    var plan = MF_PLAN[day - 1];
+    var html = '<div class="mf-day-label">The Marriage Forge · Day ' + day + ' of 40</div>';
+    if (finished) {
+      html += '<div class="mf-day-title">Forged. 🔥</div>' +
+        '<p class="mf-principle">All 40 days. What’s been forged isn’t finished — it’s ready. Keep the rhythm you chose on Day 38.</p>' + mfSpouseNoteHtml(40);
+    } else if (didToday) {
+      html += '<div class="mf-done-badge">Day ' + meDone + ' complete ✓</div>' +
+        '<p class="mf-principle" style="text-align:center;">The fire is banked. Day ' + Math.min(40, meDone + 1) + ' opens tomorrow.</p>' + mfSpouseNoteHtml(meDone);
+    } else {
+      html += '<div class="mf-day-title">' + escapeHtml(plan.t) + '</div>' +
+        '<p class="mf-principle">' + escapeHtml(plan.p) + '</p>' +
+        '<div class="mf-scripture"><b>' + escapeHtml(plan.sr) + '</b> — ' + escapeHtml(plan.s) + '</div>' +
+        '<div class="mf-dare"><div class="mf-dare-lbl">Today’s dare</div><div class="mf-dare-txt">' + escapeHtml(plan.d) + '</div></div>' +
+        '<div class="mf-check" id="mfDareCheck"><span class="gl-box" id="mfDareBox"></span><span class="mf-check-t">I did the dare</span></div>' +
+        '<div class="mf-wlbl"><b>To yourself</b> — private, saved to your journal. ' + escapeHtml(plan.j) + '</div>' +
+        '<textarea class="mf-ta" id="mfPrivate"></textarea>' +
+        '<div class="mf-wlbl"><b>To ' + escapeHtml(mfSpouseName()) + '</b> — they’ll see this note.</div>' +
+        '<textarea class="mf-ta" id="mfToSpouse"></textarea>' +
+        '<div style="height:12px;"></div>' +
+        '<button type="button" class="mf-btn" id="mfSaveDay">Seal Day ' + day + ' ✓</button>';
+    }
+    card.innerHTML = html;
+    var chk = document.getElementById("mfDareCheck");
+    if (chk) chk.addEventListener("click", function () {
+      var box = document.getElementById("mfDareBox");
+      box.classList.toggle("mf-on");
+      box.innerHTML = box.classList.contains("mf-on") ? glCheckSvg() : "";
+      box.style.background = box.classList.contains("mf-on") ? "linear-gradient(135deg, var(--accent-start), var(--accent-end))" : "";
+      box.style.borderColor = box.classList.contains("mf-on") ? "transparent" : "";
+    });
+    var save = document.getElementById("mfSaveDay");
+    if (save) save.addEventListener("click", function () { mfSealDay(day, save); });
+  }
+  function mfSpouseNoteHtml(nearDay) {
+    // Show the spouse's note for the same day if they've written it, otherwise their latest.
+    var rows = __mfDays.filter(function (r) { return (r.email || "").toLowerCase() !== mfMe() && r.note_to_spouse; });
+    if (!rows.length) return "";
+    var match = rows.find(function (r) { return r.day_number === nearDay; });
+    if (!match) { rows.sort(function (a, b) { return b.day_number - a.day_number; }); match = rows[0]; }
+    return '<div class="mf-spouse-note"><div class="mf-sn-from">From ' + escapeHtml(mfSpouseName()) + ' · their day ' + match.day_number + '</div>' +
+      '<div class="mf-sn-body">' + escapeHtml(match.note_to_spouse) + '</div></div>';
+  }
+  async function mfSealDay(day, btn) {
+    var box = document.getElementById("mfDareBox");
+    if (!box || !box.classList.contains("mf-on")) { if (typeof showToast === "function") showToast("Do the dare first — then check it off."); return; }
+    var privateTxt = (document.getElementById("mfPrivate") || {}).value || "";
+    var spouseTxt = (document.getElementById("mfToSpouse") || {}).value || "";
+    var plan = MF_PLAN[day - 1];
+    if (btn) { btn.disabled = true; btn.textContent = "Sealing…"; }
+    try {
+      const { data, error } = await sb.from("marriage_days").upsert({
+        marriage_id: __mf.id, email: mfMe(), day_number: day,
+        dare_done: true, note_to_spouse: spouseTxt.trim() || null,
+      }, { onConflict: "marriage_id,email,day_number" }).select().single();
+      if (error) throw error;
+      __mfDays = __mfDays.filter(function (r) { return !((r.email || "").toLowerCase() === mfMe() && r.day_number === day); });
+      __mfDays.push(data);
+      if (privateTxt.trim()) {
+        try {
+          await insertEntryToCloud({
+            type: "marriage", typeTitle: "Marriage Forge · Day " + day + " — " + plan.t,
+            name: (typeof getName === "function" && getName()) || "",
+            date: new Date().toLocaleDateString(), points: 15,
+            savedAt: new Date().toISOString(),
+            answers: [{ q: plan.j, a: privateTxt.trim() }, { q: "The dare", a: plan.d }],
+          });
+          if (typeof renderScore === "function") try { renderScore(); } catch (e) {}
+        } catch (e) { console.error("marriage journal save failed:", e); }
+      }
+      renderMarriageToday(); renderMarriageCard();
+      if (typeof showToast === "function") showToast("Day " + day + " sealed. 🔥");
+    } catch (err) {
+      console.error("seal day failed:", err);
+      if (btn) { btn.disabled = false; btn.textContent = "Seal Day " + day + " ✓"; }
+      if (typeof showToast === "function") showToast("Couldn't save — check your connection and try again.");
+    }
+  }
+
   // ===== Goals — weekly / monthly / yearly goals with an AI-built plan =====
   // A goal's plan (milestones + recurring daily actions) is drafted by the
   // goal-planner edge function, reviewed/edited by the user, then stored on the
@@ -7570,6 +7876,7 @@
         await migrateLocalEntriesIfNeeded();
         await fetchEntriesFromCloud();
         fetchGoalsFromCloud();
+        fetchMarriageFromCloud();
         hydrateCirclesFromCloud();
         updateCount();
         renderQuestions(currentType);

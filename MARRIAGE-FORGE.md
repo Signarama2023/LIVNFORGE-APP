@@ -8,6 +8,15 @@ The arc follows the forge: you tend the fire, strike while it's hot, temper the 
 
 > Inspired by the *format* popularized by The Love Dare / Fireproof (principle + scripture + daily dare + journal). All content below is original.
 
+## Originality diligence (verified 2026-07-12)
+
+Compared day-by-day against The Love Dare's published 40-dare list:
+- **Different spine**: their sequence follows the 1 Corinthians 13 love-attributes ("Love is patient/kind/not selfish…"); ours follows an original forge-process arc (tend → strike → temper → weld → polish → seal) with original titles.
+- **No verbatim text** anywhere; all principles, dares, and prompts written fresh.
+- **Concept cousins are universal practices** (a no-criticism day, praying for your spouse, apology/forgiveness days, ending with vows) — unprotectable ideas found across all Christian marriage material; our execution and wording differ throughout.
+- **Adjusted in this pass**: Day 32's dare originally ended "leave it where they'll find it," which echoed their Day 39 letter mechanic — changed to hand-delivering the letter and staying while they read it.
+- Days with no counterpart in their list include: First Words, Small Kindling's "don't point it out," Speak Them Well, Under Pressure, One Piece of Steel, The Locked Door ("little foxes"), In the Same Boat, Keep the Home Fire, The Study of Them, Cover Them, The Third Strand, Pass the Flame, Forged.
+
 ---
 
 ## Week 1 — Tend the Fire *(attention & words)*
@@ -217,7 +226,7 @@ Journal: When did dating each other stop being automatic — and what restarted 
 **Day 32 · Written in Steel**
 Principle: Spoken words warm; written words last.
 Scripture: Proverbs 25:11 — a word fitly spoken is like apples of gold in settings of silver.
-Dare: Write your spouse a real letter — what you see in them, what you'd choose again — and leave it where they'll find it.
+Dare: Write your spouse a real letter — what you see in them, what you'd choose again — then hand it to them tonight and stay while they read it.
 Journal: Copy one line from your letter here, and say why it's true.
 
 **Day 33 · Grateful Inventory**
