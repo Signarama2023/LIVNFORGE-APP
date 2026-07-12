@@ -7329,6 +7329,43 @@
     } catch (err) { console.error("loadMarriage failed:", err); __mfLoaded = true; }
     renderMarriageCard();
     renderMarriageToday();
+    mfEnsureCircle(); // both in the forge -> make sure the Marriage Circle exists and I'm in it
+  }
+
+  // When both spouses are in the forge, they get a private Marriage Circle chat
+  // — auto-created once, joined by each member on their own device (members can
+  // only insert themselves under circle RLS). The code is stored on the
+  // marriage row; a conditional update + re-read settles the create race.
+  async function mfEnsureCircle() {
+    if (!__mf || __mf.status !== "active" || !mfSpouseJoined() || !sb || !__currentUser) return;
+    try {
+      var code = __mf.circle_code;
+      if (!code) {
+        code = "MF-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+        await sb.from("prayer_circles").insert({
+          code: code, name: "Marriage Forge", type: "prayer",
+          focus: "Forging our marriage — 40 days, one fire.",
+          created_by: currentEmail(),
+        });
+        const { error } = await sb.from("marriages").update({ circle_code: code }).eq("id", __mf.id).is("circle_code", null);
+        if (error) throw error;
+        const { data } = await sb.from("marriages").select("circle_code").eq("id", __mf.id).single();
+        if (data && data.circle_code) code = data.circle_code; // spouse may have won the race
+        __mf.circle_code = code;
+      }
+      await sb.from("prayer_circle_members").upsert(
+        { code: code, email: currentEmail(), name: (typeof getName === "function" && getName()) || "" },
+        { onConflict: "code,email", ignoreDuplicates: true }
+      );
+      if (typeof addCircleCode === "function") addCircleCode(code);
+      renderMarriageToday(); renderMarriageCard();
+    } catch (e) { console.error("marriage circle setup failed:", e); }
+  }
+  function mfOpenCircle() {
+    if (!__mf || !__mf.circle_code) return;
+    pcOpen = __mf.circle_code;
+    showTab("circles");
+    window.scrollTo(0, 0);
   }
 
   // ---- Journey tab hub ----
@@ -7375,6 +7412,7 @@
           '<button type="button" class="mf-btn ghost" id="mfInviteSend">Invite your spouse</button>';
       }
       html += (forged ? '' : '<div style="height:8px;"></div><button type="button" class="mf-btn ghost" id="mfGoToday">Go to today’s forge</button>') +
+        (joined && __mf.circle_code ? '<div style="height:8px;"></div><button type="button" class="mf-btn ghost" id="mfHubChat">💬 Marriage Circle</button>' : '') +
         '<button type="button" class="mf-cancel" id="mfEndBtn">End the forge</button>';
     }
     body.innerHTML = html;
@@ -7390,7 +7428,8 @@
       var c = document.getElementById("mfTodayCard");
       if (c) setTimeout(function () { c.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
     });
-    var b8 = document.getElementById("mfEndBtn"); if (b8) b8.addEventListener("click", function () { mfEndCovenant("End the forge and erase its progress? Journal entries stay in your journal. This can't be undone."); });
+    var b8 = document.getElementById("mfEndBtn"); if (b8) b8.addEventListener("click", function () { mfEndCovenant("End the forge and erase its progress? Journal entries stay in your journal, and your Marriage Circle chat stays in Circles. This can't be undone."); });
+    var b9 = document.getElementById("mfHubChat"); if (b9) b9.addEventListener("click", mfOpenCircle);
   }
   // Start the forge — solo (email null) or with an invitation out. Either way the
   // caller's 40 days begin today.
@@ -7436,6 +7475,7 @@
       const { error } = await sb.from("marriages").update(fields).eq("id", __mf.id);
       if (error) throw error;
       Object.assign(__mf, fields);
+      await mfEnsureCircle(); // both in -> spin up the Marriage Circle chat
       renderMarriageCard(); renderMarriageToday();
       if (typeof showToast === "function") showToast("The forge is lit. Day 1 is on your Today tab. 🔥");
     } catch (err) { console.error("accept failed:", err); if (typeof showToast === "function") showToast("Couldn't accept right now."); }
@@ -7478,17 +7518,20 @@
     var day = mfCurrentDay(mfMe());
     var finished = meDone >= 40;
     var didToday = mfDidToday();
-    var key = day + ":" + (finished ? "f" : didToday ? "d" : "o") + ":" + (mfSpouseJoined() ? "j" : "s") + ":" + (typeof BUILD !== "undefined" ? BUILD : "");
+    var key = day + ":" + (finished ? "f" : didToday ? "d" : "o") + ":" + (mfSpouseJoined() ? "j" : "s") + ":" + (typeof BUILD !== "undefined" ? BUILD : "") + ":" + (__mf.circle_code || "");
     if (card.dataset.mfkey === key) return; // don't wipe half-typed reflections on re-render
     card.dataset.mfkey = key;
     var plan = mfDay(day);
+    var chatBtn = (__mf.circle_code && mfSpouseJoined())
+      ? '<div style="height:10px;"></div><button type="button" class="mf-btn ghost" id="mfChatBtn">💬 Talk it through — Marriage Circle</button>'
+      : "";
     var html = '<div class="mf-day-label">The Marriage Forge · Day ' + day + ' of 40</div>';
     if (finished) {
       html += '<div class="mf-day-title">Forged. 🔥</div>' +
-        '<p class="mf-principle">All 40 days. What’s been forged isn’t finished — it’s ready. Keep the rhythm you chose on Day 38.</p>' + mfSpouseNoteHtml(40);
+        '<p class="mf-principle">All 40 days. What’s been forged isn’t finished — it’s ready. Keep the rhythm you chose on Day 38.</p>' + mfSpouseNoteHtml(40) + chatBtn;
     } else if (didToday) {
       html += '<div class="mf-done-badge">Day ' + meDone + ' complete ✓</div>' +
-        '<p class="mf-principle" style="text-align:center;">The fire is banked. Day ' + Math.min(40, meDone + 1) + ' opens tomorrow.</p>' + mfSpouseNoteHtml(meDone);
+        '<p class="mf-principle" style="text-align:center;">The fire is banked. Day ' + Math.min(40, meDone + 1) + ' opens tomorrow.</p>' + mfSpouseNoteHtml(meDone) + chatBtn;
     } else {
       html += '<div class="mf-day-title">' + escapeHtml(plan.t) + '</div>' +
         '<p class="mf-principle">' + escapeHtml(plan.p) + '</p>' +
@@ -7502,9 +7545,11 @@
           : '<div class="mf-wlbl"><b>To your spouse</b> — saved for them; they’ll see it when they join the forge.</div>') +
         '<textarea class="mf-ta" id="mfToSpouse"></textarea>' +
         '<div style="height:12px;"></div>' +
-        '<button type="button" class="mf-btn" id="mfSaveDay">Seal Day ' + day + ' ✓</button>';
+        '<button type="button" class="mf-btn" id="mfSaveDay">Seal Day ' + day + ' ✓</button>' + chatBtn;
     }
     card.innerHTML = html;
+    var cbtn = document.getElementById("mfChatBtn");
+    if (cbtn) cbtn.addEventListener("click", mfOpenCircle);
     var chk = document.getElementById("mfDareCheck");
     if (chk) chk.addEventListener("click", function () {
       var box = document.getElementById("mfDareBox");
@@ -7540,6 +7585,17 @@
       if (error) throw error;
       __mfDays = __mfDays.filter(function (r) { return !((r.email || "").toLowerCase() === mfMe() && r.day_number === day); });
       __mfDays.push(data);
+      // The conversation follows the forge: post the sealed day (and the note to
+      // your spouse, if written) into the Marriage Circle chat.
+      if (__mf.circle_code && mfSpouseJoined()) {
+        try {
+          await sb.from("circle_messages").insert({
+            code: __mf.circle_code, email: mfMe(),
+            name: (typeof getName === "function" && getName()) || "",
+            body: "🔥 Day " + day + " sealed — " + plan.t + (spouseTxt.trim() ? "\n" + spouseTxt.trim() : ""),
+          });
+        } catch (e) { console.error("marriage circle post failed:", e); }
+      }
       if (privateTxt.trim()) {
         try {
           await insertEntryToCloud({

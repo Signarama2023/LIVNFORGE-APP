@@ -25,8 +25,11 @@ create table if not exists public.marriages (
   status       text not null default 'pending' check (status in ('pending','active')),
   invited_at   timestamptz default now(),
   committed_at timestamptz,     -- when the invited spouse accepted
-  start_date   date             -- Day 1 of the Marriage Forge (set on accept)
+  start_date   date,            -- Day 1 of the Marriage Forge (set on accept)
+  circle_code  text             -- the couple's auto-created Marriage Circle chat
 );
+-- For databases created before circle_code existed.
+alter table public.marriages add column if not exists circle_code text;
 
 create index if not exists marriages_a_idx on public.marriages (lower(a_email));
 create index if not exists marriages_b_idx on public.marriages (lower(b_email));
