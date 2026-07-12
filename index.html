@@ -3833,23 +3833,27 @@
   function trialDaysLeft() { return Math.max(0, Math.ceil(trialMsLeft() / 86400000)); }
 
   // ----- Paywall / subscription gate -----
+  // True once we know the user is entitled by something BESIDES the 7-day trial
+  // (Apple sub, lifetime comp, spouse, Stripe) — used to hide the trial banner
+  // for people who've already redeemed or been comped.
+  var __paidEntitled = false;
   async function isEntitled() {
     if (!PAYWALL_ENABLED) return true;            // dormant: full access for everyone
     if (!sb || !__currentUser) return false;
     if (OWNER_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // owner free pass
     if (COMP_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // friends & family free access
+    if (IN_NATIVE_APP) { try { if (await RC.isEntitledIAP()) { __paidEntitled = true; return true; } } catch (e) {} } // in-app purchase buyers (incl. redeemed offer codes)
+    // Lifetime / complimentary members (granted by email from the admin card).
+    try { const { data } = await sb.rpc("has_comp_access"); if (data === true) { __paidEntitled = true; return true; } } catch (e) {}
     if (inTrial()) return true;                   // everyone gets a free 7-day trial, no card
     if (IN_NATIVE_APP && BETA_OPEN_ACCESS) return true; // beta: all TestFlight testers get full access
-    if (IN_NATIVE_APP) { try { if (await RC.isEntitledIAP()) return true; } catch (e) {} } // in-app purchase buyers
-    // Lifetime / complimentary members (granted by email from the admin card).
-    try { const { data } = await sb.rpc("has_comp_access"); if (data === true) return true; } catch (e) {}
     // Spouse rides free: an active marriage partner's live subscription covers both.
-    try { const { data } = await sb.rpc("has_marriage_entitlement"); if (data === true) return true; } catch (e) {}
+    try { const { data } = await sb.rpc("has_marriage_entitlement"); if (data === true) { __paidEntitled = true; return true; } } catch (e) {}
     // Ask Stripe (via the edge function) for live status; it also syncs the DB row.
     // (Web subscribers stay entitled inside the app too — no double charge.)
     try {
       const { data, error } = await sb.functions.invoke("check-subscription", { body: {} });
-      if (!error && data && typeof data.entitled === "boolean") return data.entitled;
+      if (!error && data && typeof data.entitled === "boolean") { if (data.entitled) __paidEntitled = true; return data.entitled; }
     } catch (e) { /* fall through to cached row */ }
     // Fallback: read the last-synced row if the function is unreachable.
     try {
@@ -3857,6 +3861,7 @@
       if (!data) return false;
       const ok = data.status === "active" || data.status === "trialing";
       const notExpired = !data.current_period_end || new Date(data.current_period_end) > new Date();
+      if (ok && notExpired) __paidEntitled = true;
       return ok && notExpired;
     } catch (e) { return false; }
   }
@@ -6821,8 +6826,10 @@
     if (!el) return;
     const email = (__currentUser && __currentUser.email || "").toLowerCase();
     const comped = OWNER_EMAILS.includes(email) || COMP_EMAILS.includes(email);
-    // Only during an active free trial, and only for people who'd actually be gated.
-    if (!PAYWALL_ENABLED || comped || !inTrial()) { el.style.display = "none"; return; }
+    // Only during an active free trial, and only for people who'd actually be
+    // gated — never for someone already covered by a redeemed code, lifetime
+    // comp, spouse, or paid subscription.
+    if (!PAYWALL_ENABLED || comped || __paidEntitled || !inTrial()) { el.style.display = "none"; return; }
     const d = trialDaysLeft();
     const left = d <= 1 ? "Last day of your free trial" : d + " days left in your free trial";
     el.style.display = "flex";
