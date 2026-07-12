@@ -5922,10 +5922,14 @@
       // the plain ?code= form lands on the wrong screen and is the #1 reason redeems fail.
       const url = "https://apps.apple.com/redeem?ctx=offercodes&id=6776882761&code=" + encodeURIComponent(code);
       if (data.alreadyClaimed) showToast("Here's the code you already gifted — share it again.");
+      // Redeem-first flow: claiming the offer before installing means the free
+      // year is already active the moment they open the app — no paywall.
       const text = "Here's a free year of LIVN FORGE — a daily faith + fitness journal to help you live on purpose.\n\n" +
-        "1) Download the app: https://apps.apple.com/app/id6776882761\n" +
-        "2) Open this link on your iPhone to redeem: " + url + "\n   (or in the app, tap \"Have a code? Redeem it\" and enter)\n\n" +
-        "Code: " + code;
+        "Two quick steps, in this order:\n\n" +
+        "1) Redeem your free year FIRST — open this link on your iPhone and tap Redeem:\n" + url + "\n\n" +
+        "2) THEN download the app and create your account:\nhttps://apps.apple.com/app/id6776882761\n\n" +
+        "Because you redeemed first, your free year is already active when you open the app.\n\n" +
+        "Your code (if it asks): " + code;
       if (navigator.share) { try { await navigator.share({ title: "A free year of LIVN FORGE", text: text }); } catch (e) {} }
       else if (navigator.clipboard && navigator.clipboard.writeText) { try { await navigator.clipboard.writeText(text); showToast("Code copied: " + code); } catch (e) { showToast("Code: " + code); } }
       else { showToast("Code: " + code); }
