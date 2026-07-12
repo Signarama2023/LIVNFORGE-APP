@@ -7221,8 +7221,12 @@
   // Original content — format inspired by the classic 40-day marriage challenge
   // pattern; every principle, dare, and prompt is ours (see MARRIAGE-FORGE.md).
   var MF_PLAN = [
-    { t: "Light the Forge", p: "Nothing is forged by accident. Forty days of intention starts with saying it out loud.", sr: "Ecclesiastes 4:9–12", s: "Two are better than one; a cord of three strands is not quickly broken.", d: "Tell your spouse you're starting 40 days of intentionally forging your marriage — and ask them to hold you to it.", j: "What do you want your marriage to look like on Day 40? Write it down — Day 40 will ask you to read this." },
-    { t: "Guard the Coals", p: "Words either bank a fire or scatter it. One careless sentence can undo a warm week.", sr: "Proverbs 18:21", s: "The tongue holds the power of life and death.", d: "All day: no criticism, no sarcasm, no correcting your spouse. Speak only what builds, or hold it.", j: "What did you almost say today — and what did you say instead?" },
+    { t: "Light the Forge", p: "Nothing is forged by accident. Forty days of intention starts with saying it out loud.", sr: "Ecclesiastes 4:9–12", s: "Two are better than one; a cord of three strands is not quickly broken.", d: "Tell your spouse you're starting 40 days of intentionally forging your marriage — and ask them to hold you to it.", j: "What do you want your marriage to look like on Day 40? Write it down — Day 40 will ask you to read this.",
+      h: { p: "Nothing is forged by accident, and a man leads what he loves. Leading starts with going first — say it out loud." },
+      w: { p: "Nothing is forged by accident, and what a woman tends, flourishes. Tending starts with intention — say it out loud." } },
+    { t: "Guard the Coals", p: "Words either bank a fire or scatter it. One careless sentence can undo a warm week.", sr: "Proverbs 18:21", s: "The tongue holds the power of life and death.", d: "All day: no criticism, no sarcasm, no correcting your spouse. Speak only what builds, or hold it.", j: "What did you almost say today — and what did you say instead?",
+      h: { p: "Words either bank a fire or scatter it. Your words set the weather in your home — a husband's careless sentence lands heavier than he knows." },
+      w: { sr: "Proverbs 14:1", s: "The wise woman builds her house; the foolish tears it down with her own hands.", p: "Words either bank a fire or scatter it. A wife builds her house — or tears it down — one sentence at a time." } },
     { t: "Full Attention", p: "Presence is the rarest gift in your house. Attention is love made visible.", sr: "James 1:19", s: "Quick to listen, slow to speak.", d: "Give your spouse 15 undistracted minutes. Phone in another room, eyes up. Ask “How are you — really?” and only listen.", j: "What did you hear that you'd been missing?" },
     { t: "First Words", p: "The first minutes of the day set the temperature of the whole house.", sr: "Psalm 143:8", s: "Let the morning bring word of Your unfailing love.", d: "Make your first words to your spouse today warm on purpose — a greeting, a compliment, a thank-you — before any logistics or requests.", j: "How did the temperature of your home change today?" },
     { t: "Small Kindling", p: "Big fires are kept alive by small sticks. Grand gestures are rare; kindling is daily.", sr: "Galatians 5:13", s: "Serve one another humbly in love.", d: "Do one small, unasked act of service — their coffee, their chore, gas in their car — and don't point it out.", j: "What small thing does your spouse do regularly that you've stopped noticing?" },
@@ -7232,7 +7236,8 @@
     { t: "The Unseen Work", p: "The strongest welds are the ones nobody sees. Serve where only God is watching.", sr: "Matthew 6:3–4", s: "Give in secret, and your Father who sees in secret will reward you.", d: "Do something for your spouse today that they will never trace back to you.", j: "How does it feel to serve without collecting the credit?" },
     { t: "Strike the Iron", p: "Good intentions cool fast. The iron is hot now.", sr: "Proverbs 3:27–28", s: "Do not withhold good... do not say “come back tomorrow.”", d: "That thing you've been meaning to do for your spouse — the repair, the call, the errand, the conversation — do it today.", j: "What else have you been postponing in your marriage, and what's the real reason?" },
     { t: "Their Language", p: "Love isn't received in the form that's easiest for you to give — it's received in the form they hear.", sr: "Philippians 2:3–4", s: "Value others above yourselves, looking to their interests.", d: "Do one loving act today in the form your spouse most receives — words, help, time, touch, or a gift — even if it's not your native language.", j: "How does your spouse most naturally receive love? How do you? Are you speaking past each other?" },
-    { t: "Speak Them Well", p: "Your spouse's reputation in every room you enter is partly your craftsmanship.", sr: "Proverbs 31:28–29", s: "Her husband praises her: “you surpass them all.”", d: "Praise your spouse to someone else today — a friend, a parent, your kids — specifically and sincerely. Bonus if it gets back to them.", j: "What do other people know about your spouse from your mouth?" },
+    { t: "Speak Them Well", p: "Your spouse's reputation in every room you enter is partly your craftsmanship.", sr: "Proverbs 31:28–29", s: "Her husband praises her: “you surpass them all.”", d: "Praise your spouse to someone else today — a friend, a parent, your kids — specifically and sincerely. Bonus if it gets back to them.", j: "What do other people know about your spouse from your mouth?",
+      w: { sr: "Proverbs 12:4", s: "A wife of noble character is her husband's crown.", p: "How you speak about your husband in every room crowns him — or quietly diminishes him." } },
     { t: "The Strong Back", p: "The King of kings picked up a towel. Strength in marriage looks like the low task done gladly.", sr: "John 13:14–15", s: "I have washed your feet... do as I have done for you.", d: "Take your spouse's most-dreaded task today and do it start to finish.", j: "What does serving like Jesus look like in socks-on-the-floor, dishes-in-the-sink terms in your house?" },
     { t: "Rest & Reward", r: 1, p: "Delight is not a luxury of marriage. It's maintenance.", sr: "Proverbs 5:18", s: "Rejoice in the spouse of your youth.", d: "Do something purely fun together today — zero productivity allowed. You pick it together.", j: "When did you last laugh together — hard? What got you there?" },
     { t: "Controlled Heat", p: "Heat is part of forging — untended, it destroys; controlled, it strengthens.", sr: "Ephesians 4:26–27", s: "In your anger do not sin; don't let the sun go down on it.", d: "Settle every irritation before bed tonight: name it gently, or drop it honestly. Nothing goes underground.", j: "Which conflicts in your house tend to go underground instead of getting resolved?" },
@@ -7240,18 +7245,27 @@
     { t: "First to the Anvil", p: "Reconciliation belongs to whoever moves first. Go first.", sr: "Matthew 5:23–24", s: "Leave your gift at the altar; first be reconciled.", d: "Apologize today for something real — no “but,” no explanation stapled to it. Just the apology.", j: "Why is going first so hard for you?" },
     { t: "The Quench", p: "Forgiveness is the water that keeps hot steel from cracking.", sr: "Colossians 3:13", s: "Forgive as the Lord forgave you.", d: "Say the words “I forgive you” to your spouse for something — or ask them, “Is there anything you need me to forgive?”", j: "Is there a forgiveness you've spoken but not yet meant? What would it take to mean it?" },
     { t: "Under Pressure", p: "Anyone is gentle when it's easy. Tempered steel is proven under pressure.", sr: "Proverbs 15:1", s: "A gentle answer turns away wrath.", d: "The next time you're provoked today — by anyone — answer with deliberate softness, and let your spouse witness it.", j: "Who taught you how to fight? Is their way working for your marriage?" },
-    { t: "Reinforce the Weld", p: "You cannot pray sincerely for someone and stay hard toward them.", sr: "Job 42:10", s: "The Lord restored Job after he prayed for his friends.", d: "Pray for your spouse by name for ten full minutes — their burdens and their dreams, not their faults.", j: "How did praying for them change how you saw them today?" },
+    { t: "Reinforce the Weld", p: "You cannot pray sincerely for someone and stay hard toward them.", sr: "Job 42:10", s: "The Lord restored Job after he prayed for his friends.", d: "Pray for your spouse by name for ten full minutes — their burdens and their dreams, not their faults.", j: "How did praying for them change how you saw them today?",
+      h: { p: "You cannot pray sincerely for someone and stay hard toward them. A husband who covers his wife in prayer leads from his knees." },
+      w: { sr: "1 Peter 3:1–2", s: "Won over without words, by the conduct they see.", p: "You cannot pray sincerely for someone and stay hard toward them. Your strongest influence on your husband was never argument — it's prayer." } },
     { t: "Inspect the Blade", r: 1, p: "A smith inspects his own work. Examination isn't shame — it's craftsmanship.", sr: "2 Corinthians 13:5", s: "Examine yourselves.", d: "Ask your spouse: “What's one thing I do that wounds you?” Then say only “Thank you for telling me.” No defense.", j: "What did they say? What will you do about it?" },
     { t: "One Piece of Steel", p: "A weld isn't two pieces held together — it's one piece that can't remember being two.", sr: "Genesis 2:24", s: "The two become one flesh.", d: "Find one thing still labeled “mine and yours” in your life — money, plans, friends, a room — and make it “ours” today.", j: "Where are you still living like two singles under one roof?" },
     { t: "Shared Blueprint", p: "Two people can't forge one thing without one drawing.", sr: "Amos 3:3", s: "Can two walk together unless they have agreed to do so?", d: "Dream together for 20 minutes — one year out, five years out. Write down three shared hopes where you'll both see them.", j: "Which shared hope stirs you most? What's the first step toward it?" },
-    { t: "Pray as One", p: "Praying together is the most exposed you will ever be with your clothes on. That's why it welds so deep.", sr: "Matthew 18:19–20", s: "Where two agree, He is there with them.", d: "Pray out loud together tonight — even two minutes. Hold hands. Take turns. Amen.", j: "Why does praying together feel more vulnerable than almost anything else?" },
+    { t: "Pray as One", p: "Praying together is the most exposed you will ever be with your clothes on. That's why it welds so deep.", sr: "Matthew 18:19–20", s: "Where two agree, He is there with them.", d: "Pray out loud together tonight — even two minutes. Hold hands. Take turns. Amen.", j: "Why does praying together feel more vulnerable than almost anything else?",
+      h: { d: "Lead it tonight: pray out loud together — even two minutes. You go first. Hold hands. Take turns. Amen." },
+      w: { d: "Set the tone tonight: invite him to pray out loud together — even two minutes. Hold hands. Take turns. Amen." } },
     { t: "The Locked Door", p: "Every forge has walls. What's sacred must also be protected.", sr: "Song of Songs 2:15", s: "Catch the little foxes that ruin the vineyard.", d: "Together, name one “little fox” nibbling your marriage — a screen, a schedule, a comparison, an old flame's follow — and shut its door today.", j: "What gets your best attention that should never outrank your spouse?" },
     { t: "Body & Warmth", p: "God designed marriage with a fireplace in it. Tend it without agenda.", sr: "1 Corinthians 7:3–5", s: "Belong to one another; do not deprive each other.", d: "Initiate affection today with no goal beyond closeness — hold, kiss, linger. Warmth for its own sake.", j: "What does physical closeness communicate between you that words can't?" },
     { t: "In the Same Boat", p: "The problem is the enemy. Your spouse is the crew.", sr: "Ecclesiastes 4:12", s: "Though one may be overpowered, two can defend themselves.", d: "Pick one current stressor — money, a kid, a deadline, a house issue — and make a battle plan against it together, shoulder to shoulder.", j: "When did you last genuinely feel like teammates? What made it feel that way?" },
-    { t: "Keep the Home Fire", r: 1, p: "A house is where a marriage lives. Bless the place that holds the fire.", sr: "Joshua 24:15", s: "As for me and my house, we will serve the Lord.", d: "Do one small thing together to bless your home — reset a neglected corner, frame a photo, put a verse on the wall.", j: "What do you want people to feel when they walk into your home? What do you feel?" },
+    { t: "Keep the Home Fire", r: 1, p: "A house is where a marriage lives. Bless the place that holds the fire.", sr: "Joshua 24:15", s: "As for me and my house, we will serve the Lord.", d: "Do one small thing together to bless your home — reset a neglected corner, frame a photo, put a verse on the wall.", j: "What do you want people to feel when they walk into your home? What do you feel?",
+      h: { p: "A house is where a marriage lives, and a man answers for the spiritual weather of his. Bless the place that holds the fire." },
+      w: { sr: "Proverbs 14:1", s: "The wise woman builds her house.", p: "A house is where a marriage lives, and a wise woman builds hers on purpose. Bless the place that holds the fire." } },
     { t: "First Love", p: "The story of how it started is fuel for how it continues. Retell it.", sr: "Revelation 2:4–5", s: "Return to the love you had at first.", d: "Tell your spouse the story of the moment you knew — with details. Where you were, what they wore, what it did to you.", j: "Write the story down the way you'd want your grandchildren to read it." },
-    { t: "The Study of Them", p: "Your spouse is deep water. Curiosity is how love keeps drawing it up.", sr: "Proverbs 20:5", s: "The purposes of a heart are deep waters; one with insight draws them out.", d: "Tonight, ask your spouse three questions you've never asked — or haven't asked in years. Fears, dreams, favorites. Dig.", j: "What did you learn about the person you thought you fully knew?" },
-    { t: "Public Honor", p: "Honor isn't a feeling — it's a display. Let them be seen the way you see them.", sr: "1 Peter 3:7 · Song of Songs 4:7", s: "Live with honor; “you are altogether beautiful.”", d: "Take your spouse somewhere they're visibly honored — the date they'd pick, and dress like it matters. If tonight's impossible, book it today for this week.", j: "When did dating each other stop being automatic — and what restarted tonight?" },
+    { t: "The Study of Them", p: "Your spouse is deep water. Curiosity is how love keeps drawing it up.", sr: "Proverbs 20:5", s: "The purposes of a heart are deep waters; one with insight draws them out.", d: "Tonight, ask your spouse three questions you've never asked — or haven't asked in years. Fears, dreams, favorites. Dig.", j: "What did you learn about the person you thought you fully knew?",
+      h: { sr: "1 Peter 3:7", s: "Live with your wives in an understanding way — heirs together of the grace of life.", p: "Your wife is deep water, and understanding her is a command, not a compliment. Curiosity is how love keeps drawing it up." } },
+    { t: "Public Honor", p: "Honor isn't a feeling — it's a display. Let them be seen the way you see them.", sr: "1 Peter 3:7 · Song of Songs 4:7", s: "Live with honor; “you are altogether beautiful.”", d: "Take your spouse somewhere they're visibly honored — the date they'd pick, and dress like it matters. If tonight's impossible, book it today for this week.", j: "When did dating each other stop being automatic — and what restarted tonight?",
+      h: { p: "Honor isn't a feeling — it's a display. A husband lifts his wife where others can see it." },
+      w: { sr: "Ephesians 5:33", s: "The wife must respect her husband.", p: "Respect isn't a feeling — it's a display. Let your husband be seen the way you want him to stand." } },
     { t: "Written in Steel", p: "Spoken words warm; written words last.", sr: "Proverbs 25:11", s: "A word fitly spoken is like apples of gold in settings of silver.", d: "Write your spouse a real letter — what you see in them, what you'd choose again — then hand it to them tonight and stay while they read it.", j: "Copy one line from your letter here, and say why it's true." },
     { t: "Grateful Inventory", p: "Gratitude spoken out loud is polish on the blade. Unspoken, it tarnishes.", sr: "1 Thessalonians 5:18", s: "Give thanks in all circumstances.", d: "Send your spouse three specific thank-you messages spread through the day — morning, midday, night.", j: "List ten things about your spouse you're grateful for. Don't stop until you hit ten." },
     { t: "Cover Them", p: "Love never uses its inside knowledge as ammunition or entertainment.", sr: "1 Peter 4:8", s: "Love covers over a multitude of sins.", d: "Retire one joke, story, or complaint about your spouse that you bring out in company. Permanently.", j: "Does your spouse feel safer or smaller in a room because of how you talk? Be honest." },
@@ -7262,6 +7276,24 @@
     { t: "Pass the Flame", p: "A forged marriage isn't just for you. Somebody is watching yours to learn what's possible.", sr: "John 13:35", s: "By this everyone will know: your love.", d: "Encourage another couple today. Send the word, make the invite, share one thing these 40 days taught you.", j: "Who taught you marriage by how they lived? Who might be learning from yours?" },
     { t: "Forged", p: "What's been forged isn't finished — it's ready. Ready for use, ready for weather, ready for years.", sr: "Philippians 1:6", s: "He who began a good work in you will carry it on to completion.", d: "Celebrate together tonight. Retell the best dare, toast each other, and thank God out loud for what He's forging.", j: "Read your Day 1 entry — the marriage you said you wanted. What's changed in 40 days? What's next?" }
   ];
+
+  // Resolve a day for the signed-in user's build: husband (men) or wife (women)
+  // role overrides first (h/w keys on the plan entry), then "your spouse" becomes
+  // "your wife" / "your husband" throughout. Same 40 themes, two callings.
+  function mfDay(n) {
+    var base = MF_PLAN[n - 1];
+    var women = (typeof BUILD !== "undefined" && BUILD === "women");
+    var v = { t: base.t, r: base.r, p: base.p, sr: base.sr, s: base.s, d: base.d, j: base.j };
+    var o = women ? base.w : base.h;
+    if (o) { for (var k in o) v[k] = o[k]; }
+    var who = women ? "husband" : "wife";
+    ["p", "s", "d", "j"].forEach(function (key) {
+      v[key] = v[key]
+        .replace(/([Yy])our spouse's/g, function (m, y) { return (y === "Y" ? "Your " : "your ") + who + "'s"; })
+        .replace(/([Yy])our spouse/g, function (m, y) { return (y === "Y" ? "Your " : "your ") + who; });
+    });
+    return v;
+  }
 
   var __mf = null, __mfDays = [], __mfLoaded = false, __mfInviteOpen = false;
   function mfMe() { return ((__currentUser && __currentUser.email) || "").toLowerCase(); }
@@ -7446,10 +7478,10 @@
     var day = mfCurrentDay(mfMe());
     var finished = meDone >= 40;
     var didToday = mfDidToday();
-    var key = day + ":" + (finished ? "f" : didToday ? "d" : "o") + ":" + (mfSpouseJoined() ? "j" : "s");
+    var key = day + ":" + (finished ? "f" : didToday ? "d" : "o") + ":" + (mfSpouseJoined() ? "j" : "s") + ":" + (typeof BUILD !== "undefined" ? BUILD : "");
     if (card.dataset.mfkey === key) return; // don't wipe half-typed reflections on re-render
     card.dataset.mfkey = key;
-    var plan = MF_PLAN[day - 1];
+    var plan = mfDay(day);
     var html = '<div class="mf-day-label">The Marriage Forge · Day ' + day + ' of 40</div>';
     if (finished) {
       html += '<div class="mf-day-title">Forged. 🔥</div>' +
@@ -7498,7 +7530,7 @@
     if (!box || !box.classList.contains("mf-on")) { if (typeof showToast === "function") showToast("Do the dare first — then check it off."); return; }
     var privateTxt = (document.getElementById("mfPrivate") || {}).value || "";
     var spouseTxt = (document.getElementById("mfToSpouse") || {}).value || "";
-    var plan = MF_PLAN[day - 1];
+    var plan = mfDay(day);
     if (btn) { btn.disabled = true; btn.textContent = "Sealing…"; }
     try {
       const { data, error } = await sb.from("marriage_days").upsert({

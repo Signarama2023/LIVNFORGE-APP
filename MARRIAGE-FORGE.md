@@ -280,3 +280,18 @@ Principle: What's been forged isn't finished — it's ready. Ready for use, read
 Scripture: Philippians 1:6 — He who began a good work in you will carry it on to completion.
 Dare: Celebrate together tonight. Retell the best dare, toast each other, and thank God out loud for what He's forging.
 Journal: Read your Day 1 entry — the marriage you said you wanted. What's changed in 40 days? What's next?
+
+## Husband's forge / Wife's forge (added 2026-07-12)
+
+Both spouses walk the same 40 themes and arc, but each build speaks to its own calling: the men's build addresses the husband ("your wife" throughout), the women's build the wife ("your husband" throughout). Eight days carry genuinely role-specific principles, scriptures, or dares:
+
+- **Day 1** — his: "a man leads what he loves — go first" / hers: "what a woman tends, flourishes"
+- **Day 2** — his: words set the weather of the home / hers: Proverbs 14:1, the wise woman builds her house
+- **Day 12** — hers: Proverbs 12:4, a noble wife is her husband's crown
+- **Day 20** — his: a husband covers his wife in prayer, leading from his knees / hers: 1 Peter 3:1–2, influence through prayer, not argument
+- **Day 24** — his: lead the couple prayer, you go first / hers: set the tone, invite him
+- **Day 28** — his: a man answers for the spiritual weather of his house (Joshua 24:15) / hers: Proverbs 14:1
+- **Day 30** — his: 1 Peter 3:7, understanding your wife is a command, not a compliment
+- **Day 31** — his: honor displayed (1 Peter 3:7) / hers: respect displayed (Ephesians 5:33)
+
+Source of truth for both voices: MF_PLAN in index.html (h/w overrides + pronoun resolution in mfDay()).
