@@ -4206,7 +4206,7 @@
   // "Write one journal entry" chooser — any of these types counts as the day's
   // journal step; the chooser lets the user pick which one to write. Names and
   // descriptions are read from the pillar cards so they always match the build.
-  var JT_TYPES = ["guided", "freeflow", "gratitude", "family", "reframe", "drift"];
+  var JT_TYPES = ["guided", "drift", "reframe"];
   function openJournalChooser() {
     var m = document.getElementById("jtModal"), box = document.getElementById("jtModalInner");
     if (!m || !box) { setActiveType("guided"); showApp(); showWrite(); window.scrollTo(0, 0); return; }
