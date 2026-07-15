@@ -2783,7 +2783,10 @@
         headers: { "Authorization": "Bearer " + session.access_token, "apikey": EDGE_FN_APIKEY, "Content-Type": "application/json" },
         body: JSON.stringify({ action: "passage", bible_id: translation, passage_id: parsed.id })
       });
-      if (!resp.ok) throw new Error("Passage service returned " + resp.status);
+      if (!resp.ok) {
+        const failure = await resp.json().catch(function () { return {}; });
+        throw new Error(failure.error || ("Passage service returned " + resp.status));
+      }
       const json = await resp.json();
       const text = (json.data && json.data.content || "").trim();
       const reference = (json.data && json.data.reference) || parsed.label;

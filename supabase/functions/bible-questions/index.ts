@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       if (!/^[A-Za-z0-9-]+$/.test(bibleId) || !/^[A-Za-z0-9.-]+$/.test(passageId)) {
         return json({ error: "Invalid Bible or passage identifier." }, 400);
       }
-      const url = new URL(`https://api.scripture.api.bible/v1/bibles/${bibleId}/passages/${passageId}`);
+      const url = new URL(`https://rest.api.bible/v1/bibles/${bibleId}/passages/${passageId}`);
       url.searchParams.set("content-type", "text");
       url.searchParams.set("include-verse-numbers", "true");
       url.searchParams.set("include-notes", "false");
