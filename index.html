@@ -2388,8 +2388,6 @@
   function build() { return BUILDS[BUILD] || BUILDS.men; }
 
   // ----- Devotional: Bible passage loader + AI reflection questions -----
-  const BIBLE_API_KEY = "Fql9yMLc98bffGu1peuTj";
-  const BIBLE_API_BASE = "https://api.scripture.api.bible/v1";
   const EDGE_FN_URL = "https://ihhctwmgfleihlnfnfsv.supabase.co/functions/v1/bible-questions";
   const EDGE_FN_APIKEY = "sb_publishable_CRtK7cSwNjDDgu31fulMIQ_rwptULXs";
 
@@ -2785,9 +2783,14 @@
     status.textContent = "Loading passage…";
     const btn = document.getElementById("bsLoadBtn"); btn.disabled = true;
     try {
-      const url = BIBLE_API_BASE + "/bibles/" + translation + "/passages/" + parsed.id + "?content-type=text&include-verse-numbers=true&include-notes=false&include-titles=false";
-      const resp = await fetch(url, { headers: { "api-key": BIBLE_API_KEY } });
-      if (!resp.ok) throw new Error("API.Bible returned " + resp.status);
+      const session = (await sb.auth.getSession()).data.session;
+      if (!session) throw new Error("Please sign in again.");
+      const resp = await fetch(EDGE_FN_URL, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + session.access_token, "apikey": EDGE_FN_APIKEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "passage", bible_id: translation, passage_id: parsed.id })
+      });
+      if (!resp.ok) throw new Error("Passage service returned " + resp.status);
       const json = await resp.json();
       const text = (json.data && json.data.content || "").trim();
       const reference = (json.data && json.data.reference) || parsed.label;
