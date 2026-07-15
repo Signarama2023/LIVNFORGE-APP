@@ -70,6 +70,14 @@
     --gold-light: #f0c674;
     --gold-hover: #e6b94f;
     --star: #d9a93e;
+    /* Tinted glow steps for the gold accent, used by the workbench hero + accent
+       cards. Kept separate from --gold so the women's build below can re-tint the
+       glow without touching every literal rgba(217,169,62,...) in the sheet. */
+    --gold-glow-12: rgba(217,169,62,.12);
+    --gold-glow-20: rgba(217,169,62,.20);
+    --gold-glow-24: rgba(217,169,62,.24);
+    --gold-glow-26: rgba(217,169,62,.26);
+    --gold-glow-65: rgba(217,169,62,.65);
   }
   /* ---------- Women's (Daughters) soft-light theme ---------- */
   body[data-build="women"] {
@@ -88,6 +96,11 @@
     --gold-light: #b3673f;
     --gold-hover: #b56a45;
     --star: #c5896b;
+    --gold-glow-12: rgba(168,95,61,.12);
+    --gold-glow-20: rgba(168,95,61,.20);
+    --gold-glow-24: rgba(168,95,61,.24);
+    --gold-glow-26: rgba(168,95,61,.26);
+    --gold-glow-65: rgba(168,95,61,.65);
     background: #f1e2d8;
   }
   body[data-build="women"] .card { box-shadow: 0 12px 40px rgba(150,100,80,0.20); }
@@ -320,10 +333,16 @@
   .jrwb-lbl.today { color:var(--gold-light); }
   /* Journey — summary / AI review cards */
   .jr-cards { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
-  .jr-card { display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; text-align:left; background:var(--panel); border:1px solid var(--field-border); border-radius:16px; padding:15px 16px; cursor:pointer; font-family:inherit; color:var(--text); transition:border-color .15s ease, transform .1s ease; }
-  .jr-card:hover { border-color:var(--gold); }
+  .jr-card {
+    position:relative; overflow:hidden; display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; text-align:left;
+    border:1px solid var(--field-border); border-radius:16px; padding:15px 16px 15px 19px; cursor:pointer; font-family:inherit; color:var(--text);
+    background:radial-gradient(circle at 95% 0, var(--gold-glow-12), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+    transition:border-color .15s ease, transform .1s ease, box-shadow .15s ease;
+  }
+  .jr-card::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:0 3px 3px 0; background:var(--gold); box-shadow:0 0 16px var(--gold); opacity:.9; }
+  .jr-card:hover { border-color:var(--gold); transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,.32), 0 0 0 1px var(--gold-glow-12); }
   .jr-card:active { transform:scale(.99); }
-  .jr-card-ico { width:42px; height:42px; flex:0 0 auto; border-radius:12px; background:rgba(217,169,62,.12); color:var(--gold-light); display:flex; align-items:center; justify-content:center; }
+  .jr-card-ico { width:42px; height:42px; flex:0 0 auto; border-radius:12px; border:1px solid var(--gold); background:var(--gold-glow-12); box-shadow:inset 0 0 18px var(--gold-glow-12); color:var(--gold-light); display:flex; align-items:center; justify-content:center; }
   .jr-card-text { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
   .jr-card-title { font-weight:800; font-size:15px; }
   .jr-card-sub { font-size:12.5px; color:var(--muted); }
@@ -430,9 +449,9 @@
   .tab-title { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:4px 0 16px; }
   .journal-intro {
     position:relative; overflow:hidden; margin:4px 0 22px; padding:24px;
-    border:1px solid rgba(217,169,62,.26); border-radius:22px;
+    border:1px solid var(--gold-glow-26); border-radius:22px;
     background:
-      radial-gradient(circle at 92% 8%, rgba(217,169,62,.20), transparent 32%),
+      radial-gradient(circle at 92% 8%, var(--gold-glow-20), transparent 32%),
       linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
     box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 18px 42px rgba(0,0,0,.22);
   }
@@ -442,7 +461,7 @@
   }
   .ji-copy { position:relative; z-index:1; max-width:560px; }
   .ji-kicker { display:flex; align-items:center; gap:8px; color:var(--gold-light); font-size:10.5px; font-weight:800; letter-spacing:2.2px; text-transform:uppercase; margin-bottom:10px; }
-  .ji-kicker::before { content:""; width:18px; height:2px; border-radius:2px; background:var(--gold); box-shadow:0 0 12px rgba(217,169,62,.65); }
+  .ji-kicker::before { content:""; width:18px; height:2px; border-radius:2px; background:var(--gold); box-shadow:0 0 12px var(--gold-glow-65); }
   .journal-intro h1 { font-size:31px; line-height:1.02; letter-spacing:-.7px; margin:0 0 9px; }
   .journal-intro p { color:var(--muted); font-size:14px; line-height:1.55; margin:0; max-width:470px; }
   .ji-mark { position:absolute; right:22px; bottom:16px; width:72px; height:72px; color:var(--gold); opacity:.10; transform:rotate(-8deg); }
@@ -573,20 +592,20 @@
   .pc-list-btn {
     position:relative; overflow:hidden; display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; text-align:left;
     border:1px solid var(--field-border); border-radius:16px; padding:10px 14px 10px 17px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text);
-    background:radial-gradient(circle at 95% 0, var(--tg, rgba(217,169,62,.12)), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+    background:radial-gradient(circle at 95% 0, var(--tg, var(--gold-glow-12)), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
     transition:border-color .15s ease, transform .1s ease, box-shadow .15s ease;
   }
   .pc-list-btn::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:0 3px 3px 0; background:var(--tc, var(--gold)); box-shadow:0 0 16px var(--tc, var(--gold)); opacity:.9; }
-  .pc-list-btn:hover { border-color:var(--tc, var(--gold)); transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,.32), 0 0 0 1px var(--tg, rgba(217,169,62,.12)); }
+  .pc-list-btn:hover { border-color:var(--tc, var(--gold)); transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,.32), 0 0 0 1px var(--tg, var(--gold-glow-12)); }
   .pc-list-btn:active { transform:scale(0.99); }
-  .pc-list-btn .pcl-photo { width:52px; height:52px; border-radius:13px; overflow:hidden; flex:0 0 auto; border:1px solid var(--tc, var(--gold)); background:var(--tg, rgba(217,169,62,.12)); box-shadow:inset 0 0 18px var(--tg, rgba(217,169,62,.12)); display:flex; align-items:center; justify-content:center; }
+  .pc-list-btn .pcl-photo { width:52px; height:52px; border-radius:13px; overflow:hidden; flex:0 0 auto; border:1px solid var(--tc, var(--gold)); background:var(--tg, var(--gold-glow-12)); box-shadow:inset 0 0 18px var(--tg, var(--gold-glow-12)); display:flex; align-items:center; justify-content:center; }
   .pc-list-btn .pcl-photo img { width:100%; height:100%; object-fit:cover; display:block; border-radius:13px; }
   .pc-list-btn .pcl-photo-ph { color:var(--tc, var(--gold)); display:flex; opacity:.95; }
   .pc-list-btn .pcl-text { display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; }
   .pc-list-btn .pcl-name { font-weight:800; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pc-list-btn .pcl-focus { color:var(--muted); font-size:12.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pc-list-btn .pcl-focus:empty { display:none; }
-  .pc-list-btn .pcl-meta { align-self:flex-start; display:inline-flex; align-items:center; margin-top:1px; padding:3px 9px; border:1px solid var(--tg, rgba(217,169,62,.24)); border-radius:99px; background:var(--tg, rgba(217,169,62,.12)); color:var(--tc, var(--gold)); font-size:10.5px; font-weight:800; letter-spacing:.02em; text-transform:uppercase; white-space:nowrap; }
+  .pc-list-btn .pcl-meta { align-self:flex-start; display:inline-flex; align-items:center; margin-top:1px; padding:3px 9px; border:1px solid var(--tg, var(--gold-glow-24)); border-radius:99px; background:var(--tg, var(--gold-glow-12)); color:var(--tc, var(--gold)); font-size:10.5px; font-weight:800; letter-spacing:.02em; text-transform:uppercase; white-space:nowrap; }
   .pc-list-btn .pcl-arrow { color:var(--muted); font-size:24px; flex:0 0 auto; line-height:1; }
   /* Circle detail header (photo + name) */
   .pcd-head { display:flex; align-items:center; gap:14px; margin-bottom:6px; }
@@ -642,21 +661,35 @@
   .settings-card .sc-field span { font-size:14px; color:var(--text); font-weight:600; }
   .settings-card input[type="time"] { padding:9px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; }
   /* Profile — settings as a clean tappable accordion list */
-  .settings-card.sc-accordion { padding:0; overflow:hidden; margin-bottom:10px; }
-  .sc-head { display:flex; align-items:center; gap:13px; padding:15px 16px; cursor:pointer; }
-  .sc-head .sc-ico { width:36px; height:36px; border-radius:11px; background:rgba(217,169,62,.12); color:var(--gold-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .settings-card.sc-accordion {
+    position:relative; overflow:hidden; padding:0; margin-bottom:10px;
+    background:radial-gradient(circle at 95% 0, var(--gold-glow-12), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .sc-accordion::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:0 3px 3px 0; background:var(--gold); box-shadow:0 0 16px var(--gold); opacity:.9; }
+  .sc-accordion:hover { border-color:var(--gold); box-shadow:0 14px 32px rgba(0,0,0,.32), 0 0 0 1px var(--gold-glow-12); }
+  .sc-head { display:flex; align-items:center; gap:13px; padding:15px 16px 15px 19px; cursor:pointer; }
+  .sc-head .sc-ico { width:36px; height:36px; border-radius:11px; border:1px solid var(--gold); background:var(--gold-glow-12); box-shadow:inset 0 0 14px var(--gold-glow-12); color:var(--gold-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
   .sc-head .sc-htitle { flex:1; min-width:0; font-weight:800; font-size:15px; }
   .sc-head .sc-caret { color:var(--muted); font-size:20px; line-height:1; flex:0 0 auto; transition:transform .2s ease; }
   .sc-accordion.open .sc-head .sc-caret { transform:rotate(90deg); }
   .sc-accordion .sc-body { max-height:0; overflow:hidden; padding:0 16px; transition:max-height .32s ease; }
   .sc-accordion.open .sc-body { max-height:1600px; padding:0 16px 16px; }
   .sc-accordion .sc-body > .sc-desc:first-child { margin-top:0; }
-  #deleteAccountSettings.sc-accordion .sc-ico { background:rgba(240,118,138,.14); color:#f0768a; }
+  #deleteAccountSettings.sc-accordion::before { background:#f0768a; box-shadow:0 0 16px #f0768a; }
+  #deleteAccountSettings.sc-accordion .sc-ico { border-color:#f0768a; background:rgba(240,118,138,.14); box-shadow:inset 0 0 14px rgba(240,118,138,.14); color:#f0768a; }
+  #deleteAccountSettings.sc-accordion:hover { border-color:#f0768a; box-shadow:0 14px 32px rgba(0,0,0,.32), 0 0 0 1px rgba(240,118,138,.14); }
   /* Direct-action settings row (e.g. Redeem a code) — looks like an accordion row but acts on tap */
-  .sc-action-card { display:flex; align-items:center; gap:13px; width:100%; box-sizing:border-box; text-align:left; background:var(--panel); border:1px solid var(--gold); border-radius:14px; padding:13px 16px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text); transition:border-color .15s ease, transform .1s ease, background .15s ease; }
-  .sc-action-card:hover { background:rgba(217,169,62,.08); }
+  .sc-action-card {
+    position:relative; overflow:hidden; display:flex; align-items:center; gap:13px; width:100%; box-sizing:border-box; text-align:left;
+    border:1px solid var(--gold); border-radius:14px; padding:13px 16px 13px 19px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text);
+    background:radial-gradient(circle at 95% 0, var(--gold-glow-12), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+    transition:transform .1s ease, box-shadow .15s ease;
+  }
+  .sc-action-card::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:0 3px 3px 0; background:var(--gold); box-shadow:0 0 16px var(--gold); opacity:.9; }
+  .sc-action-card:hover { transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,.32), 0 0 0 1px var(--gold-glow-12); }
   .sc-action-card:active { transform:scale(.99); }
-  .sc-action-card .sc-ico { width:36px; height:36px; border-radius:11px; background:rgba(217,169,62,.14); color:var(--gold-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .sc-action-card .sc-ico { width:36px; height:36px; border-radius:11px; border:1px solid var(--gold); background:var(--gold-glow-12); box-shadow:inset 0 0 14px var(--gold-glow-12); color:var(--gold-light); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
   .sc-action-card .sc-actiontext { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
   .sc-action-card .sc-htitle { font-weight:800; font-size:15px; color:var(--gold-light); }
   .sc-action-card .sc-actionsub { font-size:12.5px; color:var(--muted); }
@@ -674,7 +707,7 @@
   .journal-section-head h2 { font-size:20px; line-height:1.15; margin:0; letter-spacing:-.2px; }
   .pillar-cards { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
   .pillar-card {
-    --jc:var(--gold); --jg:rgba(217,169,62,.12);
+    --jc:var(--gold); --jg:var(--gold-glow-12);
     position:relative; overflow:hidden; text-align:left; padding:18px; border-radius:18px;
     background:radial-gradient(circle at 95% 0, var(--jg), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
     border:1px solid rgba(255,255,255,.09); cursor:pointer;
@@ -1484,6 +1517,14 @@
         </div>
 
         <div id="profileHome" data-tab="settings">
+          <div class="journal-intro">
+            <div class="ji-copy">
+              <div class="ji-kicker">Your profile</div>
+              <h1>Own your rhythm.</h1>
+              <p>Track your progress, manage your circle settings, and keep LIVN FORGE working the way you need it to.</p>
+            </div>
+            <svg class="ji-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.2a7.5 7.5 0 0 1 15 0"/></svg>
+          </div>
           <div class="prof-head">
             <div class="prof-avatar" id="profAvatar">·</div>
             <div class="prof-id"><div class="prof-name" id="profName">Your profile</div><div class="prof-email" id="profEmail"></div></div>
@@ -1681,8 +1722,14 @@
         </div>
 
         <div id="journeyHome" data-tab="progress">
-          <h1 class="forge-greet">Your Journey</h1>
-          <div class="forge-date">Keep forging forward.</div>
+          <div class="journal-intro">
+            <div class="ji-copy">
+              <div class="ji-kicker">Your journey</div>
+              <h1>Keep forging forward.</h1>
+              <p>Faith, family and fitness, tracked one day at a time — see the rhythm you're building.</p>
+            </div>
+            <svg class="ji-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>
+          </div>
           <div class="jrings">
             <div class="jring">
               <div class="jr-wrap"><svg viewBox="0 0 80 80"><circle class="jr-bg" cx="40" cy="40" r="33"></circle><circle class="jr-fg" id="jr_faith" cx="40" cy="40" r="33" stroke="#f0c674" stroke-dasharray="207" stroke-dashoffset="207"></circle></svg><span class="jr-pct" id="jrpct_faith" style="color:#f0c674">0%</span></div>
@@ -1703,7 +1750,7 @@
           </div>
         </div>
 
-        <div class="forge-card ch-card" id="goalsCard" data-tab="progress">
+        <div class="forge-card ch-card accent" id="goalsCard" data-tab="progress">
           <div class="forge-clabel">Goals</div>
           <div id="goalsBody"><div class="gl-empty">Loading…</div></div>
         </div>
@@ -1749,7 +1796,7 @@
           </button>
         </div>
 
-        <div class="forge-card ch-card" id="marriageCard" data-tab="progress">
+        <div class="forge-card ch-card accent" id="marriageCard" data-tab="progress">
           <div class="forge-clabel">Forge Your Marriage</div>
           <div id="marriageBody"><div class="gl-empty">Loading…</div></div>
         </div>
@@ -5639,7 +5686,7 @@
       const tinfo = CIRCLE_TYPES[circle.type] || CIRCLE_TYPES.prayer;
       const count = (res[1].data || []).length;
       btn.style.setProperty("--tc", tinfo.color);
-      btn.style.setProperty("--tg", tinfo.glow || "rgba(217,169,62,.12)");
+      btn.style.setProperty("--tg", tinfo.glow || "var(--gold-glow-12)");
       const photo = btn.querySelector(".pcl-photo");
       if (photo) {
         photo.innerHTML = circle.image_url
