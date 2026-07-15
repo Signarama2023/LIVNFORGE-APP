@@ -8212,6 +8212,19 @@
           try { const K = window.Capacitor.Plugins.Keyboard; if (K && K.setAccessoryBarVisible) K.setAccessoryBarVisible({ isVisible: false }); } catch (e) {}
         }
       } else {
+        // On the public website, introduce LIVN FORGE before asking a first-time
+        // visitor to create an account. Native apps continue directly to auth.
+        // Explicit entry links preserve signup, login and password-recovery flows.
+        const wantsSignup = /[?&]start=1(?:&|$)/.test(location.search);
+        const wantsLogin = /[?&]login=1(?:&|$)/.test(location.search);
+        if (!IN_NATIVE_APP && !isRecovery && !wantsSignup && !wantsLogin) {
+          location.replace("welcome.html");
+          return;
+        }
+        if (wantsLogin) {
+          authMode = "login";
+          applyAuthMode();
+        }
         showSignIn();
       }
     } catch (err) { console.error(err); showSignIn(); }
