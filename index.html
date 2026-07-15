@@ -4177,14 +4177,9 @@
 
   // ----- First-run welcome tutorial -----
   const TUTORIAL_SLIDES = [
-    { svg: '<path d="M12 3v18"/><path d="M6.5 8.5h11"/>', title: "Forge each day with purpose", body: "Your daily mission brings together Scripture, prayer, journaling, movement, and encouragement. Complete each step to fill your progress ring.", btn: "Next", skip: true },
-    { svg: '<path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M8 4v16"/><path d="M11 8h4M11 12h4"/>', title: "Journal your way", body: "Write freely or use guided prompts for prayer, gratitude, family, fitness, devotionals, Re-Frame, and Drift Fix. Return anytime to review past entries.", btn: "Next", skip: true },
-    { svg: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 19c.5-3.6 2.3-5.4 5.5-5.4s5 1.8 5.5 5.4M14 15c2.8-.3 4.7 1 5.5 3.8"/>', title: "Grow stronger together", body: "Create or join a Circle to chat, share photos and prayer requests, pray for one another, and send encouragement.", btn: "Next", skip: true },
-    { svg: '<path d="M4 19V9M10 19V5M16 19v-7M3 19h18"/><path d="M4 7l6-4 6 6 5-5"/>', title: "See your growth", body: "Journey brings your faith, family, and fitness progress together with goals, streaks, Kingdom Points, the 21-Day Challenge, weekly summaries, personal bests, and rewards.", btn: "Next", skip: true },
-    { svg: '<path d="M12 3l1.2 4.1L17 9l-3.8 1.9L12 15l-1.2-4.1L7 9l3.8-1.9z"/><path d="M18.5 14l.7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7z"/>', title: "Reflect with helpful prompts", body: "Use AI-assisted devotional questions, weekly reviews, and Drift Fix to spot patterns and choose a next step. AI may be inaccurate and is never a substitute for Scripture or trusted counsel.", btn: "Next", skip: true },
-    { svg: '<circle cx="8.5" cy="9" r="5"/><circle cx="15.5" cy="15" r="5"/>', title: "A note about Marriage Forge", body: "Marriage Forge is a 40-day journey with one Scripture-based dare each day. Begin alone or invite your spouse; your journal stays private, while only the note you choose is shared—and one subscription covers you both.", btn: "Next", skip: true },
-    { svg: '<path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h7M15 17h5"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="13" cy="17" r="2"/>', title: "Make LIVN FORGE yours", body: "Choose the men's or women's build, set reminders and notifications, invite friends, manage your account, and revisit this walkthrough anytime from Profile.", btn: "Next", skip: true },
-    { svg: '<circle cx="12" cy="12" r="9"/><path d="M8.3 12.2l2.5 2.5 4.9-5.3"/>', title: "Today's mission is ready", body: "Start with the next unfinished step. Small acts of faithfulness become a life forged with purpose.", btn: "Start Today's Mission", skip: false, last: true }
+    { svg: '<path d="M12 3v18"/><path d="M6.5 8.5h11"/>', title: "Faith. Family. Fitness.", body: "LIVN FORGE brings the three together in one daily rhythm. You do not need to master every feature today—just take the next faithful step.", btn: "Next", skip: true },
+    { svg: '<path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M8 4v16"/><path d="M11 8h4M11 12h4"/>', title: "Start with one honest entry", body: "Choose the next step in Today's Mission. Read, reflect, and write something real. Your first win is showing up—not completing the whole app.", btn: "Next", skip: true },
+    { svg: '<circle cx="12" cy="12" r="9"/><path d="M8.3 12.2l2.5 2.5 4.9-5.3"/>', title: "Build the rhythm tomorrow", body: "Points and streaks track consistency, while Circles and Journey are ready when you need them. For now, complete one meaningful rep and come back tomorrow.", btn: "Start Today's Mission", skip: false, last: true }
   ];
   let tutIdx = 0;
   function tutKey() { return APP + ":tutseen:" + (currentEmail() || "").toLowerCase(); }
@@ -5129,6 +5124,7 @@
   // ----- Save on submit -----
   document.getElementById("journalForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const isFirstEntry = loadEntries().length === 0;
     const name = document.getElementById("entryName").value.trim();
     const date = document.getElementById("entryDate").value;
     const typeTitle = QUESTIONS[currentType].title;
@@ -5229,7 +5225,9 @@
     document.getElementById("entryDate").value = dayKey(new Date()); // local date, not UTC (fixes evening date drift)
     renderQuestions(currentType);
 
-    showToast(cappedToday
+    showToast(isFirstEntry
+      ? "First rep complete. Come back tomorrow and keep forging."
+      : cappedToday
       ? (isWeeklyType ? "Already logged this week — see you next week! 🙌" : "Already earned points for this today — keep going! 💪")
       : ("Saved  ·  +" + pts + " points!"));
     showLanding();
