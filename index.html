@@ -2395,16 +2395,9 @@
   // everyone. ?paywall=1 still forces it on for previews when LIVE is false.
   const PAYWALL_LIVE = true;
   const PAYWALL_ENABLED = PAYWALL_LIVE || /[?&]paywall=1/.test(location.search);
-  // Accounts that always have free access (owners/comp). Lowercase emails.
+  // Owner account always has free access. Complimentary members are stored in
+  // the protected comp_members table and checked through has_comp_access().
   const OWNER_EMAILS = ["markbailey1@me.com"];
-  // Friends & Family — free full access (no charge). Add lowercase emails here.
-  const COMP_EMAILS = [
-    "amessier11@mac.com",
-    "mjennings2@gmail.com",
-    "crinnina1@gmail.com",
-    "jordanbickner@gmail.com",
-    "greysonbailey@icloud.com",
-  ];
   // True only when running inside the native iOS/Android app (Capacitor). On the web this is false.
   const IN_NATIVE_APP = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
   // BETA: while the app is TestFlight-only and in-app purchase isn't live yet, give every
@@ -3902,7 +3895,6 @@
     if (!PAYWALL_ENABLED) return true;            // dormant: full access for everyone
     if (!sb || !__currentUser) return false;
     if (OWNER_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // owner free pass
-    if (COMP_EMAILS.includes((__currentUser.email || "").toLowerCase())) return true; // friends & family free access
     if (IN_NATIVE_APP) { try { if (await RC.isEntitledIAP()) { __paidEntitled = true; return true; } } catch (e) {} } // in-app purchase buyers (incl. redeemed offer codes)
     // Lifetime / complimentary members (granted by email from the admin card).
     try { const { data } = await sb.rpc("has_comp_access"); if (data === true) { __paidEntitled = true; return true; } } catch (e) {}
@@ -6898,11 +6890,11 @@
     const el = document.getElementById("trialBanner");
     if (!el) return;
     const email = (__currentUser && __currentUser.email || "").toLowerCase();
-    const comped = OWNER_EMAILS.includes(email) || COMP_EMAILS.includes(email);
+    const ownerFree = OWNER_EMAILS.includes(email);
     // Only during an active free trial, and only for people who'd actually be
     // gated — never for someone already covered by a redeemed code, lifetime
     // comp, spouse, or paid subscription.
-    if (!PAYWALL_ENABLED || comped || __paidEntitled || !inTrial()) { el.style.display = "none"; return; }
+    if (!PAYWALL_ENABLED || ownerFree || __paidEntitled || !inTrial()) { el.style.display = "none"; return; }
     const d = trialDaysLeft();
     const left = d <= 1 ? "Last day of your free trial" : d + " days left in your free trial";
     el.style.display = "flex";
