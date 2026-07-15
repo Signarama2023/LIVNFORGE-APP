@@ -428,9 +428,24 @@
   #landingView .landing-body { padding-bottom: 116px; }
   .tab-off { display:none !important; }
   .tab-title { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:4px 0 16px; }
-  .journal-intro { margin: 4px 0 18px; }
-  .journal-intro h1 { font-size: 27px; line-height: 1.15; margin: 0 0 5px; }
-  .journal-intro p { color: var(--muted); font-size: 13.5px; margin: 0; }
+  .journal-intro {
+    position:relative; overflow:hidden; margin:4px 0 22px; padding:24px;
+    border:1px solid rgba(217,169,62,.26); border-radius:22px;
+    background:
+      radial-gradient(circle at 92% 8%, rgba(217,169,62,.20), transparent 32%),
+      linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 18px 42px rgba(0,0,0,.22);
+  }
+  .journal-intro::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.32;
+    background:repeating-linear-gradient(115deg, transparent 0 20px, rgba(255,255,255,.018) 21px 22px);
+  }
+  .ji-copy { position:relative; z-index:1; max-width:560px; }
+  .ji-kicker { display:flex; align-items:center; gap:8px; color:var(--gold-light); font-size:10.5px; font-weight:800; letter-spacing:2.2px; text-transform:uppercase; margin-bottom:10px; }
+  .ji-kicker::before { content:""; width:18px; height:2px; border-radius:2px; background:var(--gold); box-shadow:0 0 12px rgba(217,169,62,.65); }
+  .journal-intro h1 { font-size:31px; line-height:1.02; letter-spacing:-.7px; margin:0 0 9px; }
+  .journal-intro p { color:var(--muted); font-size:14px; line-height:1.55; margin:0; max-width:470px; }
+  .ji-mark { position:absolute; right:22px; bottom:16px; width:72px; height:72px; color:var(--gold); opacity:.10; transform:rotate(-8deg); }
   /* Prayer circles */
   .pc-wrap { margin-bottom: 22px; }
   .pc-wrap > h3 { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:0 0 12px; }
@@ -647,64 +662,61 @@
   .pb-num { font-size: 26px; font-weight: 800; line-height: 1; background: linear-gradient(180deg, var(--gold-light), var(--gold)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
   .pb-lbl { font-size: 11px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
 
-  .pillar-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .journal-library { margin-top:24px; }
+  .journal-section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin:0 0 12px; }
+  .journal-section-eyebrow { color:var(--gold); font-size:10.5px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; margin-bottom:4px; }
+  .journal-section-head h2 { font-size:20px; line-height:1.15; margin:0; letter-spacing:-.2px; }
+  .pillar-cards { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
   .pillar-card {
-    text-align: center; padding: 26px 20px; border-radius: 14px; background: var(--panel);
-    border: 1px solid var(--field-border); cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    --jc:var(--gold); --jg:rgba(217,169,62,.12);
+    position:relative; overflow:hidden; text-align:left; padding:18px; border-radius:18px;
+    background:radial-gradient(circle at 95% 0, var(--jg), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+    border:1px solid rgba(255,255,255,.09); cursor:pointer;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+    transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
   }
-  .pillar-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
-  .pc-icon { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; border: 1.5px solid; display: flex; align-items: center; justify-content: center; }
-  .pc-title { font-size: 18px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 10px; }
-  .pc-desc { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
-  .pc-pts { display: inline-block; margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
+  .pillar-card::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:0 3px 3px 0; background:var(--jc); box-shadow:0 0 16px var(--jc); opacity:.9; }
+  .pillar-card:hover { transform:translateY(-2px); border-color:var(--jc); box-shadow:0 14px 32px rgba(0,0,0,.32), 0 0 0 1px var(--jg); }
+  .pillar-card:active { transform:scale(.99); }
+  .pillar-cards .pillar-card { display:grid; grid-template-columns:46px minmax(0,1fr) auto; grid-template-areas:"icon title pts" "icon desc desc"; column-gap:13px; row-gap:5px; align-items:start; min-height:112px; }
+  .pc-icon { grid-area:icon; width:46px; height:46px; margin:0; border-radius:13px; border:1px solid var(--jc); background:var(--jg); color:var(--jc); display:flex; align-items:center; justify-content:center; box-shadow:inset 0 0 18px var(--jg); }
+  .pc-icon svg { width:21px; height:21px; }
+  .pc-title { grid-area:title; font-size:15px; font-weight:800; letter-spacing:.2px; line-height:1.3; margin:2px 0 0; }
+  .pillar-cards .pc-title::after { content:"↗"; display:inline-block; margin-left:7px; color:var(--jc); font-size:13px; opacity:.75; transform:translateY(-1px); }
+  .pc-desc { grid-area:desc; font-size:12.5px; color:var(--muted); line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .pc-pts { grid-area:pts; display:inline-flex; align-items:center; justify-content:center; margin:0; padding:4px 8px; border:1px solid var(--jg); border-radius:99px; background:var(--jg); color:var(--jc); font-size:10.5px; font-weight:800; letter-spacing:.2px; white-space:nowrap; }
+  .pillar-card.pc-done::after, .pillar-card.pc-doneweek::after { left:auto; right:12px; top:auto; bottom:9px; padding:3px 7px; border-radius:99px; background:rgba(13,17,15,.84); }
   /* Pillar sub-tabs on the Journal page */
-  .pillar-tabs { display: flex; gap: 8px; margin: 4px 0 18px; }
-  .pillar-tab { flex: 1; background: var(--field); border: 1px solid var(--field-border); color: var(--muted); border-radius: 12px; padding: 12px 6px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; cursor: pointer; transition: all .15s ease; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-  .pillar-tab .pt-ico { width: 20px; height: 20px; }
-  .pillar-tab:hover { border-color: var(--gold); color: var(--text); }
-  .pillar-tab.active { border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 0 2px rgba(217,169,62,0.22); }
+  .pillar-tabs { display:flex; gap:4px; margin:0 0 14px; padding:4px; border:1px solid var(--field-border); border-radius:15px; background:rgba(255,255,255,.025); }
+  .pillar-tab { flex:1; min-height:42px; background:transparent; border:1px solid transparent; color:var(--muted); border-radius:11px; padding:9px 8px; font-family:inherit; font-size:12px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; cursor:pointer; transition:all .15s ease; display:flex; flex-direction:row; justify-content:center; align-items:center; gap:7px; }
+  .pillar-tab .pt-ico { width:17px; height:17px; }
+  .pillar-tab:hover { color:var(--text); background:rgba(255,255,255,.035); }
+  .pillar-tab.active { border-color:var(--gold); color:#1c1402; background:linear-gradient(135deg,var(--gold),var(--gold-light)); box-shadow:0 7px 18px rgba(217,169,62,.18); }
   /* Quick journal — Free Flow + Guided, the always-available go-to */
-  .quick-journal { margin-bottom: 20px; }
-  .qj-label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
-  /* Two compact Quick Journal cards, kept side by side even on phones. */
-  .quick-journal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .quick-journal-row .pillar-card { padding: 14px 10px; }
-  .quick-journal-row .pc-icon { width: 36px; height: 36px; margin: 0 auto 8px; }
-  .quick-journal-row .pc-icon svg { width: 18px; height: 18px; }
-  .quick-journal-row .pc-title { font-size: 13.5px; letter-spacing: .5px; margin-bottom: 0; line-height: 1.2; }
-  .quick-journal-row .pc-desc { display: none; }
-  .quick-journal-row .pc-pts { margin-top: 6px; font-size: 11px; }
-  .pc-freeflow { border-color: rgba(96,165,250,0.4); }
-  .pc-freeflow:hover { border-color: #60a5fa; }
-  .pc-freeflow .pc-icon { border-color: #60a5fa; color: #60a5fa; }
-  .pc-guided { border-color: rgba(52,211,153,0.4); }
-  .pc-guided:hover { border-color: var(--accent-start); }
-  .pc-guided .pc-icon { border-color: var(--accent-start); color: var(--accent-start); }
-  .pc-reframe { border-color: rgba(217,169,62,0.4); }
-  .pc-reframe:hover { border-color: var(--gold); }
-  .pc-reframe .pc-icon { border-color: var(--gold); color: var(--gold); }
-  .pc-devotional { border-color: rgba(167,139,250,0.4); }
-  .pc-devotional:hover { border-color: #a78bfa; }
-  .pc-devotional .pc-icon { border-color: #a78bfa; color: #a78bfa; }
-  .pc-prayer { border-color: rgba(240,138,156,0.4); }
-  .pc-prayer:hover { border-color: #f08a9c; }
-  .pc-prayer .pc-icon { border-color: #f08a9c; color: #f08a9c; }
-  .pc-fitness { border-color: rgba(52,194,194,0.4); }
-  .pc-fitness:hover { border-color: #34c2c2; }
-  .pc-fitness .pc-icon { border-color: #34c2c2; color: #34c2c2; }
-  .pc-gratitude { border-color: rgba(251,191,36,0.4); }
-  .pc-gratitude:hover { border-color: #fbbf24; }
-  .pc-gratitude .pc-icon { border-color: #fbbf24; color: #fbbf24; }
-  .pc-drift { border-color: rgba(122,170,114,0.4); }
-  .pc-drift:hover { border-color: #7faa72; }
-  .pc-drift .pc-icon { border-color: #7faa72; color: #7faa72; }
-  .pc-family { border-color: rgba(251,146,60,0.4); }
-  .pc-family:hover { border-color: #fb923c; }
-  .pc-family .pc-icon { border-color: #fb923c; color: #fb923c; }
-  .pc-finances { border-color: rgba(22,163,74,0.4); }
-  .pc-finances:hover { border-color: #16a34a; }
-  .pc-finances .pc-icon { border-color: #16a34a; color: #16a34a; }
+  .quick-journal { margin-bottom:0; }
+  .qj-head { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .qj-label { font-size:10.5px; color:var(--gold); font-weight:800; letter-spacing:1.8px; text-transform:uppercase; margin-bottom:3px; }
+  .qj-sub { color:var(--muted); font-size:12.5px; }
+  .quick-journal-row { display:grid; grid-template-columns:1.15fr .85fr; gap:12px; }
+  .quick-journal-row .pillar-card { display:flex; flex-direction:column; align-items:flex-start; min-height:172px; padding:18px; }
+  .quick-journal-row .pillar-card::before { left:18px; right:18px; top:0; bottom:auto; width:auto; height:2px; border-radius:0 0 3px 3px; }
+  .quick-journal-row .pc-icon { width:42px; height:42px; margin:9px 0 18px; }
+  .quick-journal-row .pc-icon svg { width:20px; height:20px; }
+  .quick-journal-row .pc-title { font-size:18px; letter-spacing:-.2px; margin:0 0 6px; }
+  .quick-journal-row .pc-desc { display:-webkit-box; font-size:12.5px; line-height:1.45; -webkit-line-clamp:2; }
+  .quick-journal-row .pc-pts { position:absolute; right:14px; top:13px; }
+  .quick-card-action { display:flex; align-items:center; gap:6px; margin-top:auto; padding-top:13px; color:var(--jc); font-size:12px; font-weight:800; }
+  .quick-card-action svg { width:14px; height:14px; }
+  .pc-freeflow { --jc:#60a5fa; --jg:rgba(96,165,250,.13); }
+  .pc-guided { --jc:#34d399; --jg:rgba(52,211,153,.13); }
+  .pc-reframe { --jc:#e0ad42; --jg:rgba(217,169,62,.13); }
+  .pc-devotional { --jc:#a78bfa; --jg:rgba(167,139,250,.13); }
+  .pc-prayer { --jc:#f08a9c; --jg:rgba(240,138,156,.13); }
+  .pc-fitness { --jc:#34c2c2; --jg:rgba(52,194,194,.13); }
+  .pc-gratitude { --jc:#fbbf24; --jg:rgba(251,191,36,.13); }
+  .pc-drift { --jc:#8fbd83; --jg:rgba(143,189,131,.13); }
+  .pc-family { --jc:#fb923c; --jg:rgba(251,146,60,.13); }
+  .pc-finances { --jc:#22c55e; --jg:rgba(34,197,94,.13); }
 
   /* Fitness preset workouts (KING300 / KING320) */
   .fit-presets { margin-bottom: 18px; }
@@ -1747,42 +1759,52 @@
         <div class="prayer-circles" id="prayerCircles" data-tab="circles"></div>
 
         <div class="journal-intro" data-tab="journal">
-          <h1>Journal</h1>
-          <p>Choose the reflection that fits what you need today.</p>
+          <div class="ji-copy">
+            <div class="ji-kicker">The workbench</div>
+            <h1>Put it on the page.</h1>
+            <p>Start with a blank page, follow a few prompts, or choose the part of life you want to shape today.</p>
+          </div>
+          <svg class="ji-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 46h34M20 46l4-12h16l4 12M27 34v-9h10v9M19 25h26M25 18h14l6 7H19z"/></svg>
         </div>
         <div class="quick-journal" data-tab="journal">
-          <div class="qj-label">Quick journal — just write</div>
+          <div class="qj-head"><div><div class="qj-label">Quick start</div><div class="qj-sub">Two ways in. No overthinking.</div></div></div>
           <div class="quick-journal-row">
             <div class="pillar-card pc-freeflow" data-type="freeflow">
               <div class="pc-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
               </div>
-              <div class="pc-title">FREE FLOW</div>
+              <div class="pc-title">Free Flow</div>
               <div class="pc-desc">Just write whatever is on your mind. No structure. No limits. Just you and the page.</div>
               <span class="pc-pts">+10 pts</span>
+              <span class="quick-card-action">Start writing <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </div>
             <div class="pillar-card pc-guided" data-type="guided">
               <div class="pc-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
               </div>
-              <div class="pc-title">GUIDED JOURNAL</div>
+              <div class="pc-title">Guided Journal</div>
               <div class="pc-desc">Answer intentional questions to reflect on your day, your choices, and your growth.</div>
               <span class="pc-pts">+12 pts</span>
+              <span class="quick-card-action">Use prompts <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </div>
           </div>
         </div>
-        <button class="reorder-btn" id="reorderToggle" data-tab="journal" type="button">✎ Reorder</button>
-        <div class="pillar-tabs" data-tab="journal">
+        <div class="journal-library" data-tab="journal">
+        <div class="journal-section-head">
+          <div><div class="journal-section-eyebrow">The forge library</div><h2>Choose a guided path</h2></div>
+          <button class="reorder-btn" id="reorderToggle" type="button">✎ Customize</button>
+        </div>
+        <div class="pillar-tabs">
           <button type="button" class="pillar-tab active" data-pillar="faith"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M7 8h10"/></svg>Faith</button>
           <button type="button" class="pillar-tab" data-pillar="family"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg>Family</button>
           <button type="button" class="pillar-tab" data-pillar="fitness"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5M4 9l2-2M18 20l2-2M3 13l3 3M18 5l3 3"/></svg>Fitness</button>
         </div>
-        <div class="pillar-cards" data-tab="journal">
+        <div class="pillar-cards">
           <div class="pillar-card pc-reframe" data-type="reframe" data-pillars="faith family">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 20 6-10 4 6 3-4 5 8Z"/></svg>
             </div>
-            <div class="pc-title">RE-FRAME</div>
+            <div class="pc-title">Re-Frame</div>
             <div class="pc-desc">Challenge the view you have toward something and replace it with truth.</div>
             <span class="pc-pts">+13 pts</span>
           </div>
@@ -1790,7 +1812,7 @@
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18V5a1 1 0 0 1 1-1h6a2 2 0 0 1 2 2 2 2 0 0 1 2-2h6a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-7a1 1 0 0 0-1 1 1 1 0 0 0-1-1H4a1 1 0 0 1-1-1Z"/></svg>
             </div>
-            <div class="pc-title">DEVOTIONAL</div>
+            <div class="pc-title">Devotional</div>
             <div class="pc-desc">Spend time in God's Word and prayer. Draw closer to the One who leads and strengthens you.</div>
             <span class="pc-pts">+15 pts</span>
           </div>
@@ -1798,7 +1820,7 @@
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 3.5c-1.2 2.3-3 4.3-3 7.5v5a2.5 2.5 0 0 0 2.5 2.5h1"/><path d="M12.5 3.5c1.2 2.3 3 4.3 3 7.5v5a2.5 2.5 0 0 1-2.5 2.5h-1"/><path d="M8.5 13H6M18 13h-2.5"/></svg>
             </div>
-            <div class="pc-title">PRAYER REQUESTS</div>
+            <div class="pc-title">Prayer Requests</div>
             <div class="pc-desc">Lift up the people and needs on your heart. Write your prayers and bring them before God.</div>
             <span class="pc-pts">+13 pts</span>
           </div>
@@ -1806,7 +1828,7 @@
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></svg>
             </div>
-            <div class="pc-title">FAMILY</div>
+            <div class="pc-title">Family</div>
             <div class="pc-desc">Invest in the people God gave you. Reflect on how you led, served and showed up for your family today.</div>
             <span class="pc-pts">+9 pts</span>
           </div>
@@ -1814,7 +1836,7 @@
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
             </div>
-            <div class="pc-title">FITNESS ROUTINE</div>
+            <div class="pc-title">Fitness Routine</div>
             <div class="pc-desc">Track your training, energy and goals. Steward your body and stay disciplined.</div>
             <span class="pc-pts">+7 pts</span>
           </div>
@@ -1822,7 +1844,7 @@
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </div>
-            <div class="pc-title">GRATITUDE JOURNAL</div>
+            <div class="pc-title">Gratitude</div>
             <div class="pc-desc">Count your blessings. Name the people, moments and gifts you're thankful for today.</div>
             <span class="pc-pts">+11 pts</span>
           </div>
@@ -1830,10 +1852,11 @@
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="16.2 7.8 13.4 13.4 7.8 16.2 10.6 10.6"/></svg>
             </div>
-            <div class="pc-title">DRIFT FIX</div>
+            <div class="pc-title">Drift Fix</div>
             <div class="pc-desc">Feel off in an area of life? A guided, honest audit with personalized Scripture, a step and a prayer.</div>
             <span class="pc-pts">+12 pts</span>
           </div>
+        </div>
         </div>
 
         <div class="verse" data-tab="today">
@@ -4244,7 +4267,7 @@
   function setReorderMode(on) {
     __reorderMode = on;
     const wrap = document.querySelector(".pillar-cards"); if (wrap) wrap.classList.toggle("reordering", on);
-    const btn = document.getElementById("reorderToggle"); if (btn) btn.textContent = on ? "✓ Done reordering" : "✎ Reorder";
+    const btn = document.getElementById("reorderToggle"); if (btn) btn.textContent = on ? "✓ Done reordering" : "✎ Customize";
     document.querySelectorAll(".pillar-cards .reorder-ctrls").forEach(function (e) { e.remove(); });
     if (on) {
       document.querySelectorAll(".pillar-cards .pillar-card").forEach(function (card) {
