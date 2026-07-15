@@ -34,6 +34,17 @@
     });
   } catch (e) {}
 })();
+// Best-effort portrait lock — only Android/Chrome-family browsers expose
+// screen.orientation.lock(), and only in fullscreen/installed contexts. Safe
+// no-op everywhere else (notably Safari/iOS, which has no lock API at all;
+// there portrait-only comes from manifest.json's "orientation" key instead).
+(function () {
+  try {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock("portrait").catch(function () {});
+    }
+  } catch (e) {}
+})();
 </script>
 <meta name="description" content="A faith-driven daily journal for men and women — journaling, scripture devotionals, fitness, prayer, gratitude, and an AI weekly review. Start your 7-day free trial.">
 <meta name="theme-color" content="#15161a">
