@@ -109,6 +109,11 @@
   body[data-build="women"] .sum-entry .se-preview,
   body[data-build="women"] .saved-sum-body pre { color: #4a3f39; }
   * { box-sizing: border-box; }
+  .sr-only {
+    position: absolute !important; width: 1px !important; height: 1px !important;
+    padding: 0 !important; margin: -1px !important; overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important;
+  }
   body {
     margin: 0;
     background: #0c0d10;
@@ -152,8 +157,7 @@
   /* The Forge home fully replaces the old Today screen — scoreboard, identity line,
      quick-journal, and the pillar tabs/cards. (Every journal type is still reachable
      from the type switcher inside the compose view.) */
-  #landingView .scoreboard, #landingView #heroDesc, #landingView .quick-journal,
-  #landingView .pillar-tabs, #landingView .pillar-cards, #landingView .reorder-btn,
+  #landingView .scoreboard, #landingView #heroDesc,
   #landingView .forge-more { display: none !important; }
   .crown { color: var(--gold); margin-bottom: 6px; }
   .brand-title { font-weight: 800; letter-spacing: 2px; line-height: 0.95; margin: 4px 0 2px; }
@@ -193,13 +197,15 @@
   .auth-switch { margin-top: 16px; font-size: 13px; color: var(--muted); }
   .auth-switch button {
     background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit;
-    cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 10px 4px;
+    min-height: 44px; display: inline-flex; align-items: center;
   }
   .auth-switch button:hover { color: var(--gold-light); }
   .auth-forgot { margin-top: 8px; font-size: 13px; }
   .auth-forgot button {
     background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit;
-    cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 10px 4px;
+    min-height: 44px; display: inline-flex; align-items: center;
   }
   .auth-forgot button:hover { color: var(--gold-light); }
   .signin-btn {
@@ -273,12 +279,12 @@
   .fqj .pen { width:38px; height:38px; flex:0 0 auto; border-radius:10px; background:rgba(217,169,62,.16); color:var(--gold-light); display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; }
   .fqj .pen svg { width:18px; height:18px; }
   .fjourney { margin:2px 0 6px; }
-  .fstep { display:flex; align-items:center; gap:13px; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:11px; cursor:pointer; transition:transform .1s ease; }
+  .fstep { display:flex; align-items:center; gap:13px; width:100%; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:11px; cursor:pointer; transition:transform .1s ease; color:var(--text); font-family:inherit; text-align:left; }
   .fstep:active { transform:scale(.99); }
   .fstep .sico { width:34px; height:34px; flex:0 0 auto; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--field); color:var(--muted); }
   .fstep .sico svg { width:19px; height:19px; }
-  .fstep .stitle { font-size:15px; font-weight:700; }
-  .fstep .ssub { font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .fstep .stitle { display:block; font-size:15px; font-weight:700; }
+  .fstep .ssub { display:block; font-size:12.5px; color:var(--muted); margin-top:2px; }
   .fstep .schev { margin-left:auto; color:var(--muted); display:flex; }
   .fstep .schev svg { width:20px; height:20px; }
   .fstep.done { opacity:.6; }
@@ -414,7 +420,7 @@
   .rw-claim-item { border-top:1px solid var(--field-border); padding:10px 0; font-size:13px; line-height:1.5; }
   /* Bottom tab navigation */
   .bottom-nav { position: fixed; left:0; right:0; bottom:0; z-index:900; display:flex; background:var(--panel); border-top:1px solid var(--field-border); padding:8px 4px calc(8px + max(env(safe-area-inset-bottom,0px), 16px)); box-shadow:0 -4px 16px rgba(0,0,0,0.18); }
-  .bottom-nav button { position:relative; flex:1; background:none; border:none; color:var(--muted); font-family:inherit; font-size:10px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
+  .bottom-nav button { position:relative; flex:1; min-height:48px; background:none; border:none; color:var(--muted); font-family:inherit; font-size:11px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
   .bottom-nav .bn-ico { width:23px; height:23px; }
   .bottom-nav button.active { color:var(--gold-light); }
   .bn-badge { display:none; position:absolute; top:-1px; left:calc(50% + 7px); min-width:16px; height:16px; padding:0 4px; box-sizing:border-box; background:#e5484d; color:#fff; font-size:10px; font-weight:800; line-height:16px; text-align:center; border-radius:9px; box-shadow:0 0 0 2px var(--panel); }
@@ -422,6 +428,9 @@
   #landingView .landing-body { padding-bottom: 116px; }
   .tab-off { display:none !important; }
   .tab-title { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:4px 0 16px; }
+  .journal-intro { margin: 4px 0 18px; }
+  .journal-intro h1 { font-size: 27px; line-height: 1.15; margin: 0 0 5px; }
+  .journal-intro p { color: var(--muted); font-size: 13.5px; margin: 0; }
   /* Prayer circles */
   .pc-wrap { margin-bottom: 22px; }
   .pc-wrap > h3 { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:0 0 12px; }
@@ -649,7 +658,7 @@
   .pc-title { font-size: 18px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 10px; }
   .pc-desc { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
   .pc-pts { display: inline-block; margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
-  /* Pillar sub-tabs on the Today page */
+  /* Pillar sub-tabs on the Journal page */
   .pillar-tabs { display: flex; gap: 8px; margin: 4px 0 18px; }
   .pillar-tab { flex: 1; background: var(--field); border: 1px solid var(--field-border); color: var(--muted); border-radius: 12px; padding: 12px 6px; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; cursor: pointer; transition: all .15s ease; display: flex; flex-direction: column; align-items: center; gap: 5px; }
   .pillar-tab .pt-ico { width: 20px; height: 20px; }
@@ -793,7 +802,7 @@
   .hist-btn .count { background: var(--gold); color: #1c1402; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 7px; min-width: 18px; text-align: center; }
   .body { padding: 22px 26px max(44px, calc(26px + env(safe-area-inset-bottom,0px))); }
   .type-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 26px; }
-  /* The activity is chosen on the Today page now — hide the in-entry type switcher. */
+  /* The activity is chosen before entering compose — hide the in-entry type switcher. */
   #typeSelector { display: none; }
   .write-title { font-size: 20px; font-weight: 700; letter-spacing: .3px; color: var(--text); margin: 2px 0 20px; }
   /* Morning / End-of-day daypart toggle inside an entry */
@@ -1073,7 +1082,7 @@
   .pw-redeem-cta:hover { background:rgba(217,169,62,.16); }
   .pw-redeem-cta:active { transform:scale(.99); }
   .pw-redeem-cta svg { flex:0 0 auto; }
-  .paywall-signout { margin-top: 20px; background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .paywall-signout { margin-top: 12px; min-height:44px; padding:10px 6px; background: none; border: none; color: var(--gold); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   /* Devotional reflection card (women's build) */
   .reflection-card { background: linear-gradient(135deg, rgba(217,169,62,0.16), rgba(217,169,62,0.04)); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
   .reflection-card .rc-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
@@ -1099,6 +1108,8 @@
     body { padding: 0; -webkit-text-size-adjust: 100%; }
     .card { border-radius: 0; box-shadow: none; max-width: 100%; }
     .hero { padding: max(80px, calc(38px + env(safe-area-inset-top, 0px))) 18px 30px; }
+    #signInView .hero { padding: max(28px, calc(18px + env(safe-area-inset-top, 0px))) 18px 18px; }
+    #signInView .logo, body[data-build="women"] #signInView .logo { max-width: 150px; margin-bottom: 0; }
     .brand-title .rise { font-size: 40px; }
     .brand-title .kings { font-size: 46px; }
     .brand-sub { letter-spacing: 3px; font-size: 14px; margin-bottom: 18px; }
@@ -1127,6 +1138,11 @@
     .meta-row { gap: 12px; }
     .submit-btn { font-size: 16px; padding: 16px; }
     .entry-head { padding: 14px; }
+  }
+
+  :where(button, a, input, textarea, select, [role="button"]):focus-visible {
+    outline: 3px solid var(--gold-light) !important;
+    outline-offset: 3px;
   }
 
   /* The writing view should never scroll horizontally — hard guard against any
@@ -1363,21 +1379,24 @@
       </div>
       <div class="signin-body">
         <h2 id="authTitle">Create your account</h2>
-        <p id="authSubtitle">Sign up with an email and password. Your journals, points and streak are saved privately on this device.</p>
+        <p id="authSubtitle">Sign up with an email and password. Your journals, points and streak sync securely to your account.</p>
+        <label class="sr-only" for="emailInput">Email address</label>
         <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
         <div class="pw-wrap" id="pwWrap">
+          <label class="sr-only" for="passwordInput">Password</label>
           <input type="password" id="passwordInput" placeholder="Password (min 6 characters)" autocomplete="current-password">
           <button type="button" class="pw-eye" data-pwtoggle="passwordInput" aria-label="Show password"></button>
         </div>
         <div class="pw-wrap" id="pwConfirmWrap">
+          <label class="sr-only" for="passwordConfirm">Confirm password</label>
           <input type="password" id="passwordConfirm" placeholder="Confirm password" autocomplete="new-password">
           <button type="button" class="pw-eye" data-pwtoggle="passwordConfirm" aria-label="Show password"></button>
         </div>
-        <div class="auth-error" id="authError"></div>
+        <div class="auth-error" id="authError" role="alert" aria-live="polite"></div>
         <button class="signin-btn" id="signInBtn">Create account</button>
         <div class="auth-switch"><span id="authSwitchLabel">Already have an account?</span> <button type="button" id="authToggle">Log in</button></div>
         <div class="auth-forgot" id="authForgot" style="display: none;"><button type="button" id="authForgotBtn">Forgot password?</button></div>
-        <div class="signin-note">Your password is salted and hashed on this device — it is never stored as plain text or sent anywhere.</div>
+        <div class="signin-note">Your password is securely handled by our authentication provider. LIVN FORGE never stores it as plain text.</div>
       </div>
     </div>
 
@@ -1437,7 +1456,7 @@
           <div class="forge-card">
             <div class="forge-clabel">Quick journal</div>
             <div class="fqj">
-              <input id="forgeQjInput" placeholder="What's on your mind?" readonly>
+              <input id="forgeQjInput" placeholder="What's on your mind?" readonly role="button" aria-label="Open quick journal">
               <button class="pen" id="forgeQjBtn" type="button" aria-label="Open journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>
             </div>
           </div>
@@ -1478,6 +1497,7 @@
         <div class="settings-card" id="nameSettings" data-tab="settings">
           <div class="sc-title">What should we call you?</div>
           <p class="sc-desc">This is the name used in your greeting, your profile, and your circles.</p>
+          <label class="sr-only" for="nameInput">Your name</label>
           <input id="nameInput" type="text" placeholder="e.g. Mark" autocomplete="given-name" maxlength="40" style="width:100%; box-sizing:border-box; background:var(--field); border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:11px 13px; font-family:inherit; font-size:16px; margin-bottom:10px;">
           <button class="pcc-btn" id="nameSave" type="button">Save name</button>
           <span class="sc-saved" id="nameSaved"></span>
@@ -1502,11 +1522,13 @@
           </div>
           <p class="sc-desc" style="margin-top:14px;">Let someone gift a free year too (e.g. an ambassador you gave a year to):</p>
           <div class="invite-actions">
+            <label class="sr-only" for="allowGifterEmail">Email allowed to gift</label>
             <input id="allowGifterEmail" type="email" placeholder="email@example.com" autocapitalize="off" style="flex:1; min-width:160px; background:var(--field); border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:10px 12px; font-family:inherit; font-size:16px;">
             <button class="invite-btn" id="allowGifterBtn" type="button">Allow to gift</button>
           </div>
           <p class="sc-desc" style="margin-top:14px;"><b>Lifetime access</b> — free forever, attached to their email. No code, nothing to redeem or expire; it works the moment they sign up with that email:</p>
           <div class="invite-actions">
+            <label class="sr-only" for="compEmail">Email receiving lifetime access</label>
             <input id="compEmail" type="email" placeholder="email@example.com" autocapitalize="off" style="flex:1; min-width:160px; background:var(--field); border:1px solid var(--field-border); color:var(--text); border-radius:9px; padding:10px 12px; font-family:inherit; font-size:16px;">
             <button class="invite-btn primary" id="compGrantBtn" type="button">Grant lifetime</button>
           </div>
@@ -1529,6 +1551,7 @@
           <div class="sc-title">Daily reminder</div>
           <p class="sc-desc">Pick a time and write a note to yourself — it pops up every day with your message.</p>
           <label class="sc-field"><span>Time</span><input type="time" id="reminderTimeField"></label>
+          <label class="sr-only" for="reminderNote">Reminder message</label>
           <textarea id="reminderNote" rows="3" placeholder="e.g. Lead your family well today. Stay disciplined. 🔨"></textarea>
           <button class="pcc-btn" id="reminderSave" type="button">Save reminder</button>
           <span class="sc-saved" id="reminderNoteSaved"></span>
@@ -1586,21 +1609,21 @@
           <div class="rw-modal-inner" id="jtModalInner"></div>
         </div>
 
-        <div class="rw-modal" id="claimModal">
+        <div class="rw-modal" id="claimModal" role="dialog" aria-modal="true" aria-labelledby="claimTitle">
           <div class="rw-modal-inner">
             <h3 id="claimTitle">Claim your reward</h3>
             <img id="claimHero" class="claim-hero" style="display:none" alt="">
-            <div class="rw-field"><label>Full name</label><input id="claimName" autocomplete="name"></div>
-            <div class="rw-field" id="claimSizeWrap" style="display:none;"><label>Size</label>
+            <div class="rw-field"><label for="claimName">Full name</label><input id="claimName" autocomplete="name"></div>
+            <div class="rw-field" id="claimSizeWrap" style="display:none;"><label for="claimSize">Size</label>
               <select id="claimSize"><option value="">Choose a size…</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option></select>
             </div>
-            <div class="rw-field"><label>Shipping address</label><input id="claimAddr1" autocomplete="address-line1" placeholder="Street address"></div>
-            <div class="rw-field"><input id="claimAddr2" autocomplete="address-line2" placeholder="Apt, suite (optional)"></div>
+            <div class="rw-field"><label for="claimAddr1">Shipping address</label><input id="claimAddr1" autocomplete="address-line1" placeholder="Street address"></div>
+            <div class="rw-field"><label class="sr-only" for="claimAddr2">Apartment or suite, optional</label><input id="claimAddr2" autocomplete="address-line2" placeholder="Apt, suite (optional)"></div>
             <div class="rw-row2">
-              <div class="rw-field"><label>City</label><input id="claimCity" autocomplete="address-level2"></div>
-              <div class="rw-field"><label>State</label><input id="claimState" autocomplete="address-level1"></div>
+              <div class="rw-field"><label for="claimCity">City</label><input id="claimCity" autocomplete="address-level2"></div>
+              <div class="rw-field"><label for="claimState">State</label><input id="claimState" autocomplete="address-level1"></div>
             </div>
-            <div class="rw-field"><label>ZIP</label><input id="claimZip" autocomplete="postal-code" inputmode="numeric"></div>
+            <div class="rw-field"><label for="claimZip">ZIP</label><input id="claimZip" autocomplete="postal-code" inputmode="numeric"></div>
             <div class="rw-error" id="claimError"></div>
             <div class="rw-modal-actions">
               <button class="rw-cancel" id="claimCancel" type="button">Cancel</button>
@@ -1685,6 +1708,13 @@
         </div>
 
         <div class="jr-cards" data-tab="progress">
+          <button class="jr-card" id="landingRewardsCta" type="button">
+            <span class="jr-card-ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M7 5H4.5v1.5A2.5 2.5 0 0 0 7 9"/><path d="M17 5h2.5v1.5A2.5 2.5 0 0 1 17 9"/></svg>
+            </span>
+            <span class="jr-card-text"><span class="jr-card-title">Rewards</span><span class="jr-card-sub">See what your consistency unlocks</span></span>
+            <span class="jr-card-arrow">›</span>
+          </button>
           <button class="jr-card" id="landingSummaryCta">
             <span class="jr-card-ico">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>
@@ -1716,7 +1746,11 @@
 
         <div class="prayer-circles" id="prayerCircles" data-tab="circles"></div>
 
-        <div class="quick-journal" data-tab="today">
+        <div class="journal-intro" data-tab="journal">
+          <h1>Journal</h1>
+          <p>Choose the reflection that fits what you need today.</p>
+        </div>
+        <div class="quick-journal" data-tab="journal">
           <div class="qj-label">Quick journal — just write</div>
           <div class="quick-journal-row">
             <div class="pillar-card pc-freeflow" data-type="freeflow">
@@ -1737,13 +1771,13 @@
             </div>
           </div>
         </div>
-        <button class="reorder-btn" id="reorderToggle" data-tab="today" type="button">✎ Reorder</button>
-        <div class="pillar-tabs" data-tab="today">
+        <button class="reorder-btn" id="reorderToggle" data-tab="journal" type="button">✎ Reorder</button>
+        <div class="pillar-tabs" data-tab="journal">
           <button type="button" class="pillar-tab active" data-pillar="faith"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M7 8h10"/></svg>Faith</button>
           <button type="button" class="pillar-tab" data-pillar="family"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg>Family</button>
           <button type="button" class="pillar-tab" data-pillar="fitness"><svg class="pt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5M4 9l2-2M18 20l2-2M3 13l3 3M18 5l3 3"/></svg>Fitness</button>
         </div>
-        <div class="pillar-cards" data-tab="today">
+        <div class="pillar-cards" data-tab="journal">
           <div class="pillar-card pc-reframe" data-type="reframe" data-pillars="faith family">
             <div class="pc-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 20 6-10 4 6 3-4 5 8Z"/></svg>
@@ -1812,10 +1846,10 @@
         <button class="landing-history" id="landingHistory" data-tab="progress">Review your history</button>
       </div>
 
-      <nav class="bottom-nav" id="bottomNav">
+      <nav class="bottom-nav" id="bottomNav" aria-label="Primary navigation">
         <button data-go="today"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg>Today</button>
+        <button data-go="journal"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Journal</button>
         <button data-go="circles"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M15 20c0-2 1-3.4 3-3.7"/></svg>Circles<span class="bn-badge" id="circlesNavBadge"></span></button>
-        <button data-go="rewards"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M7 5H4.5v1.5A2.5 2.5 0 0 0 7 9"/><path d="M17 5h2.5v1.5A2.5 2.5 0 0 1 17 9"/></svg>Rewards</button>
         <button data-go="progress"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Journey</button>
         <button data-go="settings"><svg class="bn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>Profile</button>
       </nav>
@@ -1874,8 +1908,8 @@
             <span class="plan-sub">billed monthly</span>
           </button>
         </div>
-        <div class="paywall-status" id="paywallStatus"></div>
-        <div class="paywall-note">7 days free, then your selected plan. A card is required to start the trial; cancel anytime before it ends and you won't be charged.</div>
+        <div class="paywall-status" id="paywallStatus" role="status" aria-live="polite"></div>
+        <div class="paywall-note">Your 7-day trial starts automatically—no card required. After the trial, choose a plan to continue.</div>
         <button type="button" class="paywall-signout" id="paywallMaybeLater" style="display:none;">Maybe later — keep using my trial</button>
         <button type="button" class="paywall-signout" id="paywallSignOut">Sign out</button>
       </div>
@@ -1920,7 +1954,7 @@
           <form id="journalForm">
             <div id="questions"></div>
             <button type="submit" class="submit-btn">Submit</button>
-            <div class="hint">Your entries are saved privately on this device so you can look back on them. Nothing is sent anywhere.</div>
+            <div class="hint">Your entries sync securely to your account and stay private unless you choose to share them.</div>
           </form>
         </div>
 
@@ -1968,7 +2002,7 @@
       </div>
     </div>
   </div>
-  <div class="toast" id="toast">Saved to your history</div>
+  <div class="toast" id="toast" role="status" aria-live="polite">Saved to your history</div>
 
   <div id="tutorialOverlay" class="tut-overlay">
     <div class="tut-card">
@@ -1989,6 +2023,7 @@
       <h3>Delete your account?</h3>
       <p>This permanently erases your account and everything in it — entries, points, streaks, circles, and prayer requests. It cannot be undone.</p>
       <p class="da-sub">Type <b>DELETE</b> to confirm:</p>
+      <label class="sr-only" for="deleteConfirmInput">Type DELETE to confirm account deletion</label>
       <input id="deleteConfirmInput" type="text" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="DELETE">
       <div class="da-actions">
         <button id="deleteCancelBtn" type="button" class="da-cancel">Cancel</button>
@@ -4119,12 +4154,14 @@
 
   // ----- First-run welcome tutorial -----
   const TUTORIAL_SLIDES = [
-    { svg: '<path d="M12 3v18"/><path d="M6.5 8.5h11"/>', title: "Forged in faith. Refined in purpose.", body: "LIVN FORGE helps you build one habit a day — show up, write it down, live it out.", btn: "Get Started", skip: false },
-    { svg: '<path d="M12 6.6C10.3 5.3 8 4.7 4 5.3v12.8c4-.6 6.3 0 8 1.3 1.7-1.3 4-1.9 8-1.3V5.3c-4-.6-6.3 0-8 1.3z"/><path d="M12 6.6v12.8"/>', title: "Start with the Word", body: "Every day opens with a verse to anchor your mindset before anything else happens.", btn: "Next", skip: true },
-    { svg: '<circle cx="12" cy="12" r="9"/><path d="M8.3 12.2l2.5 2.5 4.9-5.3"/>', title: "Five steps. One finished day.", body: "Read Scripture, pray, journal, complete your habit, encourage someone — check them off as you go. Your ring fills up as you finish strong.", btn: "Next", skip: true },
-    { svg: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>', title: "Write it down in minutes", body: "Six short prompts — Win, Challenge, God Moment, Prayer, Lesson, Tomorrow — turn a blank page into a two-minute habit.", btn: "Next", skip: true },
-    { svg: '<path d="M12 3.3l2.4 5.7 6.1.5-4.7 4 1.4 6-5.2-3.2-5.2 3.2 1.4-6-4.7-4 6.1-.5z"/>', title: "Consistency counts", body: "Every entry earns Kingdom Points and builds your streak. Miss a day and the streak resets — so show up daily.", btn: "Next", skip: true },
-    { svg: '<path d="M6 21V4"/><path d="M6 4h11l-2.3 4L17 12H6"/>', title: "Your first mission is waiting", body: "Tap in, complete today's steps, and start your streak.", btn: "Start Today's Mission", skip: false, last: true }
+    { svg: '<path d="M12 3v18"/><path d="M6.5 8.5h11"/>', title: "Forge each day with purpose", body: "Your daily mission brings together Scripture, prayer, journaling, movement, and encouragement. Complete each step to fill your progress ring.", btn: "Next", skip: true },
+    { svg: '<path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M8 4v16"/><path d="M11 8h4M11 12h4"/>', title: "Journal your way", body: "Write freely or use guided prompts for prayer, gratitude, family, fitness, devotionals, Re-Frame, and Drift Fix. Return anytime to review past entries.", btn: "Next", skip: true },
+    { svg: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 19c.5-3.6 2.3-5.4 5.5-5.4s5 1.8 5.5 5.4M14 15c2.8-.3 4.7 1 5.5 3.8"/>', title: "Grow stronger together", body: "Create or join a Circle to chat, share photos and prayer requests, pray for one another, and send encouragement.", btn: "Next", skip: true },
+    { svg: '<path d="M4 19V9M10 19V5M16 19v-7M3 19h18"/><path d="M4 7l6-4 6 6 5-5"/>', title: "See your growth", body: "Journey brings your faith, family, and fitness progress together with goals, streaks, Kingdom Points, the 21-Day Challenge, weekly summaries, personal bests, and rewards.", btn: "Next", skip: true },
+    { svg: '<path d="M12 3l1.2 4.1L17 9l-3.8 1.9L12 15l-1.2-4.1L7 9l3.8-1.9z"/><path d="M18.5 14l.7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7z"/>', title: "Reflect with helpful prompts", body: "Use AI-assisted devotional questions, weekly reviews, and Drift Fix to spot patterns and choose a next step. AI may be inaccurate and is never a substitute for Scripture or trusted counsel.", btn: "Next", skip: true },
+    { svg: '<circle cx="8.5" cy="9" r="5"/><circle cx="15.5" cy="15" r="5"/>', title: "A note about Marriage Forge", body: "Marriage Forge is a 40-day journey with one Scripture-based dare each day. Begin alone or invite your spouse; your journal stays private, while only the note you choose is shared—and one subscription covers you both.", btn: "Next", skip: true },
+    { svg: '<path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h7M15 17h5"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="13" cy="17" r="2"/>', title: "Make LIVN FORGE yours", body: "Choose the men's or women's build, set reminders and notifications, invite friends, manage your account, and revisit this walkthrough anytime from Profile.", btn: "Next", skip: true },
+    { svg: '<circle cx="12" cy="12" r="9"/><path d="M8.3 12.2l2.5 2.5 4.9-5.3"/>', title: "Today's mission is ready", body: "Start with the next unfinished step. Small acts of faithfulness become a life forged with purpose.", btn: "Start Today's Mission", skip: false, last: true }
   ];
   let tutIdx = 0;
   function tutKey() { return APP + ":tutseen:" + (currentEmail() || "").toLowerCase(); }
@@ -4614,9 +4651,9 @@
         var chev = s.done
           ? '<span class="schev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>'
           : '<span class="schev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>';
-        return '<div class="fstep ' + cls + '" data-fstep="' + i + '">' +
+        return '<button type="button" class="fstep ' + cls + '" data-fstep="' + i + '">' +
           '<span class="sico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="' + s.icon + '"/></svg></span>' +
-          '<div><div class="stitle">' + s.title + '</div><div class="ssub">' + (s.done ? "Done" : s.sub) + '</div></div>' + chev + '</div>';
+          '<span><span class="stitle">' + s.title + '</span><span class="ssub">' + (s.done ? "Done" : s.sub) + '</span></span>' + chev + '</button>';
       }).join("");
       jw.innerHTML = html;
       jw.querySelectorAll("[data-fstep]").forEach(function (el) {
@@ -4636,7 +4673,10 @@
     });
     function openQj() { setActiveType("freeflow"); showApp(); showWrite(); window.scrollTo(0, 0); }
     var qb = document.getElementById("forgeQjBtn"); if (qb) qb.addEventListener("click", openQj);
-    var qi = document.getElementById("forgeQjInput"); if (qi) qi.addEventListener("click", openQj);
+    var qi = document.getElementById("forgeQjInput"); if (qi) {
+      qi.addEventListener("click", openQj);
+      qi.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openQj(); } });
+    }
   })();
   // ===== Journey tab — 3 pillar rings (days engaged this week) =====
   function pillarWeekDays(types) {
@@ -4778,7 +4818,7 @@
       }
     });
   })();
-  // ----- Pillar sub-tabs (Faith / Family / Fitness) on the Today page -----
+  // ----- Pillar sub-tabs (Faith / Family / Fitness) on the Journal page -----
   let __activePillar = "faith";
   function pillarTabKey() { return APP + ":activepillar:" + (currentEmail() || ""); }
   function loadActivePillar() {
@@ -4811,7 +4851,9 @@
 
   // landing cards open a journal type
   document.querySelectorAll(".pillar-card").forEach(c => {
-    c.addEventListener("click", (e) => {
+    c.setAttribute("role", "button");
+    c.setAttribute("tabindex", "0");
+    function openPillarCard(e) {
       if (__reorderMode) {
         if (e.target.classList.contains("ro-up")) movePillar(c.dataset.type, -1);
         else if (e.target.classList.contains("ro-down")) movePillar(c.dataset.type, 1);
@@ -4820,10 +4862,17 @@
       // Fix #5: never block a repeat — points are simply capped at one per
       // card type per day (handled on save). Let them keep going.
       setActiveType(c.dataset.type); showApp(); showWrite(); window.scrollTo(0, 0);
+    }
+    c.addEventListener("click", openPillarCard);
+    c.addEventListener("keydown", function (e) {
+      if (e.target !== c) return;
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault(); openPillarCard(e);
     });
   });
   document.getElementById("landingHistory").addEventListener("click", () => { showApp(); showHistory(); window.scrollTo(0, 0); });
   document.getElementById("landingSummary").addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); });
+  document.getElementById("landingRewardsCta").addEventListener("click", () => { showTab("rewards"); window.scrollTo(0, 0); });
   document.getElementById("landingSummaryCta").addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); });
   (function () { var ai = document.getElementById("jrAiReviewCta"); if (ai) ai.addEventListener("click", () => { showApp(); showSummary(); window.scrollTo(0, 0); }); })();
   document.getElementById("homeBtn").addEventListener("click", () => { showLanding(); window.scrollTo(0, 0); });
@@ -4842,7 +4891,7 @@
     document.getElementById("authTitle").textContent =
       signup ? "Create your account" : reset ? "Reset password" : newPw ? "Set a new password" : "Welcome back";
     document.getElementById("authSubtitle").textContent =
-      signup ? "Sign up with an email and password. Your journals, points and streak sync to your account."
+      signup ? "Sign up with an email and password. Your journals, points and streak sync securely to your account."
       : reset ? "Enter your email and we'll send you a reset link."
       : newPw ? "Choose a new password to finish resetting your account."
       : "Log in to your account.";
@@ -6870,25 +6919,41 @@
   // ----- Boot -----
   // ---- Bottom tab navigation ----
   let __activeTab = "today";
+  const TAB_TIPS = {
+    journal: "Choose the kind of reflection that fits what you need today.",
+    circles: "Join a circle to pray, encourage, and stay accountable together.",
+    progress: "Journey shows your weekly growth, goals, challenges, and rewards."
+  };
+  function maybeShowTabTip(name) {
+    const msg = TAB_TIPS[name];
+    if (!msg || !currentEmail()) return;
+    const key = APP + ":tabtip:" + name + ":" + currentEmail().toLowerCase();
+    try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch (e) {}
+    setTimeout(function () { if (typeof showToast === "function") showToast(msg); }, 120);
+  }
   function showTab(name) {
     __activeTab = name;
     document.body.setAttribute("data-activetab", name);
     var __ht = document.getElementById("heroTitle");
-    if (__ht) __ht.textContent = ({ circles: "Circles", rewards: "Rewards", progress: "Journey", settings: "Profile" })[name] || "";
+    if (__ht) __ht.textContent = ({ journal: "Journal", circles: "Circles", rewards: "Rewards", progress: "Journey", settings: "Profile" })[name] || "";
     document.querySelectorAll("#landingView [data-tab]").forEach(function (el) {
       const tabs = (el.getAttribute("data-tab") || "").split(/\s+/);
       el.classList.toggle("tab-off", tabs.indexOf(name) < 0);
     });
     document.querySelectorAll("#bottomNav button").forEach(function (b) {
-      b.classList.toggle("active", b.getAttribute("data-go") === name);
+      const active = b.getAttribute("data-go") === name;
+      b.classList.toggle("active", active);
+      if (active) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
     });
     try {
       if (name === "rewards") renderRewards();
       if (name === "circles") { if (typeof renderCircles === "function") renderCircles(); if (typeof migrateGroupsToCircles === "function") migrateGroupsToCircles(); }
       if (name === "progress") { renderScore(); if (typeof renderJourney === "function") renderJourney(); if (typeof renderMarriageCard === "function") renderMarriageCard(); if (typeof renderGoalsCard === "function") renderGoalsCard(); }
       if (name === "today") { if (typeof renderForge === "function") renderForge(); if (typeof renderMarriageToday === "function") renderMarriageToday(); if (typeof renderGoalsToday === "function") renderGoalsToday(); if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
+      if (name === "journal") { if (typeof applyPillarOrder === "function") applyPillarOrder(); if (typeof markDonePillars === "function") markDonePillars(); if (typeof showPillar === "function") showPillar(loadActivePillar()); }
       if (name === "settings") { if (typeof renderProfile === "function") renderProfile(); if (typeof renderBlockedList === "function") renderBlockedList(); }
     } catch (e) {}
+    maybeShowTabTip(name);
     window.scrollTo(0, 0);
   }
   (function initTabs() {
