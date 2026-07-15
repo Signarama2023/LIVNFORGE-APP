@@ -81,7 +81,15 @@ async function sendApns(token: string, title: string, body: string, data: Record
 
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return new Response("ok");
-  if (WEBHOOK_SECRET && req.headers.get("x-webhook-secret") !== WEBHOOK_SECRET) {
+  // This function runs with the service-role key and is deployed without JWT
+  // verification for database webhooks. Fail closed if the shared secret was
+  // not configured; otherwise a missing environment variable would turn this
+  // endpoint into an unauthenticated push-notification relay.
+  if (!WEBHOOK_SECRET) {
+    console.error("WEBHOOK_SECRET is not configured");
+    return new Response("server misconfigured", { status: 503 });
+  }
+  if (req.headers.get("x-webhook-secret") !== WEBHOOK_SECRET) {
     return new Response("unauthorized", { status: 401 });
   }
   let payload: any;
