@@ -9,6 +9,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+const BIBLE_API_KEY = Deno.env.get("BIBLE_API_KEY");
 const MODEL = "claude-haiku-4-5-20251001";
 
 const cors = {
@@ -79,11 +80,35 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   try {
+    const body = await req.json();
+
+    // Proxy API.Bible requests so its private credential is never shipped to
+    // browsers or committed to the public repository.
+    if (body.action === "passage") {
+      if (!BIBLE_API_KEY) return json({ error: "Missing BIBLE_API_KEY secret." }, 500);
+      const bibleId = String(body.bible_id || "").trim();
+      const passageId = String(body.passage_id || "").trim();
+      if (!/^[A-Za-z0-9-]+$/.test(bibleId) || !/^[A-Za-z0-9.-]+$/.test(passageId)) {
+        return json({ error: "Invalid Bible or passage identifier." }, 400);
+      }
+      const url = new URL(`https://api.scripture.api.bible/v1/bibles/${bibleId}/passages/${passageId}`);
+      url.searchParams.set("content-type", "text");
+      url.searchParams.set("include-verse-numbers", "true");
+      url.searchParams.set("include-notes", "false");
+      url.searchParams.set("include-titles", "false");
+      const bibleResp = await fetch(url, { headers: { "api-key": BIBLE_API_KEY } });
+      const bibleData = await bibleResp.json().catch(() => ({}));
+      if (!bibleResp.ok) {
+        return json({ error: "The passage provider could not complete this request." }, bibleResp.status);
+      }
+      return json(bibleData);
+    }
+
     if (!ANTHROPIC_API_KEY) {
       return json({ error: "Missing ANTHROPIC_API_KEY secret on the function." }, 500);
     }
 
-    const { passage = "", reference = "", teachers: teachersInput, debug = false } = await req.json();
+    const { passage = "", reference = "", teachers: teachersInput, debug = false } = body;
     if (!passage || !passage.trim()) {
       return json({ error: "No passage provided." }, 400);
     }
