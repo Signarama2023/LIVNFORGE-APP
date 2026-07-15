@@ -570,17 +570,23 @@
   .pc-leave { background:none; border:none; color:var(--muted); font-size:12px; text-decoration:underline; cursor:pointer; font-family:inherit; padding:0; margin-top:10px; }
   /* Circles list -> detail */
   .pc-list-label { font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:18px 0 10px; }
-  .pc-list-btn { display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; text-align:left; background:var(--panel); border:1px solid var(--field-border); border-radius:16px; padding:10px 12px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text); transition:border-color .15s ease, transform .1s ease; }
-  .pc-list-btn:hover { border-color:var(--gold); }
+  .pc-list-btn {
+    position:relative; overflow:hidden; display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; text-align:left;
+    border:1px solid var(--field-border); border-radius:16px; padding:10px 14px 10px 17px; margin-bottom:10px; cursor:pointer; font-family:inherit; color:var(--text);
+    background:radial-gradient(circle at 95% 0, var(--tg, rgba(217,169,62,.12)), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+    transition:border-color .15s ease, transform .1s ease, box-shadow .15s ease;
+  }
+  .pc-list-btn::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:0 3px 3px 0; background:var(--tc, var(--gold)); box-shadow:0 0 16px var(--tc, var(--gold)); opacity:.9; }
+  .pc-list-btn:hover { border-color:var(--tc, var(--gold)); transform:translateY(-2px); box-shadow:0 14px 32px rgba(0,0,0,.32), 0 0 0 1px var(--tg, rgba(217,169,62,.12)); }
   .pc-list-btn:active { transform:scale(0.99); }
-  .pc-list-btn .pcl-photo { width:60px; height:60px; border-radius:13px; overflow:hidden; flex:0 0 auto; background:#16130d; display:flex; align-items:center; justify-content:center; }
-  .pc-list-btn .pcl-photo img { width:100%; height:100%; object-fit:cover; display:block; }
-  .pc-list-btn .pcl-photo-ph { color:var(--tc, var(--gold)); display:flex; opacity:.92; }
-  .pc-list-btn .pcl-text { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+  .pc-list-btn .pcl-photo { width:52px; height:52px; border-radius:13px; overflow:hidden; flex:0 0 auto; border:1px solid var(--tc, var(--gold)); background:var(--tg, rgba(217,169,62,.12)); box-shadow:inset 0 0 18px var(--tg, rgba(217,169,62,.12)); display:flex; align-items:center; justify-content:center; }
+  .pc-list-btn .pcl-photo img { width:100%; height:100%; object-fit:cover; display:block; border-radius:13px; }
+  .pc-list-btn .pcl-photo-ph { color:var(--tc, var(--gold)); display:flex; opacity:.95; }
+  .pc-list-btn .pcl-text { display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; }
   .pc-list-btn .pcl-name { font-weight:800; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pc-list-btn .pcl-focus { color:var(--muted); font-size:12.5px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pc-list-btn .pcl-focus:empty { display:none; }
-  .pc-list-btn .pcl-meta { color:var(--gold); font-size:11px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; }
+  .pc-list-btn .pcl-meta { align-self:flex-start; display:inline-flex; align-items:center; margin-top:1px; padding:3px 9px; border:1px solid var(--tg, rgba(217,169,62,.24)); border-radius:99px; background:var(--tg, rgba(217,169,62,.12)); color:var(--tc, var(--gold)); font-size:10.5px; font-weight:800; letter-spacing:.02em; text-transform:uppercase; white-space:nowrap; }
   .pc-list-btn .pcl-arrow { color:var(--muted); font-size:24px; flex:0 0 auto; line-height:1; }
   /* Circle detail header (photo + name) */
   .pcd-head { display:flex; align-items:center; gap:14px; margin-bottom:6px; }
@@ -5524,11 +5530,11 @@
   const prayerCirclesEl = document.getElementById("prayerCircles");
 
   const CIRCLE_TYPES = {
-    prayer:  { label: "Prayer Circle",  icon: "🙏", color: "#f0768a", focus: "A circle praying together" },
-    team:    { label: "Team Circle",    icon: "🤝", color: "#60a5fa", focus: "A team growing together" },
-    victory: { label: "Victory Circle", icon: "🏆", color: "#f0c674", focus: "Celebrating wins together" },
-    impact:  { label: "Impact Circle",  icon: "✨", color: "#34d399", focus: "Making an impact together" },
-    iron:    { label: "Iron Circle",    icon: "⚔️", color: "#9aa0a6", focus: "Iron sharpening iron — Proverbs 27:17" }
+    prayer:  { label: "Prayer Circle",  icon: "🙏", color: "#f0768a", glow: "rgba(240,118,138,.13)", focus: "A circle praying together" },
+    team:    { label: "Team Circle",    icon: "🤝", color: "#60a5fa", glow: "rgba(96,165,250,.13)", focus: "A team growing together" },
+    victory: { label: "Victory Circle", icon: "🏆", color: "#f0c674", glow: "rgba(240,198,116,.13)", focus: "Celebrating wins together" },
+    impact:  { label: "Impact Circle",  icon: "✨", color: "#34d399", glow: "rgba(52,211,153,.13)", focus: "Making an impact together" },
+    iron:    { label: "Iron Circle",    icon: "⚔️", color: "#9aa0a6", glow: "rgba(154,160,166,.13)", focus: "Iron sharpening iron — Proverbs 27:17" }
   };
   // Premium thin-line SVG icons per circle type (no emoji — brand rule). Inherit
   // color via currentColor so callers tint with the type color.
@@ -5572,7 +5578,17 @@
       const t = CIRCLE_TYPES[k];
       return '<button type="button" class="pc-type-chip ' + (pcNewType === k ? "active" : "") + '" data-newtype="' + k + '" style="--tc:' + t.color + '">' + circleIconSvg(k, 15) + '<span>' + t.label.replace(" Circle", "") + '</span></button>';
     }).join("");
-    let html = '<div class="pc-wrap"><h3>Circles</h3>' +
+    let html =
+      '<div class="journal-intro">' +
+        '<div class="ji-copy">' +
+          '<div class="ji-kicker">The circle</div>' +
+          '<h1>Do life with people.</h1>' +
+          '<p>Share wins, prayer requests, and daily encouragement with the people already walking this with you.</p>' +
+        '</div>' +
+        '<svg class="ji-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.4"/><path d="M2.8 20.4a6.2 6.2 0 0 1 12.4 0"/><circle cx="18" cy="9.6" r="2.6"/><path d="M16 17a5.6 5.6 0 0 1 6 4"/></svg>' +
+      '</div>' +
+      '<div class="pc-wrap">' +
+      '<div class="journal-section-head"><div><div class="journal-section-eyebrow">New circle</div><h2>Join or start one</h2></div></div>' +
       '<div class="pc-join">' +
       '<input id="pcName" placeholder="Your name" value="' + escapeHtml(getName() || "") + '">' +
       '<input id="pcCode" placeholder="Circle code (e.g. MENS-GROUP)" autocapitalize="characters">' +
@@ -5582,7 +5598,7 @@
       '<button class="pcc-btn" id="pcJoin" type="button">Join / Create circle</button>' +
       '</div>';
     if (codes.length) {
-      html += '<div class="pc-list-label">Your circles — tap to open</div>';
+      html += '<div class="journal-section-head" style="margin-top:24px;"><div><div class="journal-section-eyebrow">Your circles</div><h2>Tap in to catch up</h2></div></div>';
       codes.forEach(function (code, i) {
         html += '<button class="pc-list-btn" id="pcBtn_' + i + '" data-open="' + escapeHtml(code) + '">' +
           '<span class="pcl-photo"><span class="pcl-photo-ph">' + circleIconSvg("prayer", 26) + '</span></span>' +
@@ -5623,6 +5639,7 @@
       const tinfo = CIRCLE_TYPES[circle.type] || CIRCLE_TYPES.prayer;
       const count = (res[1].data || []).length;
       btn.style.setProperty("--tc", tinfo.color);
+      btn.style.setProperty("--tg", tinfo.glow || "rgba(217,169,62,.12)");
       const photo = btn.querySelector(".pcl-photo");
       if (photo) {
         photo.innerHTML = circle.image_url
