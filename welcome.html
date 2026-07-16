@@ -58,7 +58,7 @@
   .feature span { color:var(--muted); }
   .rhythm { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; counter-reset:rhythm; }
   .rhythm .card:before { counter-increment:rhythm; content:"0" counter(rhythm); display:block; color:var(--gold2); font-weight:900; letter-spacing:2px; margin-bottom:18px; }
-  .price-box { display:grid; grid-template-columns:1fr 1fr; gap:20px; padding:30px; background:var(--panel); border:1px solid var(--line); border-radius:20px; }
+  .price-box { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; padding:30px; background:var(--panel); border:1px solid var(--line); border-radius:20px; }
   .price-side h3 { margin:0 0 8px; font-size:23px; }
   .price-side p { margin:0; color:var(--muted); }
   .price { margin:18px 0 2px; font-size:30px; font-weight:900; color:var(--gold2); }
@@ -133,10 +133,11 @@
 
     <section id="pricing">
       <div class="wrap">
-        <div class="section-head"><div class="eyebrow">Membership</div><h2>Choose where you want to subscribe.</h2><p>Pricing differs by platform. Your LIVN FORGE account keeps your progress connected.</p></div>
+        <div class="section-head"><div class="eyebrow">Membership</div><h2>One price, wherever you join.</h2><p>Monthly and annual membership cost the same on the web and iPhone. Your LIVN FORGE account keeps your progress connected.</p></div>
         <div class="price-box">
-          <div class="price-side"><h3>Web membership</h3><p>Subscribe directly through LIVNFORGE.com.</p><div class="price">$5.99 <small>/ month</small></div><div class="price">$49.99 <small>/ year</small></div></div>
-          <div class="price-side"><h3>iPhone membership</h3><p>Subscribe through Apple’s App Store.</p><div class="price">$6.99 <small>/ month</small></div><div class="price">$59.99 <small>/ year</small></div><div class="price">$119.99 <small>lifetime</small></div></div>
+          <div class="price-side"><h3>Monthly</h3><p>On the web and iPhone.</p><div class="price">$5.99 <small>/ month</small></div></div>
+          <div class="price-side"><h3>Annual</h3><p>Best value — on the web and iPhone.</p><div class="price">$49.99 <small>/ year</small></div></div>
+          <div class="price-side"><h3>Lifetime</h3><p>iPhone in-app purchase.</p><div class="price">$119.99 <small>one time</small></div></div>
           <div class="price-foot">Prices shown are current as of July 15, 2026 and may vary by country, taxes, currency, promotions, or App Store changes. Current checkout pricing is always controlling.</div>
         </div>
       </div>
