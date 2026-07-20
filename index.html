@@ -7554,7 +7554,8 @@
         P.addListener("registration", async function (t) {
           const token = t && (t.value || t.token); if (!token) return;
           try {
-            if (sb && __currentUser) await sb.from("device_tokens").upsert({ token: token, user_id: __currentUser.id, email: (__currentUser.email || "").toLowerCase(), platform: "ios" }, { onConflict: "token" });
+            const platform = (window.Capacitor && typeof window.Capacitor.getPlatform === "function" && window.Capacitor.getPlatform()) || "ios";
+            if (sb && __currentUser) await sb.from("device_tokens").upsert({ token: token, user_id: __currentUser.id, email: (__currentUser.email || "").toLowerCase(), platform: platform }, { onConflict: "token" });
           } catch (e) { console.warn("token save failed", e); }
         });
         P.addListener("registrationError", function (e) { console.warn("push reg error", e); });
