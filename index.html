@@ -1463,9 +1463,58 @@
   .gl-spin { text-align:center; color:var(--muted); font-size:14px; padding:26px 0; }
   .gl-spin .flame { font-size:28px; display:block; margin-bottom:10px; animation:glPulse 1.1s ease-in-out infinite; }
   @keyframes glPulse { 0%,100% { transform:scale(1); opacity:0.75; } 50% { transform:scale(1.18); opacity:1; } }
+
+  /* ===== Launch intro splash — the brand lockup, then fades into the app ===== */
+  #introSplash {
+    position: fixed; inset: 0; z-index: 100000;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(217,169,62,0.16), transparent 60%),
+      #0c0d10;
+    opacity: 1; transition: opacity 0.65s ease;
+  }
+  #introSplash.intro-hide { opacity: 0; }
+  #introSplash .intro-logo {
+    width: min(74vw, 340px); height: auto; display: block;
+    animation: introRise 0.9s cubic-bezier(0.2,0.7,0.2,1) both;
+  }
+  @keyframes introRise {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #introSplash { transition: none; }
+    #introSplash .intro-logo { animation: none; }
+  }
 </style>
 </head>
 <body>
+  <div id="introSplash" role="img" aria-label="LIVN FORGE — Forged in Faith. Refined in Purpose.">
+    <img src="LIVNFORGE%20Logo.png" alt="" class="intro-logo">
+  </div>
+  <script>
+  // Brief branded intro on cold launch, then fade into the app. Shows once per
+  // session; never interrupts the password-reset (#recovery) or Stripe-return
+  // (?checkout) flows, nor the cache-bust reload (?v=).
+  (function () {
+    var el = document.getElementById("introSplash");
+    if (!el) return;
+    try {
+      var skip =
+        (location.hash && /recovery/i.test(location.hash)) ||
+        /checkout/i.test(location.search) ||
+        /[?&]v=/.test(location.search) ||
+        sessionStorage.getItem("lf_introshown");
+      if (skip) { el.remove(); return; }
+      sessionStorage.setItem("lf_introshown", "1");
+      setTimeout(function () {
+        el.classList.add("intro-hide");
+        setTimeout(function () { el.remove(); }, 750);
+      }, 1900);
+    } catch (e) { el.remove(); }
+  })();
+  </script>
+
   <div class="card">
 
     <!-- ===================== SIGN IN VIEW ===================== -->
