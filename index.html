@@ -962,6 +962,17 @@
   .bs-btn:hover:not(:disabled) { background: var(--gold-light); }
   .bs-status { font-size: 13px; color: var(--muted); min-height: 18px; }
   /* Bible-in-a-year reading plan card */
+  /* Devotional reading history */
+  .bs-history { background: var(--field); border: 1px solid var(--field-border); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
+  .bs-history-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; color: var(--gold-light); margin-bottom: 8px; }
+  .bs-hist-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; border-radius: 8px; padding: 9px 8px; color: var(--text); font-family: inherit; cursor: pointer; }
+  .bs-hist-item + .bs-hist-item { border-top: 1px solid var(--field-border); }
+  .bs-hist-item:hover { background: rgba(255,255,255,0.04); }
+  body[data-build="women"] .bs-hist-item:hover { background: rgba(0,0,0,0.04); }
+  .bs-hist-ref { flex: 1; min-width: 0; font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bs-hist-when { flex: none; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bs-hist-last { flex: none; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #0c0d10; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 999px; padding: 2px 7px; }
+  .bs-hist-arrow { flex: none; color: var(--muted); font-size: 18px; }
   .bs-plan { background: linear-gradient(135deg, rgba(217,169,62,0.16), rgba(217,169,62,0.05)); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; }
   .bs-plan-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; color: var(--gold-light); }
   .bs-plan-ref { font-size: 20px; font-weight: 800; color: var(--text); margin-top: 3px; }
@@ -2825,6 +2836,76 @@
       return arr.filter(function (x) { var d = x && x.at ? dayKey(new Date(x.at)) : ""; return d >= s && d <= e; });
     } catch (e) { return []; }
   }
+  // ===== Devotional reading history (cloud-synced, newest first) =====
+  // Loading a passage upserts (user_id, reference) and bumps read_at, so the
+  // list is distinct passages by last-read — the top row is "last read".
+  let __devoReads = [];
+  async function fetchDevoReadsFromCloud() {
+    if (!__currentUser || !sb) { __devoReads = []; return; }
+    try {
+      const { data, error } = await sb.from("devotional_reads")
+        .select("reference, translation, read_at")
+        .eq("user_id", __currentUser.id)
+        .order("read_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      __devoReads = data || [];
+    } catch (err) { console.error("loadDevoReads failed:", err); }
+    renderDevoHistory();
+  }
+  async function logDevoRead(reference, translation) {
+    if (!reference || !__currentUser || !sb) return;
+    const now = new Date().toISOString();
+    // Optimistic local update so the history reflects it immediately.
+    __devoReads = __devoReads.filter(function (r) { return r.reference !== reference; });
+    __devoReads.unshift({ reference: reference, translation: translation || null, read_at: now });
+    renderDevoHistory();
+    try {
+      const { error } = await sb.from("devotional_reads").upsert({
+        user_id: __currentUser.id, email: __currentUser.email,
+        reference: reference, translation: translation || null, read_at: now,
+      }, { onConflict: "user_id,reference" });
+      if (error) throw error;
+    } catch (err) { console.error("logDevoRead failed:", err); }
+  }
+  function devoWhen(iso) {
+    if (!iso) return "";
+    var then = new Date(iso), now = new Date();
+    var d1 = dayKey(then), d0 = dayKey(now);
+    if (d1 === d0) return "Today";
+    var y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    if (d1 === dayKey(y)) return "Yesterday";
+    var days = Math.round((now - then) / 86400000);
+    if (days < 7) return days + " days ago";
+    return then.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+  function renderDevoHistory() {
+    var wrap = document.getElementById("bsHistory"), list = document.getElementById("bsHistoryList");
+    if (!wrap || !list) return;
+    if (!__devoReads.length) { wrap.style.display = "none"; return; }
+    wrap.style.display = "";
+    list.innerHTML = __devoReads.slice(0, 12).map(function (r, i) {
+      return '<button type="button" class="bs-hist-item" data-devoref="' + escapeHtml(r.reference) + '"' +
+        (r.translation ? ' data-devotrans="' + escapeHtml(r.translation) + '"' : '') + '>' +
+        '<span class="bs-hist-ref">' + escapeHtml(r.reference) + '</span>' +
+        (i === 0 ? '<span class="bs-hist-last">Last read</span>' : '') +
+        '<span class="bs-hist-when">' + devoWhen(r.read_at) + '</span>' +
+        '<span class="bs-hist-arrow">›</span></button>';
+    }).join("");
+    list.querySelectorAll("[data-devoref]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var ref = el.getAttribute("data-devoref");
+        var trans = el.getAttribute("data-devotrans");
+        var refEl = document.getElementById("bsReference");
+        if (refEl) { refEl.value = ref; refEl.dataset.manual = "1"; }
+        var tsel = document.getElementById("bsTranslation");
+        if (trans && tsel) tsel.value = trans;
+        loadBiblePassage();
+        var wrapEl = document.getElementById("bsPassageWrap");
+        if (wrapEl) setTimeout(function () { wrapEl.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
+      });
+    });
+  }
   function renderBiblePlan() {
     if (!document.getElementById("bsPlan")) return;
     const idx = getPlanIdx(), r = BIBLE_PLAN[idx];
@@ -2954,6 +3035,7 @@
       document.getElementById("bsQuestionsWrap").style.display = "none";
       status.textContent = "";
       __devo = { passage: text, reference: reference, translation: translation, keyVerse: "", keyVerseRef: "", summary: "", keyPoints: [], teacherInsights: [], reflection: [] };
+      logDevoRead(reference, translation); // remember what was read, for the history
     } catch (err) {
       status.textContent = "Couldn't load that passage. Check the reference and try again.";
       console.error(err);
@@ -3406,6 +3488,10 @@
       html += `
         <div class="bs-panel">
           <div class="bs-controls">
+            <div class="bs-history" id="bsHistory" style="display:none;">
+              <div class="bs-history-label">Recently read</div>
+              <div id="bsHistoryList"></div>
+            </div>
             <div class="bs-plan" id="bsPlan">
               <div class="bs-plan-label">Read through the Bible</div>
               <div class="bs-plan-ref" id="bsPlanRef">—</div>
@@ -3563,6 +3649,7 @@
       // manual picker look broken) — instead "Read today's passage" loads the plan, and
       // pressing Load with an empty box also falls back to today's reading.
       renderBiblePlan();
+      renderDevoHistory(); // show recently-read passages when the devotional opens
       // onclick (not addEventListener) so re-opening the devotional never stacks handlers.
       var _planRead = document.getElementById("bsPlanRead");
       if (_planRead) _planRead.onclick = function () {
@@ -5167,6 +5254,7 @@
     await fetchEntriesFromCloud();
     fetchGoalsFromCloud();
     fetchMarriageFromCloud();
+    fetchDevoReadsFromCloud();
     hydrateCirclesFromCloud();
     renderQuestions(currentType);
     updateCount();
@@ -8401,6 +8489,7 @@
         await fetchEntriesFromCloud();
         fetchGoalsFromCloud();
         fetchMarriageFromCloud();
+        fetchDevoReadsFromCloud();
         hydrateCirclesFromCloud();
         updateCount();
         renderQuestions(currentType);
