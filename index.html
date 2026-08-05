@@ -303,17 +303,20 @@
   .fqj .pen { width:38px; height:38px; flex:0 0 auto; border-radius:10px; background:rgba(217,169,62,.16); color:var(--gold-light); display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; }
   .fqj .pen svg { width:18px; height:18px; }
   .fjourney { margin:2px 0 6px; }
-  .fstep { display:flex; align-items:center; gap:13px; width:100%; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:11px; cursor:pointer; transition:transform .1s ease; color:var(--text); font-family:inherit; text-align:left; }
+  .fstep { display:flex; align-items:center; gap:10px; width:100%; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:11px; transition:transform .1s ease; color:var(--text); }
   .fstep:active { transform:scale(.99); }
+  .fstep-open { flex:1; min-width:0; display:flex; align-items:center; gap:13px; background:none; border:none; padding:0; color:inherit; font-family:inherit; text-align:left; cursor:pointer; }
   .fstep .sico { width:34px; height:34px; flex:0 0 auto; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--field); color:var(--muted); }
   .fstep .sico svg { width:19px; height:19px; }
   .fstep .stitle { display:block; font-size:15px; font-weight:700; }
   .fstep .ssub { display:block; font-size:12.5px; color:var(--muted); margin-top:2px; }
-  .fstep .schev { margin-left:auto; color:var(--muted); display:flex; }
-  .fstep .schev svg { width:20px; height:20px; }
-  .fstep.done { opacity:.6; }
+  /* Tap-to-complete check — mark a step done without writing anything. */
+  .fstep-check { flex:0 0 auto; width:30px; height:30px; border-radius:50%; border:2px solid var(--field-border); background:none; display:flex; align-items:center; justify-content:center; color:transparent; cursor:pointer; padding:0; transition:border-color .15s, background .15s; }
+  .fstep-check svg { width:17px; height:17px; }
+  .fstep-check:hover { border-color:var(--gold); }
+  .fstep.done { opacity:.7; }
   .fstep.done .sico { background:rgba(52,211,153,.16); color:#34d399; }
-  .fstep.done .schev { color:#34d399; }
+  .fstep.done .fstep-check { background:linear-gradient(135deg,#34d399,#6ee7b7); border-color:transparent; color:#0c0d10; }
   .fstep.next { border-color:var(--gold); background:linear-gradient(135deg,rgba(217,169,62,.16),rgba(217,169,62,.04)); }
   .fstep.next .sico { background:rgba(217,169,62,.2); color:var(--gold-light); }
   .forge-complete { text-align:center; background:linear-gradient(135deg,rgba(217,169,62,.18),rgba(217,169,62,.05)); border:1px solid var(--gold); border-radius:16px; padding:18px; margin-bottom:14px; }
@@ -934,6 +937,7 @@
   .field-group { margin-bottom: 22px; }
   .field-group label { display: block; font-size: 15px; margin-bottom: 10px; color: var(--text); }
   .field-group label .req { color: var(--star); margin-left: 3px; }
+  .field-group label .opt { color: var(--muted); margin-left: 4px; font-weight: 400; font-size: 12px; }
   /* Guided Journal — labeled reflection fields (bold label + sub-prompt) */
   .guided-field { margin-bottom: 16px; }
   .guided-field label { margin-bottom: 8px; }
@@ -3553,8 +3557,8 @@
     } else if (data.freeform) {
       html += `
       <div class="field-group">
-        <label for="q0">Journal entry <span class="req">*</span></label>
-        <textarea id="q0" data-question="Journal entry" placeholder="${data.placeholder || 'Write anything you want…'}" style="min-height: 260px;" required></textarea>
+        <label for="q0">Journal entry <span class="opt">(optional)</span></label>
+        <textarea id="q0" data-question="Journal entry" placeholder="${data.placeholder || 'Write anything you want…'}" style="min-height: 260px;"></textarea>
       </div>`;
     } else if (data.fields) {
       // Single-screen labeled reflection (e.g. Guided Journal): bold label + sub-prompt.
@@ -3587,16 +3591,16 @@
         html += itemList.map((q, i) => `
           <div class="qstep" data-step="${i}"${i === 0 ? "" : ' style="display:none"'}>
             <div class="field-group">
-              <label for="q${i}">${q} <span class="req">*</span></label>
-              <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here" required></textarea>
+              <label for="q${i}">${q} <span class="opt">(optional)</span></label>
+              <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
             </div>
           </div>`).join("");
         html += '<div class="step-nav"><button type="button" class="step-back" id="stepBack" style="display:none">← Back</button><button type="button" class="submit-btn step-next" id="stepNext">Next →</button></div>';
       } else {
         html += itemList.map((q, i) => `
         <div class="field-group">
-          <label for="q${i}">${q} <span class="req">*</span></label>
-          <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here" required></textarea>
+          <label for="q${i}">${q} <span class="opt">(optional)</span></label>
+          <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
         </div>
       `).join("");
       }
@@ -3621,7 +3625,7 @@
         const q = morning ? "What's your fuel & hydration plan for today?" : "How was my nutrition and hydration today?";
         ta.setAttribute("data-question", q);
         ta.placeholder = morning ? "e.g. protein at every meal, a gallon of water, no sugar after 6pm…" : "Write your text here";
-        if (lbl) lbl.innerHTML = q + ' <span class="req">*</span>';
+        if (lbl) lbl.innerHTML = q + ' <span class="opt">(optional)</span>';
       };
       const intRow = document.getElementById("fitIntensity");
       if (intRow) intRow.addEventListener("click", function (e) {
@@ -4594,11 +4598,11 @@
     var encouraged = false; try { encouraged = localStorage.getItem("lf_encouraged_" + today) === "1"; } catch (e) {}
     var openType = function (t) { return function () { setActiveType(t); showApp(); showWrite(); window.scrollTo(0, 0); }; };
     return [
-      { title: "Read today's Scripture", sub: "Devotional", icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z', done: !!d.devotional, act: openType("devotional") },
-      { title: "Pray", sub: "Lift it up", icon: 'M12 3v18 M8 8h8', done: !!d.prayer, act: openType("prayer") },
-      { title: "Write one journal entry", sub: "Pick any journal type", icon: 'M12 20h9 M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z', done: !!journaled, act: openJournalChooser },
-      { title: "Steward your body", sub: "Fitness routine", icon: 'M5 7v10 M7 9v6 M17 9v6 M19 7v10 M7 12h10', done: !!d.fitness, act: openType("fitness") },
-      { title: "Encourage someone", sub: "In a circle", icon: 'M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z', done: encouraged, act: function () { showTab("circles"); window.scrollTo(0, 0); } },
+      { title: "Read today's Scripture", sub: "Devotional", icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z', done: !!d.devotional, qtype: "devotional", act: openType("devotional") },
+      { title: "Pray", sub: "Lift it up", icon: 'M12 3v18 M8 8h8', done: !!d.prayer, qtype: "prayer", act: openType("prayer") },
+      { title: "Write one journal entry", sub: "Pick any journal type", icon: 'M12 20h9 M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z', done: !!journaled, qtype: "freeflow", act: openJournalChooser },
+      { title: "Steward your body", sub: "Fitness routine", icon: 'M5 7v10 M7 9v6 M17 9v6 M19 7v10 M7 12h10', done: !!d.fitness, qtype: "fitness", act: openType("fitness") },
+      { title: "Encourage someone", sub: "In a circle", icon: 'M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z', done: encouraged, qtype: "__encourage", act: function () { showTab("circles"); window.scrollTo(0, 0); } },
     ];
   }
   // ===== 21-Day Challenge (structured daily plan: workout, reading, gratitude, prayer) =====
@@ -4899,6 +4903,39 @@
     }
   }
 
+  // Mark a daily-journey step complete without writing. For journal-type steps
+  // this logs a minimal entry (so points, streak, and the Journey rings all
+  // count it exactly like a written one — just with no notes); the "Encourage"
+  // step sets its local flag. Points still cap once per type per day.
+  async function logQuickEntry(type) {
+    if (!__currentUser || !sb) return false;
+    var today = dayKey(new Date());
+    var capped = loadEntries().some(function (en) { return en.type === type && entryDay(en) === today; });
+    var entry = {
+      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      type: type, typeTitle: (QUESTIONS[type] && QUESTIONS[type].title) || type,
+      name: (typeof getName === "function" && getName()) || "", date: today,
+      points: capped ? 0 : pointsFor(type), capped: capped, savedAt: new Date().toISOString(),
+      answers: [{ q: "Marked complete", a: "Completed today — no notes added." }]
+    };
+    try { await insertEntryToCloud(entry); }
+    catch (e) { if (typeof showToast === "function") showToast("Couldn't save — check your connection."); return false; }
+    try { updateCount(); } catch (e) {}
+    try { syncToGroup(true); } catch (e) {}
+    try { markChallengeForType(type); } catch (e) {}
+    return true;
+  }
+  async function quickCompleteStep(i) {
+    var s = forgeSteps()[i];
+    if (!s || s.done) return; // already complete for today
+    var ok = true;
+    if (s.qtype === "__encourage") { markEncouragedToday(); }
+    else if (s.qtype) { ok = await logQuickEntry(s.qtype); }
+    if (!ok) return;
+    if (typeof renderForge === "function") renderForge();
+    if (typeof renderScore === "function") { try { renderScore(); } catch (e) {} }
+    if (typeof showToast === "function") showToast(s.title + " — done ✓");
+  }
   function renderForge() {
     var g = document.getElementById("forgeGreet");
     if (!g) return;
@@ -4933,18 +4970,27 @@
       if (done === steps.length) html += '<div class="forge-complete"><div class="fc-t">Today’s Forge complete</div><div class="fc-s">You showed up. Well done — see you tomorrow.</div></div>';
       html += steps.map(function (s, i) {
         var cls = s.done ? "done" : (i === nextIx ? "next" : "");
-        var chev = s.done
-          ? '<span class="schev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>'
-          : '<span class="schev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>';
-        return '<button type="button" class="fstep ' + cls + '" data-fstep="' + i + '">' +
-          '<span class="sico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="' + s.icon + '"/></svg></span>' +
-          '<span><span class="stitle">' + s.title + '</span><span class="ssub">' + (s.done ? "Done" : s.sub) + '</span></span>' + chev + '</button>';
+        var check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+        return '<div class="fstep ' + cls + '">' +
+          '<button type="button" class="fstep-open" data-fstep="' + i + '">' +
+            '<span class="sico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="' + s.icon + '"/></svg></span>' +
+            '<span><span class="stitle">' + s.title + '</span><span class="ssub">' + (s.done ? "Done" : s.sub) + '</span></span>' +
+          '</button>' +
+          '<button type="button" class="fstep-check" data-fdone="' + i + '" aria-label="' + (s.done ? "Completed" : "Mark done") + '" aria-pressed="' + (s.done ? "true" : "false") + '">' + check + '</button>' +
+        '</div>';
       }).join("");
       jw.innerHTML = html;
       jw.querySelectorAll("[data-fstep]").forEach(function (el) {
         el.addEventListener("click", function () {
           var s = forgeSteps()[+el.getAttribute("data-fstep")];
           if (s && s.act) { closeDailyMission(false); s.act(); }
+        });
+      });
+      // Tap the check to complete a step without writing anything.
+      jw.querySelectorAll("[data-fdone]").forEach(function (el) {
+        el.addEventListener("click", function (e) {
+          e.stopPropagation();
+          quickCompleteStep(+el.getAttribute("data-fdone"));
         });
       });
     }
@@ -5448,12 +5494,8 @@
     } else {
       answers = fields.map(f => ({ q: f.dataset.question, a: f.value.trim() }));
     }
-    // Optional labeled forms (Guided Journal): allow blanks, but require at least one answer.
-    if (QUESTIONS[currentType] && QUESTIONS[currentType].fields && !answers.some(a => a.a)) {
-      const first = questionsEl.querySelector("textarea"); if (first) first.focus();
-      alert("Write at least one field to save your entry.");
-      return;
-    }
+    // Writing is optional: an entry may be saved with no notes at all (it still
+    // counts toward points, streak, and the Journey rings — you showed up).
     if (currentType === "fitness") {
       if (currentFitnessCardio && currentFitnessCardio !== "No cardio") {
         answers.unshift({ q: "Cardio added", a: currentFitnessCardio });
