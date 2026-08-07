@@ -831,6 +831,18 @@
   .fit-opt-btn { flex: 1; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 9px; padding: 11px 6px; font-family: inherit; font-size: 14px; cursor: pointer; transition: all .15s ease; }
   .fit-opt-btn:hover { border-color: #34c2c2; }
   .fit-opt-btn.active { border-color: #34c2c2; color: #34c2c2; box-shadow: 0 0 0 2px rgba(52,194,194,0.25); font-weight: 700; }
+  /* Workout category (Cardio / Strength) + type picker */
+  .fit-cat-block { margin-bottom: 18px; }
+  .fit-cat-row { display: flex; gap: 12px; margin-bottom: 14px; }
+  .fit-cat-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 13px; padding: 18px 10px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .15s ease; }
+  .fit-cat-btn svg { width: 26px; height: 26px; }
+  .fit-cat-btn:hover { border-color: #34c2c2; }
+  .fit-cat-btn.active { border-color: #34c2c2; color: #34c2c2; box-shadow: 0 0 0 2px rgba(52,194,194,0.25); }
+  .fit-type-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .fit-type-btn { background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 9px; padding: 10px 15px; font-family: inherit; font-size: 14px; cursor: pointer; transition: all .15s ease; }
+  .fit-type-btn:hover { border-color: #34c2c2; }
+  .fit-type-btn.active { border-color: #34c2c2; color: #34c2c2; box-shadow: 0 0 0 2px rgba(52,194,194,0.25); font-weight: 700; }
+  .fit-other-input { margin-top: 10px; width: 100%; box-sizing: border-box; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 9px; padding: 11px 13px; font-family: inherit; font-size: 16px; }
   .fpb-name { font-weight: 700; letter-spacing: 1px; color: #34c2c2; font-size: 14px; }
   .fpb-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
   .fpb-pts { font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; align-self: flex-start; margin-top: 2px; }
@@ -3289,8 +3301,13 @@
   let currentFitnessIntensity = "Medium"; // Low | Medium | High
   let currentFitnessTime = "Morning"; // Morning | Afternoon (drives the nutrition prompt)
   let currentFitnessVariation = "As prescribed"; // tracked "minimal change" to the selected workout
-  let currentFitnessCardio = "No cardio"; // optional run/walk add-on, tracked with the entry
-  const FIT_CARDIO_OPTIONS = ["No cardio", "Walk 5 min", "Walk 10 min", "Walk 15 min", "Run 5 min", "Run 10 min", "Run 1 mile", "Run 2 miles"];
+  let currentFitnessCategory = ""; // "" | "strength" | "cardio"
+  let currentFitnessType = "";     // Gym training / Body Weight / Run / Walk / Hike / Swim / Bike / Other
+  let currentFitnessOther = "";    // free text when the cardio type is "Other"
+  const FIT_TYPES = {
+    strength: ["Gym training", "Body Weight"],
+    cardio: ["Run", "Walk", "Hike", "Swim", "Bike", "Other"]
+  };
   function presetDef(id) { return build().presets[id] || null; }
   let timerInterval = null;
   let timerStartMs = 0;
@@ -3448,6 +3465,24 @@
           </button>`;
       }).join("");
       html += `
+      <div class="fit-cat-block">
+        <div class="fit-opt-label">What did you do today?</div>
+        <div class="fit-cat-row" id="fitCatRow">
+          <button type="button" class="fit-cat-btn" data-fitcat="strength">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5M4 8l2-2M8 4l-2 2M16 20l2-2M20 16l-2 2M2 12l4-4 4 4-4 4zM22 12l-4-4-4 4 4 4z"/></svg>
+            Strength training
+          </button>
+          <button type="button" class="fit-cat-btn" data-fitcat="cardio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+            Cardio
+          </button>
+        </div>
+        <div class="fit-type-wrap" id="fitTypeWrap" style="display:none;">
+          <div class="fit-opt-label" id="fitTypeLabel">Pick one</div>
+          <div class="fit-type-row" id="fitTypeRow"></div>
+          <input type="text" class="fit-other-input" id="fitOther" placeholder="What kind of cardio?" style="display:none;">
+        </div>
+      </div>
       <div class="fit-presets" id="fitPresets">
         <div class="fit-presets-label">Preset workouts</div>
         <div class="fit-presets-row">${presetBtns}</div>
@@ -3481,10 +3516,6 @@
         <div class="fit-opt-group">
           <div class="fit-opt-label">Modify workout</div>
           <select class="fit-select" id="fitVariation" disabled><option value="">Pick a workout first</option></select>
-        </div>
-        <div class="fit-opt-group">
-          <div class="fit-opt-label">Add cardio</div>
-          <select class="fit-select" id="fitCardio">${FIT_CARDIO_OPTIONS.map(function (c) { return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>'; }).join("")}</select>
         </div>
       </div>`;
     }
@@ -3614,7 +3645,45 @@
 
     if (type === "fitness") {
       currentFitnessIntensity = "Medium"; currentFitnessTime = "Morning";
-      currentFitnessVariation = "As prescribed"; currentFitnessCardio = "No cardio";
+      currentFitnessVariation = "As prescribed";
+      currentFitnessCategory = ""; currentFitnessType = ""; currentFitnessOther = "";
+      // Category (Cardio / Strength) -> type (Gym training, Body Weight / Run, Walk, …).
+      var fitTypeWrap = document.getElementById("fitTypeWrap");
+      var fitTypeRow = document.getElementById("fitTypeRow");
+      var fitTypeLabel = document.getElementById("fitTypeLabel");
+      var fitOther = document.getElementById("fitOther");
+      function renderFitTypes() {
+        if (!fitTypeRow) return;
+        var types = FIT_TYPES[currentFitnessCategory] || [];
+        fitTypeLabel.textContent = currentFitnessCategory === "cardio" ? "What kind of cardio?" : "What kind of strength?";
+        fitTypeRow.innerHTML = types.map(function (t) {
+          return '<button type="button" class="fit-type-btn' + (t === currentFitnessType ? " active" : "") + '" data-fittype="' + escapeHtml(t) + '">' + escapeHtml(t) + '</button>';
+        }).join("");
+        fitTypeWrap.style.display = currentFitnessCategory ? "" : "none";
+        if (fitOther) {
+          var showOther = currentFitnessCategory === "cardio" && currentFitnessType === "Other";
+          fitOther.style.display = showOther ? "" : "none";
+          if (!showOther) fitOther.value = currentFitnessOther = "";
+        }
+      }
+      var catRow = document.getElementById("fitCatRow");
+      if (catRow) catRow.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-fitcat]"); if (!b) return;
+        currentFitnessCategory = b.dataset.fitcat; currentFitnessType = "";
+        catRow.querySelectorAll(".fit-cat-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
+        renderFitTypes();
+      });
+      if (fitTypeRow) fitTypeRow.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-fittype]"); if (!b) return;
+        currentFitnessType = b.dataset.fittype;
+        fitTypeRow.querySelectorAll(".fit-type-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
+        if (fitOther) {
+          var showOther = currentFitnessCategory === "cardio" && currentFitnessType === "Other";
+          fitOther.style.display = showOther ? "" : "none";
+          if (showOther) fitOther.focus();
+        }
+      });
+      if (fitOther) fitOther.addEventListener("input", function () { currentFitnessOther = fitOther.value; });
       // The nutrition question (q3) reflects the day in the afternoon, but in the
       // morning the day hasn't happened yet — so swap it for a forward-looking fuel plan.
       const applyFitNutrition = function () {
@@ -3642,8 +3711,6 @@
       });
       const varSel = document.getElementById("fitVariation");
       if (varSel) varSel.addEventListener("change", function () { currentFitnessVariation = varSel.value || "As prescribed"; });
-      const cardioSel = document.getElementById("fitCardio");
-      if (cardioSel) cardioSel.addEventListener("change", function () { currentFitnessCardio = cardioSel.value || "No cardio"; });
       applyFitNutrition();
     }
 
@@ -3720,8 +3787,6 @@
         updateTimerDisplay();
         populateVariationSelect(presetDef(currentFitnessPreset));
       }
-      const cardioSelRestore = document.getElementById("fitCardio");
-      if (cardioSelRestore) cardioSelRestore.value = currentFitnessCardio;
       document.getElementById("fitPresets").addEventListener("click", (ev) => {
         const btn = ev.target.closest(".fit-preset-btn");
         if (!btn) return;
@@ -5497,13 +5562,17 @@
     // Writing is optional: an entry may be saved with no notes at all (it still
     // counts toward points, streak, and the Journey rings — you showed up).
     if (currentType === "fitness") {
-      if (currentFitnessCardio && currentFitnessCardio !== "No cardio") {
-        answers.unshift({ q: "Cardio added", a: currentFitnessCardio });
-      }
       if (currentFitnessPreset && currentFitnessVariation && currentFitnessVariation !== "As prescribed") {
         answers.unshift({ q: "Workout variation", a: currentFitnessVariation });
       }
       answers.unshift({ q: "Time of day", a: currentFitnessTime }, { q: "Intensity", a: currentFitnessIntensity });
+      // Category + type (Strength — Body Weight / Cardio — Run), from the picker.
+      if (currentFitnessCategory) {
+        var catLabel = currentFitnessCategory === "cardio" ? "Cardio" : "Strength training";
+        var typeLabel = currentFitnessType;
+        if (currentFitnessType === "Other" && currentFitnessOther.trim()) typeLabel = currentFitnessOther.trim();
+        answers.unshift({ q: "Workout", a: catLabel + (typeLabel ? " — " + typeLabel : "") });
+      }
     }
     if (QUESTIONS[currentType] && QUESTIONS[currentType].morning && QUESTIONS[currentType].evening) {
       answers.unshift({ q: "Time of day", a: currentDaypart === "morning" ? "Morning" : "End of day" });
@@ -5531,7 +5600,7 @@
     // reset preset + timer after capturing the entry
     currentFitnessPreset = null;
     currentFitnessVariation = "As prescribed";
-    currentFitnessCardio = "No cardio";
+    currentFitnessCategory = ""; currentFitnessType = ""; currentFitnessOther = "";
     resetTimerState();
 
     try {
