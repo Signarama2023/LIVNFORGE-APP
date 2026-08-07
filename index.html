@@ -8105,6 +8105,30 @@
   // ---- Today tab: the Marriage Forge leads the day ----
   // The forge card sits ABOVE Today's Mission; the standard journey items stay
   // available below it.
+  // Draft auto-save for the day's writing — so leaving the card mid-write and
+  // coming back keeps your text (and the dare check). Local per marriage+day;
+  // cleared when the day is sealed.
+  function mfDraftKey(day) { return APP + ":mfdraft:" + ((__mf && __mf.id) || "") + ":" + day; }
+  function mfLoadDraft(day) { try { return JSON.parse(localStorage.getItem(mfDraftKey(day)) || "{}") || {}; } catch (e) { return {}; } }
+  function mfSaveDraft(day) {
+    try {
+      var priv = (document.getElementById("mfPrivate") || {}).value || "";
+      var note = (document.getElementById("mfToSpouse") || {}).value || "";
+      var box = document.getElementById("mfDareBox");
+      var dare = !!(box && box.classList.contains("mf-on"));
+      if (!priv && !note && !dare) { localStorage.removeItem(mfDraftKey(day)); return; }
+      localStorage.setItem(mfDraftKey(day), JSON.stringify({ priv: priv, note: note, dare: dare }));
+    } catch (e) {}
+  }
+  function mfClearDraft(day) { try { localStorage.removeItem(mfDraftKey(day)); } catch (e) {} }
+  function mfMarkDareBox(on) {
+    var box = document.getElementById("mfDareBox");
+    if (!box) return;
+    box.classList.toggle("mf-on", !!on);
+    box.innerHTML = on ? glCheckSvg() : "";
+    box.style.background = on ? "linear-gradient(135deg, var(--accent-start), var(--accent-end))" : "";
+    box.style.borderColor = on ? "transparent" : "";
+  }
   function renderMarriageToday() {
     var card = document.getElementById("mfTodayCard");
     if (!card) return;
@@ -8163,13 +8187,21 @@
     var chk = document.getElementById("mfDareCheck");
     if (chk) chk.addEventListener("click", function () {
       var box = document.getElementById("mfDareBox");
-      box.classList.toggle("mf-on");
-      box.innerHTML = box.classList.contains("mf-on") ? glCheckSvg() : "";
-      box.style.background = box.classList.contains("mf-on") ? "linear-gradient(135deg, var(--accent-start), var(--accent-end))" : "";
-      box.style.borderColor = box.classList.contains("mf-on") ? "transparent" : "";
+      mfMarkDareBox(!(box && box.classList.contains("mf-on")));
+      mfSaveDraft(day);
     });
     var save = document.getElementById("mfSaveDay");
     if (save) save.addEventListener("click", function () { mfSealDay(day, save); });
+    // Restore any in-progress draft (text + dare check) and keep it saved as you type.
+    var privEl = document.getElementById("mfPrivate"), noteEl = document.getElementById("mfToSpouse");
+    if (privEl || noteEl) {
+      var draft = mfLoadDraft(day);
+      if (privEl && draft.priv) privEl.value = draft.priv;
+      if (noteEl && draft.note) noteEl.value = draft.note;
+      if (draft.dare) mfMarkDareBox(true);
+      if (privEl) privEl.addEventListener("input", function () { mfSaveDraft(day); });
+      if (noteEl) noteEl.addEventListener("input", function () { mfSaveDraft(day); });
+    }
   }
   function mfSpouseNoteHtml(nearDay) {
     // Show the spouse's note for the same day if they've written it, otherwise their latest.
@@ -8218,6 +8250,7 @@
           if (typeof renderScore === "function") try { renderScore(); } catch (e) {}
         } catch (e) { console.error("marriage journal save failed:", e); }
       }
+      mfClearDraft(day); // sealed — draft no longer needed
       __mfOpenToday = false;
       renderMarriageToday(); renderMarriageCard();
       if (typeof showToast === "function") showToast("Day " + day + " sealed. 🔥");
