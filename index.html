@@ -843,6 +843,13 @@
   .fit-type-btn:hover { border-color: #34c2c2; }
   .fit-type-btn.active { border-color: #34c2c2; color: #34c2c2; box-shadow: 0 0 0 2px rgba(52,194,194,0.25); font-weight: 700; }
   .fit-other-input { margin-top: 10px; width: 100%; box-sizing: border-box; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 9px; padding: 11px 13px; font-family: inherit; font-size: 16px; }
+  /* Preset-workouts toggle */
+  .fit-preset-toggle { display: flex; align-items: center; gap: 10px; width: 100%; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 11px; padding: 13px 15px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 14px; transition: border-color .15s ease; }
+  .fit-preset-toggle:hover { border-color: #34c2c2; }
+  .fit-preset-toggle > svg:first-child { width: 20px; height: 20px; flex: 0 0 auto; color: #34c2c2; }
+  .fit-preset-toggle span { flex: 1; text-align: left; }
+  .fit-preset-toggle .fpt-chev { width: 18px; height: 18px; flex: 0 0 auto; color: var(--muted); transition: transform .2s ease; }
+  .fit-preset-toggle[aria-expanded="true"] .fpt-chev { transform: rotate(180deg); }
   .fpb-name { font-weight: 700; letter-spacing: 1px; color: #34c2c2; font-size: 14px; }
   .fpb-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
   .fpb-pts { font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; align-self: flex-start; margin-top: 2px; }
@@ -3483,8 +3490,13 @@
           <input type="text" class="fit-other-input" id="fitOther" placeholder="What kind of cardio?" style="display:none;">
         </div>
       </div>
-      <div class="fit-presets" id="fitPresets">
-        <div class="fit-presets-label">Preset workouts</div>
+      <button type="button" class="fit-preset-toggle" id="fitPresetToggle" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5M2 12l4-4 4 4-4 4zM22 12l-4-4-4 4 4 4z"/></svg>
+        <span>Preset workouts</span>
+        <svg class="fpt-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="fit-presets" id="fitPresets" style="display:none;">
+        <div class="fit-presets-label">Preset body-weight workouts</div>
         <div class="fit-presets-row">${presetBtns}</div>
       </div>
       <div class="fit-timer" id="fitTimer" style="display: none;">
@@ -3673,6 +3685,18 @@
         catRow.querySelectorAll(".fit-cat-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
         renderFitTypes();
       });
+      // Show/hide the preset body-weight workouts.
+      function setPresetsOpen(open) {
+        var pw = document.getElementById("fitPresets"), tog = document.getElementById("fitPresetToggle");
+        if (pw) pw.style.display = open ? "" : "none";
+        if (tog) tog.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+      var presetToggle = document.getElementById("fitPresetToggle");
+      if (presetToggle) presetToggle.addEventListener("click", function () {
+        var open = presetToggle.getAttribute("aria-expanded") === "true";
+        setPresetsOpen(!open);
+        if (!open) { var pw = document.getElementById("fitPresets"); if (pw) setTimeout(function () { pw.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 60); }
+      });
       if (fitTypeRow) fitTypeRow.addEventListener("click", function (e) {
         var b = e.target.closest("[data-fittype]"); if (!b) return;
         currentFitnessType = b.dataset.fittype;
@@ -3682,6 +3706,8 @@
           fitOther.style.display = showOther ? "" : "none";
           if (showOther) fitOther.focus();
         }
+        // Body Weight -> the preset workouts ARE body-weight routines, so surface them.
+        if (currentFitnessCategory === "strength" && currentFitnessType === "Body Weight") setPresetsOpen(true);
       });
       if (fitOther) fitOther.addEventListener("input", function () { currentFitnessOther = fitOther.value; });
       // The nutrition question (q3) reflects the day in the afternoon, but in the
@@ -3779,6 +3805,7 @@
       };
       // restore selected preset visual + timer panel state
       if (currentFitnessPreset) {
+        setPresetsOpen(true); // a preset is chosen — make sure it's visible
         const sel = document.querySelector('.fit-preset-btn[data-preset="' + currentFitnessPreset + '"]');
         if (sel) sel.classList.add("active");
         const timer = document.getElementById("fitTimer");
