@@ -2732,6 +2732,21 @@
     "jude":"JUD",
     "revelation":"REV","rev":"REV","re":"REV"
   };
+  // Extra common abbreviations (merged in so we don't have to touch every line above).
+  Object.assign(BOOK_MAP, {
+    "gn":"GEN", "dt":"DEU", "jsh":"JOS", "jg":"JDG", "jgs":"JDG", "jdgs":"JDG",
+    "1 sm":"1SA", "1sm":"1SA", "2 sm":"2SA", "2sm":"2SA",
+    "ne":"NEH", "pss":"PSA", "prv":"PRO", "eccles":"ECC", "qoh":"ECC",
+    "jr":"JER", "eze":"EZK", "dn":"DAN", "ho":"HOS", "jl":"JOL", "am":"AMO",
+    "ob":"OBA", "jnh":"JON", "mi":"MIC", "na":"NAM", "hb":"HAB", "zp":"ZEP",
+    "hg":"HAG", "zc":"ZEC", "ml":"MAL",
+    "mar":"MRK", "lu":"LUK", "ac":"ACT", "ro":"ROM", "rm":"ROM",
+    "1 co":"1CO", "2 co":"2CO", "ga":"GAL", "ep":"EPH",
+    "1 th":"1TH", "1th":"1TH", "2 th":"2TH", "2th":"2TH",
+    "1 ti":"1TI", "1ti":"1TI", "2 ti":"2TI", "2ti":"2TI",
+    "tt":"TIT", "phile":"PHM", "he":"HEB", "jm":"JAS", "jms":"JAS",
+    "1 pt":"1PE", "1pt":"1PE", "2 pt":"2PE", "2pt":"2PE", "jd":"JUD", "rv":"REV"
+  });
   const BIBLE_BOOKS = [
     {n:"Genesis",c:50,vc:[31,25,24,26,32,22,24,22,29,32,32,20,18,24,21,16,27,33,38,18,34,24,20,67,34,35,46,22,35,43,55,32,20,31,29,43,36,30,23,23,57,38,34,34,28,34,31,22,33,26]},
     {n:"Exodus",c:40,vc:[22,25,22,31,23,30,25,32,35,29,10,51,22,31,27,36,16,27,25,26,36,31,33,18,40,37,21,43,46,38,18,35,23,35,35,38,29,31,43,38]},
@@ -3002,6 +3017,17 @@
   }
   function parseReference(ref) {
     ref = (ref || "").trim();
+    // Normalize common ways people type references so more inputs "just work":
+    //   First/1st John -> 1 John · "John 3.16" -> "John 3:16" · "Jn." -> "Jn" ·
+    //   "Revelations" -> "Revelation" · en/em dashes -> hyphen · tidy spaces.
+    ref = ref
+      .replace(/[‒–—−]/g, "-")                                   // – — − -> -
+      .replace(/^\s*(1st|2nd|3rd)\s+/i, function (_m, w) { return w.charAt(0) + " "; })
+      .replace(/^\s*first\s+/i, "1 ").replace(/^\s*second\s+/i, "2 ").replace(/^\s*third\s+/i, "3 ")
+      .replace(/\brevelations\b/i, "Revelation")
+      .replace(/(\d)\s*[.·]\s*(\d)/g, "$1:$2")                                  // 3.16 -> 3:16
+      .replace(/\./g, " ")                                                          // strip abbreviation dots
+      .replace(/\s+/g, " ").trim();
     // Cross-chapter verse range first: book c1:v1-c2:v2 (used by the reading plan).
     const mx = ref.match(/^(\d?\s*[A-Za-z][A-Za-z ]*?)\s+(\d+):(\d+)\s*-\s*(\d+):(\d+)$/);
     if (mx) {
