@@ -996,6 +996,8 @@
   .bs-hist-when { flex: none; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .bs-hist-last { flex: none; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #0c0d10; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 999px; padding: 2px 7px; }
   .bs-hist-arrow { flex: none; color: var(--muted); font-size: 18px; }
+  .bs-hist-toggle { display: block; width: 100%; margin-top: 8px; padding: 9px; background: none; border: none; border-top: 1px solid var(--field-border); color: var(--gold-light); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .bs-hist-toggle:hover { color: var(--gold); }
   .bs-plan { background: linear-gradient(135deg, rgba(217,169,62,0.16), rgba(217,169,62,0.05)); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; }
   .bs-plan-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; color: var(--gold-light); }
   .bs-plan-ref { font-size: 20px; font-weight: 800; color: var(--text); margin-top: 3px; }
@@ -2902,12 +2904,16 @@
     if (days < 7) return days + " days ago";
     return then.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
+  var __devoHistOpen = false; // collapsed by default: show only the last read
   function renderDevoHistory() {
     var wrap = document.getElementById("bsHistory"), list = document.getElementById("bsHistoryList");
+    var lbl = wrap ? wrap.querySelector(".bs-history-label") : null;
     if (!wrap || !list) return;
     if (!__devoReads.length) { wrap.style.display = "none"; return; }
     wrap.style.display = "";
-    list.innerHTML = __devoReads.slice(0, 12).map(function (r, i) {
+    if (lbl) lbl.textContent = __devoHistOpen ? "Reading history" : "Last read";
+    var shown = __devoHistOpen ? __devoReads.slice(0, 50) : __devoReads.slice(0, 1);
+    var itemHtml = shown.map(function (r, i) {
       return '<button type="button" class="bs-hist-item" data-devoref="' + escapeHtml(r.reference) + '"' +
         (r.translation ? ' data-devotrans="' + escapeHtml(r.translation) + '"' : '') + '>' +
         '<span class="bs-hist-ref">' + escapeHtml(r.reference) + '</span>' +
@@ -2915,6 +2921,14 @@
         '<span class="bs-hist-when">' + devoWhen(r.read_at) + '</span>' +
         '<span class="bs-hist-arrow">›</span></button>';
     }).join("");
+    var toggle = "";
+    if (__devoReads.length > 1) {
+      toggle = '<button type="button" class="bs-hist-toggle" id="bsHistToggle">' +
+        (__devoHistOpen ? "Show less" : "History (" + __devoReads.length + ")") + '</button>';
+    }
+    list.innerHTML = itemHtml + toggle;
+    var tg = document.getElementById("bsHistToggle");
+    if (tg) tg.addEventListener("click", function () { __devoHistOpen = !__devoHistOpen; renderDevoHistory(); });
     list.querySelectorAll("[data-devoref]").forEach(function (el) {
       el.addEventListener("click", function () {
         var ref = el.getAttribute("data-devoref");
@@ -3746,7 +3760,8 @@
       // manual picker look broken) — instead "Read today's passage" loads the plan, and
       // pressing Load with an empty box also falls back to today's reading.
       renderBiblePlan();
-      renderDevoHistory(); // show recently-read passages when the devotional opens
+      __devoHistOpen = false; // start collapsed each time the devotional opens
+      renderDevoHistory(); // show the last-read passage when the devotional opens
       // onclick (not addEventListener) so re-opening the devotional never stacks handlers.
       var _planRead = document.getElementById("bsPlanRead");
       if (_planRead) _planRead.onclick = function () {
