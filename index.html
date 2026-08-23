@@ -873,6 +873,27 @@
   #fitTimerToggle.running { background: rgba(240,118,138,0.15); border-color: #f0768a; color: #f0768a; font-weight: 700; }
   #fitTimerToggle.idle { background: #34c2c2; color: #0c2929; border-color: #34c2c2; font-weight: 700; }
   #fitTimerToggle.idle:hover { background: #4adfdf; }
+  /* Guided circuit timer (AMRAP) */
+  .fit-circuit { background: var(--field); border: 1px solid var(--field-border); border-radius: 14px; padding: 18px 16px; margin-bottom: 18px; text-align: center; }
+  .fit-circuit.phase-rest { border-color: #f0c674; background: rgba(240,198,116,0.08); }
+  .fit-circuit.phase-work { border-color: #34c2c2; }
+  .fit-circuit.phase-done { border-color: #34d399; background: rgba(52,211,153,0.08); }
+  .fck-round { font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .fck-phase { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-top: 8px; color: #34c2c2; }
+  .fit-circuit.phase-rest .fck-phase { color: #f0c674; }
+  .fit-circuit.phase-done .fck-phase { color: #34d399; }
+  .fck-ex { font-size: 24px; font-weight: 800; margin: 3px 0 2px; letter-spacing: -0.3px; }
+  .fck-reps { font-size: 13.5px; color: var(--muted); }
+  .fck-count { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 58px; font-weight: 800; line-height: 1.05; margin: 10px 0 4px; color: #34c2c2; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+  .fit-circuit.phase-rest .fck-count { color: #f0c674; }
+  .fck-next { font-size: 12.5px; color: var(--muted); min-height: 16px; }
+  .fck-meta { display: flex; justify-content: center; gap: 18px; margin-top: 12px; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .fck-meta b { color: var(--text); }
+  .fck-controls { display: flex; gap: 8px; margin-top: 14px; }
+  .fck-controls button { flex: 1; border: 1px solid var(--field-border); background: none; color: var(--text); border-radius: 9px; padding: 12px 8px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s ease; }
+  .fck-controls button:hover { border-color: #34c2c2; }
+  #fckToggle.running { background: rgba(240,118,138,0.15); border-color: #f0768a; color: #f0768a; }
+  #fckToggle.idle { background: #34c2c2; color: #0c2929; border-color: #34c2c2; }
   .fit-select {
     width: 100%; background: var(--field); border: 1px solid var(--field-border); color: var(--text);
     border-radius: 9px; padding: 11px 10px; font-family: inherit; font-size: 14px; cursor: pointer;
@@ -2535,14 +2556,35 @@
 
   // ----- Build variants (men / women), chosen at sign-in and saved to the account -----
   let BUILD = "men"; // "men" | "women"
+  // Shared barbell AMRAP preset — a guided circuit workout (see the circuit runner
+  // below). Same definition used in both builds.
+  const BARBELL_AMRAP = {
+    name: "45lb Barbell AMRAP", points: 10,
+    short: "30-min AMRAP · 7 barbell moves · 45 lb bar",
+    desc: "30-minute AMRAP with a 45 lb barbell — 7 exercises, 10 reps each, back-to-back, then 90 seconds rest between rounds. Your score is rounds completed.",
+    variations: ["As prescribed", "Lighter bar", "Heavier bar", "20-min time cap"],
+    circuit: {
+      durationMin: 30, restBetweenRoundsSec: 90, pointsPerRound: 10,
+      exercises: [
+        { name: "Reverse Curls", reps: 10, workSec: 40 },
+        { name: "Overhead Press", reps: 10, workSec: 40 },
+        { name: "Tricep Overhead Extension", reps: 10, workSec: 40 },
+        { name: "Squats", reps: 10, workSec: 40 },
+        { name: "Rows", reps: 10, workSec: 40 },
+        { name: "One-Arm Lunges", reps: 10, note: "per leg, 20 total", workSec: 50 },
+        { name: "Bar Swings Side to Side", reps: 10, workSec: 40 }
+      ]
+    }
+  };
   const BUILDS = {
     men: {
       logo: BRAND.logo,
       heroDesc: "For men who live on purpose as sons of the King.",
       verseText: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.",
       verseRef: "COLOSSIANS 3:23",
-      presetOrder: ["king300", "king320", "king400", "king360"],
+      presetOrder: ["king300", "king320", "king400", "king360", "barbellamrap"],
       presets: {
+        barbellamrap: BARBELL_AMRAP,
         king300: { name: "KING300", points: 7, short: "4 sets · 25 pushups · 25 situps · 25 squats", desc: "4 sets of 25 pushups, 25 situps, 25 squats (100 / 100 / 100 total)", variations: ["As prescribed", "Add weight to squats", "Slower tempo (3-sec negatives)", "Decline push-ups", "Extra set (5 total)"] },
         king320: { name: "KING320", points: 8, short: "4 sets · 25 pushups · 25 situps · 25 squats · 5 pullups", desc: "4 sets of 25 pushups, 25 situps, 25 squats, 5 pullups (100 / 100 / 100 / 20 total)", variations: ["As prescribed", "Add weight to squats", "Extra pull-ups (+5 per set)", "Weighted pull-ups", "Decline push-ups", "Extra set (5 total)"] },
         king400: { name: "KING400", points: 8, short: "4 rounds · 25 squats · 25 pushups · 25 situps · 25 jumping jacks", desc: "The Gauntlet — 4 rounds of 25 squats, 25 push-ups, 25 sit-ups, 25 jumping jacks (400 total). ~20 min, full-body + conditioning.", variations: ["As prescribed", "Add weight to squats", "Slower tempo (3-sec negatives)", "Decline push-ups", "Extra round (5 total)"] },
@@ -2556,8 +2598,9 @@
       heroDesc: "For women who live on purpose as daughters of the King.",
       verseText: "Strength and dignity are her clothing. She laughs at the time to come.",
       verseRef: "PROVERBS 31:25",
-      presetOrder: ["reign240", "reign260", "reign300", "reign280"],
+      presetOrder: ["reign240", "reign260", "reign300", "reign280", "barbellamrap"],
       presets: {
+        barbellamrap: BARBELL_AMRAP,
         reign240: { name: "REIGN240", points: 7, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 sit-ups", desc: "4 rounds of 15 squats, 15 glute bridges, 20 walking lunges, 10 sit-ups (240 total)", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Single-leg glute bridges", "Slower tempo (3-sec lower)", "Extra round (5 total)"] },
         reign260: { name: "REIGN260", points: 8, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 push-ups · 5 sit-to-stands", desc: "4 rounds of 15 squats, 15 glute bridges, 20 lunges, 10 push-ups, 5 sit-to-stands (260 total)", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Knee push-ups → full push-ups", "Slower tempo (3-sec lower)", "Extra round (5 total)"] },
         reign300: { name: "REIGN300", points: 8, short: "5 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 sit-ups", desc: "Glow Engine — 5 rounds of 15 squats, 15 glute bridges, 20 walking lunges, 10 sit-ups (300 total). ~20 min, lower-body + conditioning.", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Single-leg glute bridges", "Slower tempo (3-sec lower)", "Extra round (6 total)"] },
@@ -3411,6 +3454,126 @@
     updateTimerDisplay();
     setTimerToggleState(false);
   }
+
+  // ===== Guided circuit timer (AMRAP presets with a `circuit` config) =====
+  // Walks through each exercise for its work seconds, auto-advances with a beep,
+  // rests between rounds, counts rounds completed, and stops at the time cap.
+  var CKT = { cfg: null, started: false, interval: null, round: 1, exIdx: 0, phase: "work", remain: 0, totalSec: 0, rounds: 0, done: false };
+  var currentCircuitRounds = 0; // captured for the saved entry
+  var __cktAudio = null;
+  function cktBeep(kind) {
+    try {
+      __cktAudio = __cktAudio || new (window.AudioContext || window.webkitAudioContext)();
+      var t = __cktAudio.currentTime, o = __cktAudio.createOscillator(), g = __cktAudio.createGain();
+      o.connect(g); g.connect(__cktAudio.destination);
+      o.frequency.value = kind === "round" ? 660 : kind === "done" ? 880 : 520;
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+      o.start(t); o.stop(t + 0.24);
+    } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate(kind === "round" ? [80, 40, 80] : 60); } catch (e) {}
+  }
+  function cktFmt(sec) { var m = Math.floor(sec / 60), s = sec % 60; return m + ":" + String(s).padStart(2, "0"); }
+  function cktCapSec() { return (CKT.cfg && CKT.cfg.durationMin ? CKT.cfg.durationMin : 30) * 60; }
+  function cktInit(cfg) {
+    if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+    CKT = { cfg: cfg, started: false, interval: null, round: 1, exIdx: 0, phase: "work",
+            remain: cfg.exercises[0].workSec, totalSec: 0, rounds: 0, done: false };
+    currentCircuitRounds = 0;
+    cktRender();
+  }
+  function cktRender() {
+    var card = document.getElementById("fitCircuit");
+    if (!card || !CKT.cfg) return;
+    var exs = CKT.cfg.exercises;
+    card.classList.remove("phase-work", "phase-rest", "phase-done");
+    var roundEl = document.getElementById("fckRound"), phaseEl = document.getElementById("fckPhase"),
+        exEl = document.getElementById("fckEx"), repsEl = document.getElementById("fckReps"),
+        countEl = document.getElementById("fckCount"), nextEl = document.getElementById("fckNext"),
+        roundsEl = document.getElementById("fckRounds"), totalEl = document.getElementById("fckTotal"),
+        toggle = document.getElementById("fckToggle");
+    if (CKT.done) {
+      card.classList.add("phase-done");
+      roundEl.textContent = "Complete";
+      phaseEl.textContent = "Well done";
+      exEl.textContent = CKT.rounds + (CKT.rounds === 1 ? " round" : " rounds");
+      repsEl.textContent = "in " + cktFmt(CKT.totalSec);
+      countEl.textContent = "✓"; nextEl.textContent = "";
+    } else if (CKT.phase === "rest") {
+      card.classList.add("phase-rest");
+      roundEl.textContent = "Round " + CKT.round + " done";
+      phaseEl.textContent = "Rest";
+      exEl.textContent = "Catch your breath";
+      repsEl.textContent = "Next round coming up";
+      countEl.textContent = CKT.remain;
+      nextEl.textContent = "Up first: " + exs[0].name;
+    } else {
+      card.classList.add("phase-work");
+      var ex = exs[CKT.exIdx];
+      roundEl.textContent = "Round " + CKT.round;
+      phaseEl.textContent = "Exercise " + (CKT.exIdx + 1) + " of " + exs.length;
+      exEl.textContent = ex.name;
+      repsEl.textContent = ex.reps + " reps" + (ex.note ? " (" + ex.note + ")" : "");
+      countEl.textContent = CKT.remain;
+      var nx = exs[CKT.exIdx + 1];
+      nextEl.textContent = nx ? ("Next: " + nx.name) : "Next: rest, then round " + (CKT.round + 1);
+    }
+    if (roundsEl) roundsEl.textContent = CKT.rounds;
+    if (totalEl) totalEl.textContent = cktFmt(CKT.totalSec);
+    if (toggle) {
+      var running = !!CKT.interval;
+      toggle.textContent = CKT.done ? "Done" : running ? "Pause" : (CKT.started ? "Resume" : "Start");
+      toggle.className = running ? "running" : "idle";
+      toggle.disabled = !!CKT.done;
+    }
+  }
+  function cktAdvance() {
+    var exs = CKT.cfg.exercises;
+    if (CKT.phase === "rest") { // rest over -> next round, first exercise
+      CKT.round++; CKT.exIdx = 0; CKT.phase = "work"; CKT.remain = exs[0].workSec; cktBeep("round");
+      return;
+    }
+    // finished an exercise
+    CKT.exIdx++;
+    if (CKT.exIdx >= exs.length) { // round complete
+      CKT.rounds++;
+      var rest = CKT.cfg.restBetweenRoundsSec || 0;
+      if (rest > 0) { CKT.phase = "rest"; CKT.remain = rest; }
+      else { CKT.round++; CKT.exIdx = 0; CKT.phase = "work"; CKT.remain = exs[0].workSec; }
+      cktBeep("round");
+    } else {
+      CKT.remain = exs[CKT.exIdx].workSec; cktBeep("work");
+    }
+  }
+  function cktTick() {
+    CKT.totalSec++;
+    if (CKT.totalSec >= cktCapSec()) { cktFinish(); return; }
+    CKT.remain--;
+    if (CKT.remain <= 0) cktAdvance();
+    cktRender();
+  }
+  function cktStart() {
+    if (!CKT.cfg || CKT.done || CKT.interval) return;
+    CKT.started = true;
+    CKT.interval = setInterval(cktTick, 1000);
+    cktRender();
+  }
+  function cktPause() {
+    if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+    cktRender();
+  }
+  function cktFinish() {
+    if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+    CKT.done = true;
+    currentCircuitRounds = CKT.rounds;
+    timerElapsedMs = CKT.totalSec * 1000; // feeds the entry's duration capture
+    cktBeep("done");
+    cktRender();
+  }
+  function cktResetPanel() {
+    if (CKT.cfg) cktInit(CKT.cfg);
+  }
   const questionsEl = document.getElementById("questions");
   let currentStep = 0;
   function showStep(i) {
@@ -3547,6 +3710,23 @@
         <div class="fit-timer-controls">
           <button type="button" id="fitTimerToggle" class="idle">Start</button>
           <button type="button" id="fitTimerReset">Reset</button>
+        </div>
+      </div>
+      <div class="fit-circuit phase-work" id="fitCircuit" style="display:none;">
+        <div class="fck-round" id="fckRound">Round 1</div>
+        <div class="fck-phase" id="fckPhase">Get ready</div>
+        <div class="fck-ex" id="fckEx">—</div>
+        <div class="fck-reps" id="fckReps"></div>
+        <div class="fck-count" id="fckCount">40</div>
+        <div class="fck-next" id="fckNext"></div>
+        <div class="fck-meta">
+          <span>Rounds done: <b id="fckRounds">0</b></span>
+          <span>Time: <b id="fckTotal">0:00</b> / 30:00</span>
+        </div>
+        <div class="fck-controls">
+          <button type="button" id="fckToggle" class="idle">Start</button>
+          <button type="button" id="fckSkip">Skip</button>
+          <button type="button" id="fckFinish">Finish</button>
         </div>
       </div>
       <div class="fit-opts">
@@ -3844,16 +4024,30 @@
         if (vars.indexOf(currentFitnessVariation) >= 0) { sel.value = currentFitnessVariation; }
         else { currentFitnessVariation = vars[0]; sel.value = vars[0]; }
       };
+      // Show the right timer for a preset: guided circuit runner if it has a
+      // `circuit` config, otherwise the plain count-up stopwatch.
+      const applyPresetTimerUI = function (info) {
+        const timer = document.getElementById("fitTimer");
+        const ckt = document.getElementById("fitCircuit");
+        const isCircuit = !!(info && info.circuit);
+        if (timer) timer.style.display = isCircuit ? "none" : "flex";
+        if (ckt) ckt.style.display = isCircuit ? "" : "none";
+        if (!isCircuit && CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+        return isCircuit;
+      };
       // restore selected preset visual + timer panel state
       if (currentFitnessPreset) {
         setPresetsOpen(true); // a preset is chosen — make sure it's visible
         const sel = document.querySelector('.fit-preset-btn[data-preset="' + currentFitnessPreset + '"]');
         if (sel) sel.classList.add("active");
-        const timer = document.getElementById("fitTimer");
-        if (timer) timer.style.display = "flex";
-        setTimerToggleState(!!timerInterval);
-        updateTimerDisplay();
-        populateVariationSelect(presetDef(currentFitnessPreset));
+        const info = presetDef(currentFitnessPreset);
+        if (applyPresetTimerUI(info)) {
+          if (!CKT.cfg) cktInit(info.circuit); else cktRender();
+        } else {
+          setTimerToggleState(!!timerInterval);
+          updateTimerDisplay();
+        }
+        populateVariationSelect(info);
       }
       document.getElementById("fitPresets").addEventListener("click", (ev) => {
         const btn = ev.target.closest(".fit-preset-btn");
@@ -3864,16 +4058,22 @@
         const info = presetDef(preset);
         const q0 = document.getElementById("q0");
         if (q0) q0.value = info.name + " — " + info.desc;
-        const timer = document.getElementById("fitTimer");
-        if (timer) timer.style.display = "flex";
         currentFitnessVariation = "As prescribed";
         populateVariationSelect(info);
         resetTimerState();
+        if (applyPresetTimerUI(info)) cktInit(info.circuit);
       });
       document.getElementById("fitTimerToggle").addEventListener("click", () => {
         if (timerInterval) stopTimer(); else startTimer();
       });
       document.getElementById("fitTimerReset").addEventListener("click", resetTimerState);
+      // Circuit runner controls
+      var fckT = document.getElementById("fckToggle");
+      if (fckT) fckT.addEventListener("click", function () { if (CKT.interval) cktPause(); else cktStart(); });
+      var fckS = document.getElementById("fckSkip");
+      if (fckS) fckS.addEventListener("click", function () { if (CKT.cfg && !CKT.done) { cktAdvance(); cktRender(); } });
+      var fckF = document.getElementById("fckFinish");
+      if (fckF) fckF.addEventListener("click", function () { if (CKT.cfg && !CKT.done) cktFinish(); });
     }
   }
 
@@ -5603,9 +5803,16 @@
     });
     // capture timer if still running for a fitness preset workout
     if (currentType === "fitness" && currentFitnessPreset && timerInterval) { stopTimer(); }
+    // Stop a running circuit so its rounds/time are captured before saving.
+    if (currentType === "fitness" && CKT.cfg && CKT.interval) { cktPause(); }
     let pts = pointsFor(currentType);
     if (currentType === "fitness" && currentFitnessPreset && presetDef(currentFitnessPreset)) {
-      pts = presetDef(currentFitnessPreset).points;
+      const pdef = presetDef(currentFitnessPreset);
+      pts = pdef.points;
+      // AMRAP circuit: score by rounds completed (points_per_round), min the base.
+      if (pdef.circuit && currentCircuitRounds > 0) {
+        pts = Math.max(pdef.points, currentCircuitRounds * (pdef.circuit.pointsPerRound || 10));
+      }
     }
     if (cappedToday) pts = 0; // already earned points for this card type today
 
@@ -5632,6 +5839,10 @@
     if (currentType === "fitness") {
       if (currentFitnessPreset && currentFitnessVariation && currentFitnessVariation !== "As prescribed") {
         answers.unshift({ q: "Workout variation", a: currentFitnessVariation });
+      }
+      // AMRAP circuit result: rounds completed + total time.
+      if (currentFitnessPreset && presetDef(currentFitnessPreset) && presetDef(currentFitnessPreset).circuit && currentCircuitRounds > 0) {
+        answers.unshift({ q: "Rounds completed", a: String(currentCircuitRounds) });
       }
       answers.unshift({ q: "Time of day", a: currentFitnessTime }, { q: "Intensity", a: currentFitnessIntensity });
       // Category + type (Strength — Body Weight / Cardio — Run), from the picker.
@@ -5670,6 +5881,8 @@
     currentFitnessVariation = "As prescribed";
     currentFitnessCategory = ""; currentFitnessType = ""; currentFitnessOther = "";
     resetTimerState();
+    if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+    CKT.cfg = null; currentCircuitRounds = 0;
 
     try {
       await insertEntryToCloud(entry);
