@@ -894,6 +894,9 @@
   .fck-controls button:hover { border-color: #34c2c2; }
   #fckToggle.running { background: rgba(240,118,138,0.15); border-color: #f0768a; color: #f0768a; }
   #fckToggle.idle { background: #34c2c2; color: #0c2929; border-color: #34c2c2; }
+  .fck-bar { text-align: left; margin-bottom: 14px; }
+  .fck-bar label { display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .fck-bar input { width: 100%; box-sizing: border-box; background: var(--bg); border: 1px solid var(--field-border); color: var(--text); border-radius: 9px; padding: 11px 13px; font-family: inherit; font-size: 16px; text-align: center; }
   .fit-select {
     width: 100%; background: var(--field); border: 1px solid var(--field-border); color: var(--text);
     border-radius: 9px; padding: 11px 10px; font-family: inherit; font-size: 14px; cursor: pointer;
@@ -2576,6 +2579,16 @@
       ]
     }
   };
+  // Women's variant — same circuit, but the bar weight is entered by the user
+  // (defaults to 15 lb) rather than fixed at 45.
+  const BARBELL_AMRAP_CUSTOM = {
+    name: "Barbell AMRAP", points: 10,
+    short: "30-min AMRAP · 7 moves · your bar weight",
+    desc: "30-minute AMRAP with a barbell you choose the weight for — 7 exercises, 10 reps each, back-to-back, then 90 seconds rest between rounds. Your score is rounds completed.",
+    variations: ["As prescribed", "Lighter bar", "Heavier bar", "20-min time cap"],
+    barWeight: { label: "Enter your bar weight (lbs)", default: 15 },
+    circuit: BARBELL_AMRAP.circuit
+  };
   const BUILDS = {
     men: {
       logo: BRAND.logo,
@@ -2598,9 +2611,9 @@
       heroDesc: "For women who live on purpose as daughters of the King.",
       verseText: "Strength and dignity are her clothing. She laughs at the time to come.",
       verseRef: "PROVERBS 31:25",
-      presetOrder: ["reign240", "reign260", "reign300", "reign280", "barbellamrap"],
+      presetOrder: ["reign240", "reign260", "reign300", "reign280", "barbellamrapx"],
       presets: {
-        barbellamrap: BARBELL_AMRAP,
+        barbellamrapx: BARBELL_AMRAP_CUSTOM,
         reign240: { name: "REIGN240", points: 7, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 sit-ups", desc: "4 rounds of 15 squats, 15 glute bridges, 20 walking lunges, 10 sit-ups (240 total)", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Single-leg glute bridges", "Slower tempo (3-sec lower)", "Extra round (5 total)"] },
         reign260: { name: "REIGN260", points: 8, short: "4 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 push-ups · 5 sit-to-stands", desc: "4 rounds of 15 squats, 15 glute bridges, 20 lunges, 10 push-ups, 5 sit-to-stands (260 total)", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Knee push-ups → full push-ups", "Slower tempo (3-sec lower)", "Extra round (5 total)"] },
         reign300: { name: "REIGN300", points: 8, short: "5 rounds · 15 squats · 15 glute bridges · 20 lunges · 10 sit-ups", desc: "Glow Engine — 5 rounds of 15 squats, 15 glute bridges, 20 walking lunges, 10 sit-ups (300 total). ~20 min, lower-body + conditioning.", variations: ["As prescribed", "Add dumbbells", "Resistance band on squats/bridges", "Single-leg glute bridges", "Slower tempo (3-sec lower)", "Extra round (6 total)"] },
@@ -3388,6 +3401,7 @@
 
   // ----- Fitness preset workouts (per build) + timer -----
   let currentFitnessPreset = null; // preset id within the active build, or null
+  let currentBarWeight = null;     // user-entered bar weight (lbs) for custom barbell presets
   let currentFitnessIntensity = "Medium"; // Low | Medium | High
   let currentFitnessTime = "Morning"; // Morning | Afternoon (drives the nutrition prompt)
   let currentFitnessVariation = "As prescribed"; // tracked "minimal change" to the selected workout
@@ -3713,6 +3727,10 @@
         </div>
       </div>
       <div class="fit-circuit phase-work" id="fitCircuit" style="display:none;">
+        <div class="fck-bar" id="fckBarRow" style="display:none;">
+          <label for="fckBarWeight" id="fckBarLabel">Enter your bar weight (lbs)</label>
+          <input type="number" id="fckBarWeight" inputmode="numeric" min="1" step="1" value="15">
+        </div>
         <div class="fck-round" id="fckRound">Round 1</div>
         <div class="fck-phase" id="fckPhase">Get ready</div>
         <div class="fck-ex" id="fckEx">—</div>
@@ -4033,6 +4051,19 @@
         if (timer) timer.style.display = isCircuit ? "none" : "flex";
         if (ckt) ckt.style.display = isCircuit ? "" : "none";
         if (!isCircuit && CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+        // Optional user-entered bar weight (custom barbell preset).
+        const barRow = document.getElementById("fckBarRow");
+        const barInput = document.getElementById("fckBarWeight");
+        const barLabel = document.getElementById("fckBarLabel");
+        if (info && info.barWeight) {
+          if (barLabel) barLabel.textContent = info.barWeight.label || "Enter your bar weight (lbs)";
+          if (currentBarWeight == null) currentBarWeight = info.barWeight.default;
+          if (barInput) barInput.value = currentBarWeight;
+          if (barRow) barRow.style.display = "";
+        } else {
+          if (barRow) barRow.style.display = "none";
+          currentBarWeight = null;
+        }
         return isCircuit;
       };
       // restore selected preset visual + timer panel state
@@ -4059,6 +4090,7 @@
         const q0 = document.getElementById("q0");
         if (q0) q0.value = info.name + " — " + info.desc;
         currentFitnessVariation = "As prescribed";
+        currentBarWeight = null; // fresh pick → default gets re-applied by applyPresetTimerUI
         populateVariationSelect(info);
         resetTimerState();
         if (applyPresetTimerUI(info)) cktInit(info.circuit);
@@ -4074,6 +4106,8 @@
       if (fckS) fckS.addEventListener("click", function () { if (CKT.cfg && !CKT.done) { cktAdvance(); cktRender(); } });
       var fckF = document.getElementById("fckFinish");
       if (fckF) fckF.addEventListener("click", function () { if (CKT.cfg && !CKT.done) cktFinish(); });
+      var fckBar = document.getElementById("fckBarWeight");
+      if (fckBar) fckBar.addEventListener("input", function () { var v = parseInt(fckBar.value, 10); currentBarWeight = (isNaN(v) || v <= 0) ? null : v; });
     }
   }
 
@@ -5844,6 +5878,9 @@
       if (currentFitnessPreset && presetDef(currentFitnessPreset) && presetDef(currentFitnessPreset).circuit && currentCircuitRounds > 0) {
         answers.unshift({ q: "Rounds completed", a: String(currentCircuitRounds) });
       }
+      if (currentBarWeight != null) {
+        answers.unshift({ q: "Bar weight", a: currentBarWeight + " lbs" });
+      }
       answers.unshift({ q: "Time of day", a: currentFitnessTime }, { q: "Intensity", a: currentFitnessIntensity });
       // Category + type (Strength — Body Weight / Cardio — Run), from the picker.
       if (currentFitnessCategory) {
@@ -5882,7 +5919,7 @@
     currentFitnessCategory = ""; currentFitnessType = ""; currentFitnessOther = "";
     resetTimerState();
     if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
-    CKT.cfg = null; currentCircuitRounds = 0;
+    CKT.cfg = null; currentCircuitRounds = 0; currentBarWeight = null;
 
     try {
       await insertEntryToCloud(entry);
