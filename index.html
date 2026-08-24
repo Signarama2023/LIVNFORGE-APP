@@ -2562,29 +2562,29 @@
   // Shared barbell AMRAP preset — a guided circuit workout (see the circuit runner
   // below). Same definition used in both builds.
   const BARBELL_AMRAP = {
-    name: "45lb Barbell AMRAP", points: 10,
+    name: "45lb Barbell AMRAP", points: 1,
     short: "30-min AMRAP · 7 barbell moves · 45 lb bar",
-    desc: "30-minute AMRAP with a 45 lb barbell — 7 exercises, 10 reps each, back-to-back, then 90 seconds rest between rounds. Your score is rounds completed.",
+    desc: "30-minute AMRAP with a 45 lb barbell — 7 exercises, 10 reps each, 30 seconds each (tap Next when you finish early), then 90 seconds rest between rounds. Your score is rounds completed — 1 point per round.",
     variations: ["As prescribed", "Lighter bar", "Heavier bar", "20-min time cap"],
     circuit: {
-      durationMin: 30, restBetweenRoundsSec: 90, pointsPerRound: 10,
+      durationMin: 30, restBetweenRoundsSec: 90, pointsPerRound: 1,
       exercises: [
-        { name: "Reverse Curls", reps: 10, workSec: 40 },
-        { name: "Overhead Press", reps: 10, workSec: 40 },
-        { name: "Tricep Overhead Extension", reps: 10, workSec: 40 },
-        { name: "Squats", reps: 10, workSec: 40 },
-        { name: "Rows", reps: 10, workSec: 40 },
-        { name: "One-Arm Lunges", reps: 10, note: "per leg, 20 total", workSec: 50 },
-        { name: "Bar Swings Side to Side", reps: 10, workSec: 40 }
+        { name: "Reverse Curls", reps: 10, workSec: 30 },
+        { name: "Overhead Press", reps: 10, workSec: 30 },
+        { name: "Tricep Overhead Extension", reps: 10, workSec: 30 },
+        { name: "Squats", reps: 10, workSec: 30 },
+        { name: "Rows", reps: 10, workSec: 30 },
+        { name: "One-Arm Lunges", reps: 10, note: "per leg, 20 total", workSec: 30 },
+        { name: "Bar Swings Side to Side", reps: 10, workSec: 30 }
       ]
     }
   };
   // Women's variant — same circuit, but the bar weight is entered by the user
   // (defaults to 15 lb) rather than fixed at 45.
   const BARBELL_AMRAP_CUSTOM = {
-    name: "Barbell AMRAP", points: 10,
+    name: "Barbell AMRAP", points: 1,
     short: "30-min AMRAP · 7 moves · your bar weight",
-    desc: "30-minute AMRAP with a barbell you choose the weight for — 7 exercises, 10 reps each, back-to-back, then 90 seconds rest between rounds. Your score is rounds completed.",
+    desc: "30-minute AMRAP with a barbell you choose the weight for — 7 exercises, 10 reps each, 30 seconds each (tap Next when you finish early), then 90 seconds rest between rounds. Your score is rounds completed — 1 point per round.",
     variations: ["As prescribed", "Lighter bar", "Heavier bar", "20-min time cap"],
     barWeight: { label: "Enter your bar weight (lbs)", default: 15 },
     circuit: BARBELL_AMRAP.circuit
@@ -3735,7 +3735,7 @@
         <div class="fck-phase" id="fckPhase">Get ready</div>
         <div class="fck-ex" id="fckEx">—</div>
         <div class="fck-reps" id="fckReps"></div>
-        <div class="fck-count" id="fckCount">40</div>
+        <div class="fck-count" id="fckCount">30</div>
         <div class="fck-next" id="fckNext"></div>
         <div class="fck-meta">
           <span>Rounds done: <b id="fckRounds">0</b></span>
@@ -3743,7 +3743,7 @@
         </div>
         <div class="fck-controls">
           <button type="button" id="fckToggle" class="idle">Start</button>
-          <button type="button" id="fckSkip">Skip</button>
+          <button type="button" id="fckSkip">Next →</button>
           <button type="button" id="fckFinish">Finish</button>
         </div>
       </div>
@@ -4103,7 +4103,11 @@
       var fckT = document.getElementById("fckToggle");
       if (fckT) fckT.addEventListener("click", function () { if (CKT.interval) cktPause(); else cktStart(); });
       var fckS = document.getElementById("fckSkip");
-      if (fckS) fckS.addEventListener("click", function () { if (CKT.cfg && !CKT.done) { cktAdvance(); cktRender(); } });
+      if (fckS) fckS.addEventListener("click", function () {
+        if (!CKT.cfg || CKT.done) return;
+        if (!CKT.started) cktStart(); // first Next also starts the clock
+        cktAdvance(); cktRender();
+      });
       var fckF = document.getElementById("fckFinish");
       if (fckF) fckF.addEventListener("click", function () { if (CKT.cfg && !CKT.done) cktFinish(); });
       var fckBar = document.getElementById("fckBarWeight");
