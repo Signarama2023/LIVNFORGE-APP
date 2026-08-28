@@ -3197,7 +3197,7 @@
     if (vEnd) return { id: bookId + "." + chapter + "." + vStart + "-" + bookId + "." + chapter + "." + vEnd, label: ref };
     return { id: bookId + "." + chapter + "." + vStart, label: ref };
   }
-  let __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", summary: "", keyPoints: [], teacherInsights: [], reflection: [] };
+  let __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", author: "", context: "", meaning: "", teacherInsights: [], reflection: [], shownPastor: null };
   async function loadBiblePassage() {
     const refEl = document.getElementById("bsReference");
     // The picker is the source of truth whenever a book + chapter are selected and the
@@ -3244,12 +3244,21 @@
       document.getElementById("bsPassageWrap").style.display = "block";
       document.getElementById("bsQuestionsWrap").style.display = "none";
       status.textContent = "";
-      __devo = { passage: text, reference: reference, translation: translation, keyVerse: "", keyVerseRef: "", summary: "", keyPoints: [], teacherInsights: [], reflection: [] };
+      __devo = { passage: text, reference: reference, translation: translation, keyVerse: "", keyVerseRef: "", author: "", context: "", meaning: "", teacherInsights: [], reflection: [], shownPastor: null };
       logDevoRead(reference, translation); // remember what was read, for the history
     } catch (err) {
       status.textContent = "Couldn't load that passage. Check the reference and try again.";
       console.error(err);
     } finally { btn.disabled = false; }
+  }
+  // Rotate which pastor's take is shown — advances one step per study generated.
+  function devoPastorKey() { return APP + ":devopastor:" + (currentEmail() || "").toLowerCase(); }
+  function nextDevoPastorIdx(n) {
+    if (!n) return 0;
+    var v = 0; try { v = parseInt(localStorage.getItem(devoPastorKey()) || "0", 10); } catch (e) {}
+    if (isNaN(v) || v < 0) v = 0;
+    try { localStorage.setItem(devoPastorKey(), String((v + 1) % 1000000)); } catch (e) {}
+    return v % n;
   }
   async function generateDevotionalQuestions() {
     const status = document.getElementById("bsStatus");
@@ -3271,8 +3280,9 @@
       if (data && data.error) throw new Error(data.error);
       __devo.keyVerse = data.key_verse || "";
       __devo.keyVerseRef = data.key_verse_reference || "";
-      __devo.summary = data.summary || "";
-      __devo.keyPoints = Array.isArray(data.key_points) ? data.key_points : [];
+      __devo.author = data.author || "";
+      __devo.context = data.context || "";
+      __devo.meaning = data.meaning || data.summary || "";
       __devo.teacherInsights = Array.isArray(data.teacher_insights) ? data.teacher_insights : [];
       __devo.reflection = Array.isArray(data.reflection) ? data.reflection : [];
       const kv = document.getElementById("bsKeyVerse");
@@ -3280,20 +3290,20 @@
         kv.innerHTML = '<div class="kv-label">KEY VERSE</div><div class="kv-text">"' + escapeHtml(__devo.keyVerse) + '"</div><div class="kv-ref">— ' + escapeHtml(__devo.keyVerseRef) + '</div>';
       } else { kv.innerHTML = ""; }
       let qHtml = "";
-      if (__devo.summary) {
-        qHtml += '<div class="bs-section-label">Summary</div>';
-        qHtml += '<div class="bs-summary">' + escapeHtml(__devo.summary) + '</div>';
-      }
-      if (__devo.keyPoints.length) {
-        qHtml += '<div class="bs-section-label">Key points</div>';
-        qHtml += '<ul class="bs-keypoints">' + __devo.keyPoints.map(function (p) { return '<li>' + escapeHtml(p) + '</li>'; }).join("") + '</ul>';
-      }
+      var devoSection = function (label, body) {
+        return body ? ('<div class="bs-section-label">' + label + '</div><div class="bs-summary">' + escapeHtml(body) + '</div>') : "";
+      };
+      qHtml += devoSection("Who wrote it", __devo.author);
+      qHtml += devoSection("The context it was written in", __devo.context);
+      qHtml += devoSection("What it means", __devo.meaning);
+      // One pastor's take, rotating each study.
+      __devo.shownPastor = null;
       if (__devo.teacherInsights.length) {
-        qHtml += '<div class="bs-section-label">How they might talk about it</div>';
-        qHtml += __devo.teacherInsights.map(function (t) {
-          return '<div class="bs-teacher"><div class="bs-teacher-name">' + escapeHtml(t.teacher || "") + '</div>' +
-            '<div class="bs-teacher-insight">' + escapeHtml(t.insight || "") + '</div></div>';
-        }).join("");
+        var pIdx = nextDevoPastorIdx(__devo.teacherInsights.length);
+        var t = __devo.teacherInsights[pIdx] || __devo.teacherInsights[0];
+        __devo.shownPastor = t;
+        qHtml += '<div class="bs-section-label">A pastor’s take · ' + escapeHtml(t.teacher || "") + '</div>';
+        qHtml += '<div class="bs-teacher"><div class="bs-teacher-insight">' + escapeHtml(t.insight || "") + '</div></div>';
       }
       if (__devo.reflection.length) {
         qHtml += '<div class="bs-section-label">Reflect &amp; apply</div>';
@@ -5960,6 +5970,10 @@
     if (currentType === "devotional") {
       answers = [];
       if (__devo.keyVerse) answers.push({ q: "Key verse", a: __devo.keyVerse + (__devo.keyVerseRef ? " — " + __devo.keyVerseRef : "") });
+      if (__devo.author) answers.push({ q: "Who wrote it", a: __devo.author });
+      if (__devo.context) answers.push({ q: "The context", a: __devo.context });
+      if (__devo.meaning) answers.push({ q: "What it means", a: __devo.meaning });
+      if (__devo.shownPastor && __devo.shownPastor.insight) answers.push({ q: "A pastor's take · " + (__devo.shownPastor.teacher || ""), a: __devo.shownPastor.insight });
       (__devo.understanding || []).forEach((u, i) => {
         const sel = document.querySelector('input[name="bsu' + i + '"]:checked');
         const chosen = sel ? (u.choices[+sel.value] || "") : "(not answered)";

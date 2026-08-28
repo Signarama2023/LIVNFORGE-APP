@@ -23,9 +23,9 @@ const cors = {
 // WHITELABEL config); otherwise these defaults are used.
 //   label = the heading shown in the app; style = whose teaching style to emulate.
 const DEFAULT_TEACHERS: Array<{ label: string; style: string }> = [
-  { label: "Joby Style", style: "Joby Martin" },
-  { label: "Matt Style", style: "Matt Chandler" },
-  { label: "Chris Style", style: "Chris Brown" },
+  { label: "Joby", style: "Joby Martin" },
+  { label: "Matt", style: "Matt Chandler" },
+  { label: "Chris", style: "Chris Brown" },
 ];
 
 function sanitizeTeachers(input: unknown): Array<{ label: string; style: string }> {
@@ -59,17 +59,20 @@ function buildSystemPrompt(teachers: Array<{ label: string; style: string }>): s
     '- "key_verse": the single most central verse of the passage, quoted EXACTLY from the provided passage text (do ' +
     "not paraphrase).\n" +
     '- "key_verse_reference": its reference (e.g. "John 3:16").\n' +
-    '- "summary": 4-6 short, plain sentences that EXPLAIN the passage to a beginner. First set the scene simply ' +
-    "(who is involved, where, and what is going on), then explain what it means in everyday words. Briefly explain " +
-    "any names, places, or religious terms a newcomer likely wouldn't know. No assumed background, no jargon.\n" +
-    '- "key_points": an array of 3 to 5 short strings, each a clear takeaway from THIS passage stated in plain, ' +
-    "everyday language a first-time reader would immediately understand — explain, don't just assert.\n" +
+    '- "author": 1-2 plain sentences on WHO WROTE this passage and who they were writing to (e.g. "Paul, a follower ' +
+    'of Jesus, wrote this as a letter to the young church in the city of Rome."). If the human author is genuinely ' +
+    "uncertain, say so simply.\n" +
+    '- "context": 2-3 plain sentences on THE SITUATION IT WAS WRITTEN IN — what was going on, who it was for, and ' +
+    "why it was written. Give a newcomer the background they need to make sense of it.\n" +
+    '- "meaning": 3-5 short, plain sentences on WHAT IT MEANS — explain the passage in everyday words, define any ' +
+    "term a newcomer wouldn't know, and land on the main point. No jargon, no assumed background.\n" +
     '- "teacher_insights": an array of EXACTLY ' + n + " objects capturing the TEACHING STYLE of " + styleList +
-    ", in that order. Each object has keys \"teacher\" (set to EXACTLY " + labelList + ", respectively) and " +
-    '"insight" (2-3 plain-language sentences on how that teacher MIGHT help a newcomer understand THIS passage in ' +
-    "their characteristic style — gospel-centered, grace-filled, application-driven, and still easy to follow. " +
-    "This is a STYLE IMPRESSION, not a quote: NEVER present anything as a verbatim quotation, NEVER claim they " +
-    "actually said a specific thing, and NEVER invent quotes, sermons, or biographical facts.\n" +
+    ", in that order. Each object has keys \"teacher\" (set to EXACTLY " + labelList + ", respectively — FIRST " +
+    'NAME ONLY, never the full name) and "insight" (2-3 plain-language sentences on how that teacher MIGHT help a ' +
+    "newcomer understand THIS passage in their characteristic style — gospel-centered, grace-filled, " +
+    "application-driven, easy to follow, and referring to the teacher by FIRST NAME ONLY. This is a STYLE " +
+    "IMPRESSION, not a quote: NEVER present anything as a verbatim quotation, NEVER claim they actually said a " +
+    "specific thing, NEVER invent quotes or sermons, and NEVER use their full name.\n" +
     '- "reflection": an array of EXACTLY 2 open-ended reflection questions (plain strings), simply worded, that ' +
     "move the reader toward Jesus and honest, personal response — grace-filled, practical, never mere " +
     "self-improvement, and answerable by someone brand new to faith.\n\n" +
@@ -187,10 +190,9 @@ Deno.serve(async (req) => {
     }
 
     // light validation / normalization for the understanding-focused output
-    const summary = String(parsed.summary || "").trim();
-    const key_points = Array.isArray(parsed.key_points)
-      ? (parsed.key_points as unknown[]).slice(0, 6).map(String).map((s) => s.trim()).filter(Boolean)
-      : [];
+    const author = String(parsed.author || "").trim();
+    const context = String(parsed.context || "").trim();
+    const meaning = String(parsed.meaning || parsed.summary || "").trim();
     const teacher_insights = Array.isArray(parsed.teacher_insights)
       ? (parsed.teacher_insights as Array<Record<string, unknown>>).slice(0, teachers.length)
           .map((t) => ({ teacher: String(t.teacher || "").trim(), insight: String(t.insight || "").trim() }))
@@ -203,8 +205,9 @@ Deno.serve(async (req) => {
     return json({
       key_verse: String(parsed.key_verse || ""),
       key_verse_reference: String(parsed.key_verse_reference || reference || ""),
-      summary,
-      key_points,
+      author,
+      context,
+      meaning,
       teacher_insights,
       reflection,
     });
