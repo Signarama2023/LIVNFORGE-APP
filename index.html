@@ -1822,6 +1822,10 @@
           <div class="rw-modal-inner" id="circAcceptInner"></div>
         </div>
 
+        <div class="rw-modal" id="circWarnModal">
+          <div class="rw-modal-inner" id="circWarnInner"></div>
+        </div>
+
         <div class="rw-modal" id="jtModal">
           <div class="rw-modal-inner" id="jtModalInner"></div>
         </div>
@@ -6729,8 +6733,54 @@
     __circInvitesQueue = __circInvitesQueue.filter(function (x) { return x.id !== inv.id; });
     showNextCircleInvite();
   }
+  // Create/join guard: warn if the circle code already exists; if it exists but
+  // has no members, offer to resend its invitations.
+  async function attemptCreateOrJoinCircle(code, focus, name, type) {
+    var existing = null;
+    try { existing = (await sb.from("prayer_circles").select("code,name").eq("code", code).maybeSingle()).data; } catch (e) {}
+    if (!existing) { await joinCircle(code, focus, name, type); return; } // brand new — just create + join
+    var count = 0;
+    try { var res = await sb.from("prayer_circle_members").select("email", { count: "exact", head: true }).eq("code", code); count = res.count || 0; } catch (e) {}
+    if (count === 0) showCircleZeroMembers(code, existing.name || code, focus, name, type);
+    else showCircleExistsWarn(code, existing.name || code, count, focus, name, type);
+  }
+  function closeCircWarn() { var m = document.getElementById("circWarnModal"); if (m) m.style.display = "none"; }
+  function showCircleExistsWarn(code, cname, count, focus, name, type) {
+    var box = document.getElementById("circWarnInner"); if (!box) return;
+    box.innerHTML =
+      '<h3>That circle already exists</h3>' +
+      '<p class="gl-hint">A circle with code <b>' + escapeHtml(code) + '</b> already exists — “' + escapeHtml(cname) + '” (' + count + (count === 1 ? " member" : " members") + '). ' +
+      'Joining adds you to that existing circle. To start a fresh one, close this and pick a different code.</p>' +
+      '<div class="gl-actions"><button type="button" id="circWarnCancel">Cancel</button>' +
+      '<button type="button" class="primary" id="circWarnJoin">Join this circle</button></div>';
+    document.getElementById("circWarnCancel").addEventListener("click", closeCircWarn);
+    document.getElementById("circWarnJoin").addEventListener("click", function () { closeCircWarn(); joinCircle(code, focus, name, type); });
+    document.getElementById("circWarnModal").style.display = "flex";
+  }
+  function showCircleZeroMembers(code, cname, focus, name, type) {
+    var box = document.getElementById("circWarnInner"); if (!box) return;
+    box.innerHTML =
+      '<h3>This circle has no members</h3>' +
+      '<p class="gl-hint">A circle with code <b>' + escapeHtml(code) + '</b> exists (“' + escapeHtml(cname) + '”) but nobody is in it yet. Resend its invitations, or join it yourself to get it going.</p>' +
+      '<div class="gl-actions"><button type="button" id="circZeroJoin">Join it</button>' +
+      '<button type="button" class="primary" id="circZeroResend">Resend invites</button></div>' +
+      '<button type="button" class="mf-cancel" id="circZeroCancel">Cancel</button>';
+    document.getElementById("circZeroJoin").addEventListener("click", function () { closeCircWarn(); joinCircle(code, focus, name, type); });
+    document.getElementById("circZeroResend").addEventListener("click", function () { closeCircWarn(); resendCircleInvites(code); });
+    document.getElementById("circZeroCancel").addEventListener("click", closeCircWarn);
+    document.getElementById("circWarnModal").style.display = "flex";
+  }
+  async function resendCircleInvites(code) {
+    try {
+      var { data } = await sb.from("circle_invites").select("id,status").eq("code", code);
+      var toResend = (data || []).filter(function (i) { return i.status !== "accepted"; });
+      if (!toResend.length) { openCircleInvite(code); return; } // no prior invites — send fresh ones
+      await Promise.all(toResend.map(function (i) { return sb.from("circle_invites").update({ status: "pending" }).eq("id", i.id); }));
+      showToast("Resent " + toResend.length + " invitation" + (toResend.length === 1 ? "" : "s") + ".");
+    } catch (e) { console.error("resend invites failed:", e); showToast("Couldn't resend invites."); }
+  }
   (function initCircleInviteModals() {
-    ["circInviteModal", "circAcceptModal"].forEach(function (id) {
+    ["circInviteModal", "circAcceptModal", "circWarnModal"].forEach(function (id) {
       var el = document.getElementById(id);
       if (el && el.parentNode !== document.body) document.body.appendChild(el); // overlay any screen
       if (el) el.addEventListener("click", function (e) { if (e.target === el) el.style.display = "none"; });
@@ -7217,7 +7267,7 @@
       const focus = (document.getElementById("pcFocus").value || "").trim();
       if (!code) { alert("Enter a circle code to create or join."); return; }
       if (name) setName(name);
-      await joinCircle(code, focus, name, pcNewType);
+      await attemptCreateOrJoinCircle(code, focus, name, pcNewType);
     } else if (t.dataset.newtype) {
       pcNewType = t.dataset.newtype;
       document.querySelectorAll(".pc-type-chip").forEach(function (c) { c.classList.toggle("active", c.dataset.newtype === pcNewType); });
