@@ -1814,6 +1814,14 @@
           <div class="rw-modal-inner" id="goalModalInner"></div>
         </div>
 
+        <div class="rw-modal" id="circInviteModal">
+          <div class="rw-modal-inner" id="circInviteInner"></div>
+        </div>
+
+        <div class="rw-modal" id="circAcceptModal">
+          <div class="rw-modal-inner" id="circAcceptInner"></div>
+        </div>
+
         <div class="rw-modal" id="jtModal">
           <div class="rw-modal-inner" id="jtModalInner"></div>
         </div>
@@ -5785,6 +5793,7 @@
     fetchMarriageFromCloud();
     fetchDevoReadsFromCloud();
     hydrateCirclesFromCloud();
+    checkCircleInvites();
     renderQuestions(currentType);
     updateCount();
     // Gate: paywall (if enabled) -> build chooser -> landing
@@ -6640,6 +6649,93 @@
       renderCircles();
     } catch (e) { alert("Couldn't join that circle right now. Check your connection and try again."); }
   }
+
+  // ===== Circle invitations: invite by email -> popup -> accept -> joined =====
+  var __circInviteCode = "";
+  function openCircleInvite(code) {
+    __circInviteCode = code;
+    var box = document.getElementById("circInviteInner"); if (!box) return;
+    box.innerHTML =
+      '<h3>Invite to your circle</h3>' +
+      '<p class="gl-hint">Enter the email they use for LIVN FORGE. They’ll get a popup asking to accept — the moment they do, they’re in the circle.</p>' +
+      '<input class="gl-field" id="circInviteEmail" type="email" autocapitalize="off" placeholder="friend@email.com">' +
+      '<div class="gl-actions"><button type="button" id="circInviteCancel">Cancel</button>' +
+      '<button type="button" class="primary" id="circInviteSend">Send invite</button></div>' +
+      '<button type="button" class="mf-cancel" id="circInviteShareCode">Or share the circle code instead</button>';
+    document.getElementById("circInviteCancel").addEventListener("click", function () { document.getElementById("circInviteModal").style.display = "none"; });
+    document.getElementById("circInviteSend").addEventListener("click", submitCircleInvite);
+    document.getElementById("circInviteShareCode").addEventListener("click", function () { document.getElementById("circInviteModal").style.display = "none"; shareInvite(code); });
+    document.getElementById("circInviteModal").style.display = "flex";
+    setTimeout(function () { var i = document.getElementById("circInviteEmail"); if (i) i.focus(); }, 60);
+  }
+  async function submitCircleInvite() {
+    var inp = document.getElementById("circInviteEmail");
+    var email = ((inp && inp.value) || "").trim().toLowerCase();
+    if (inp) inp.blur();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast("Enter a valid email."); return; }
+    if (email === (currentEmail() || "").toLowerCase()) { showToast("That's your own email."); return; }
+    var code = __circInviteCode, cname = code;
+    try { var c = (await sb.from("prayer_circles").select("name").eq("code", code).maybeSingle()).data; if (c && c.name) cname = c.name; } catch (e) {}
+    try {
+      const { error } = await sb.from("circle_invites").insert({
+        code: code, circle_name: cname, invited_email: email,
+        invited_by_email: (currentEmail() || "").toLowerCase(), invited_by_name: getName() || null, status: "pending"
+      });
+      if (error) throw error;
+      document.getElementById("circInviteModal").style.display = "none";
+      showToast("Invitation sent to " + email + ".");
+    } catch (e) { console.error("circle invite failed:", e); showToast("Couldn't send that invite."); }
+  }
+  var __circInvitesQueue = [];
+  async function checkCircleInvites() {
+    if (!sb || !currentEmail()) return;
+    try {
+      const { data, error } = await sb.from("circle_invites")
+        .select("*").eq("invited_email", (currentEmail() || "").toLowerCase()).eq("status", "pending")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      __circInvitesQueue = data || [];
+    } catch (e) { return; }
+    showNextCircleInvite();
+  }
+  function showNextCircleInvite() {
+    var modal = document.getElementById("circAcceptModal"), box = document.getElementById("circAcceptInner");
+    if (!modal || !box) return;
+    if (!__circInvitesQueue.length) { modal.style.display = "none"; return; }
+    var inv = __circInvitesQueue[0];
+    box.innerHTML =
+      '<h3>Circle invitation</h3>' +
+      '<p class="mf-vow">' + escapeHtml(inv.invited_by_name || inv.invited_by_email) + ' invited you to join</p>' +
+      '<p class="mf-lede" style="font-size:19px;color:var(--text);font-weight:800;margin-top:2px;">“' + escapeHtml(inv.circle_name || inv.code) + '”</p>' +
+      '<div class="gl-actions"><button type="button" id="circDecline">Decline</button>' +
+      '<button type="button" class="primary" id="circAccept">Accept &amp; join</button></div>';
+    document.getElementById("circAccept").addEventListener("click", function () { acceptCircleInvite(inv); });
+    document.getElementById("circDecline").addEventListener("click", function () { declineCircleInvite(inv); });
+    modal.style.display = "flex";
+  }
+  async function acceptCircleInvite(inv) {
+    var btn = document.getElementById("circAccept"); if (btn) { btn.disabled = true; btn.textContent = "Joining…"; }
+    try {
+      await joinCircle(inv.code, "", getName(), null);          // self-insert membership → in the circle now
+      await sb.from("circle_invites").update({ status: "accepted" }).eq("id", inv.id);
+    } catch (e) { console.error("accept invite failed:", e); if (btn) { btn.disabled = false; btn.textContent = "Accept & join"; } showToast("Couldn't join — try again."); return; }
+    __circInvitesQueue = __circInvitesQueue.filter(function (x) { return x.id !== inv.id; });
+    showToast("You joined " + (inv.circle_name || inv.code) + "! 🙌");
+    showNextCircleInvite();
+    try { pcOpen = inv.code; showTab("circles"); renderCircles(); window.scrollTo(0, 0); } catch (e) {}
+  }
+  async function declineCircleInvite(inv) {
+    try { await sb.from("circle_invites").update({ status: "declined" }).eq("id", inv.id); } catch (e) {}
+    __circInvitesQueue = __circInvitesQueue.filter(function (x) { return x.id !== inv.id; });
+    showNextCircleInvite();
+  }
+  (function initCircleInviteModals() {
+    ["circInviteModal", "circAcceptModal"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.parentNode !== document.body) document.body.appendChild(el); // overlay any screen
+      if (el) el.addEventListener("click", function (e) { if (e.target === el) el.style.display = "none"; });
+    });
+  })();
   let __migratedGroups = false;
   async function migrateGroupsToCircles() {
     if (__migratedGroups || !sb || !currentEmail()) return;
@@ -7158,7 +7254,7 @@
     else if (t.dataset.blockuser) { await blockUser(t.dataset.blockuser, t.dataset.blockname); }
     else if (t.dataset.leave) { if (confirm('Leave "' + t.dataset.leave + '"? You can rejoin anytime with the code.')) { await leaveCircle(t.dataset.leave); } }
     else if (t.dataset.removemember) { if (confirm("Remove this member from the circle?")) { await removeMember(t.dataset.code, t.dataset.removemember); } }
-    else if (t.dataset.invite) { await shareInvite(t.dataset.invite); }
+    else if (t.dataset.invite) { openCircleInvite(t.dataset.invite); }
     else if (t.dataset.deletecircle) { if (confirm('Delete the entire "' + t.dataset.deletecircle + '" circle for everyone? This permanently removes its messages, prayer requests, members, and leaderboard. This cannot be undone.')) { await deleteCircle(t.dataset.deletecircle); } }
   });
 
@@ -9073,6 +9169,7 @@
         fetchMarriageFromCloud();
         fetchDevoReadsFromCloud();
         hydrateCirclesFromCloud();
+        checkCircleInvites();
         updateCount();
         renderQuestions(currentType);
         if (/[?&]checkout=success/.test(location.search)) {
