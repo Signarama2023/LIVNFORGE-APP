@@ -6636,17 +6636,18 @@
     if (!sb) return;
     const t = CIRCLE_TYPES[type] ? type : "prayer";
     try {
-      const existing = (await sb.from("prayer_circles").select("code,focus").eq("code", code).maybeSingle()).data;
-      if (!existing) {
-        await sb.from("prayer_circles").insert({ code: code, name: code, focus: focus || CIRCLE_TYPES[t].focus, type: t, created_by: currentEmail() });
-      } else if (focus && !existing.focus) {
-        await sb.from("prayer_circles").update({ focus: focus }).eq("code", code);
-      }
-      // ignoreDuplicates -> ON CONFLICT DO NOTHING. Rejoining a circle you're
-      // already a member of must NOT try to UPDATE the row (there's no RLS
-      // update policy on prayer_circle_members, so a merge-upsert would throw and
-      // the join would silently fail to show you as a member).
-      await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: name || getName() }, { onConflict: "code,email", ignoreDuplicates: true });
+      // Creating the circle and adding the caller as a member happen together
+      // in one database transaction (join_or_create_circle, prayer_circles.sql)
+      // — otherwise a dropped connection between the two writes could leave a
+      // circle that exists but has no members in it.
+      const { error } = await sb.rpc("join_or_create_circle", {
+        p_code: code,
+        p_focus_for_create: focus || CIRCLE_TYPES[t].focus,
+        p_focus_raw: focus || null,
+        p_type: t,
+        p_member_name: name || getName()
+      });
+      if (error) throw error;
       addCircleCode(code);
       addGroup(code);
       syncToGroup(true);
@@ -6794,9 +6795,10 @@
     for (const code of getGroups()) {
       if (getCircles().includes(code)) continue;
       try {
-        const existing = (await sb.from("prayer_circles").select("code").eq("code", code).maybeSingle()).data;
-        if (!existing) await sb.from("prayer_circles").insert({ code: code, name: code, focus: "", type: "team", created_by: currentEmail() });
-        await sb.from("prayer_circle_members").upsert({ code: code, email: currentEmail(), name: getName() }, { onConflict: "code,email", ignoreDuplicates: true });
+        const { error } = await sb.rpc("join_or_create_circle", {
+          p_code: code, p_focus_for_create: "", p_focus_raw: null, p_type: "team", p_member_name: getName()
+        });
+        if (error) throw error;
         addCircleCode(code); changed = true;
       } catch (e) {}
     }

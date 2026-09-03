@@ -148,3 +148,45 @@ drop policy if exists "plog insert" on public.prayer_logs;
 create policy "plog read"   on public.prayer_logs for select using (public.is_circle_member(code));
 create policy "plog insert" on public.prayer_logs for insert
   with check (lower(email) = lower(auth.jwt() ->> 'email') and public.is_circle_member(code));
+
+-- ---------- Atomic join-or-create ----------
+-- joinCircle() used to insert the circle row, then upsert the caller's
+-- membership row, as two separate requests. If the first succeeded and the
+-- second failed (dropped connection, etc.) the circle was left with zero
+-- members — visible by code, but with no one actually in it. Doing both in
+-- one SECURITY DEFINER transaction (same pattern as marriage_setup_circle in
+-- marriage.sql) means either both rows land or neither does.
+create or replace function public.join_or_create_circle(
+  p_code text, p_focus_for_create text, p_focus_raw text, p_type text, p_member_name text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email text := lower(auth.jwt() ->> 'email');
+begin
+  if v_email is null or v_email = '' then
+    raise exception 'Not signed in.';
+  end if;
+
+  insert into public.prayer_circles (code, name, focus, type, created_by)
+  values (p_code, p_code, nullif(p_focus_for_create, ''), coalesce(p_type, 'prayer'), v_email)
+  on conflict (code) do nothing;
+
+  -- Matches the old behavior: only backfill focus on an existing circle that
+  -- doesn't have one yet, and only when the caller actually typed one (not
+  -- the type's default, which is baked into p_focus_for_create above).
+  update public.prayer_circles
+     set focus = p_focus_raw
+   where code = p_code
+     and (focus is null or focus = '')
+     and p_focus_raw is not null and p_focus_raw <> '';
+
+  insert into public.prayer_circle_members (code, email, name)
+  values (p_code, v_email, p_member_name)
+  on conflict (code, email) do nothing;
+end;
+$$;
+grant execute on function public.join_or_create_circle(text, text, text, text, text) to authenticated;
