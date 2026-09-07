@@ -4111,6 +4111,11 @@
           return '<button type="button" class="fit-type-btn' + (t === currentFitnessType ? " active" : "") + '" data-fittype="' + escapeHtml(t) + '">' + escapeHtml(t) + '</button>';
         }).join("");
         fitTypeWrap.style.display = currentFitnessCategory ? "" : "none";
+        // The "Preset workouts" are strength body-weight routines — irrelevant to
+        // stretching, and their extra height pushes the guided panel off-screen.
+        var presetToggleEl = document.getElementById("fitPresetToggle");
+        if (presetToggleEl) presetToggleEl.style.display = currentFitnessCategory === "stretch" ? "none" : "";
+        if (currentFitnessCategory === "stretch") setPresetsOpen(false);
         if (fitOther) {
           fitOther.placeholder = currentFitnessCategory === "stretch" ? "What kind of stretching?"
             : currentFitnessCategory === "strength" ? "What kind of strength work?" : "What kind of cardio?";
@@ -4273,6 +4278,9 @@
           if (timer) timer.style.display = "none";
           if (ckt) ckt.style.display = "";
           cktInit(proto);
+          // The circuit panel sits below the pickers — on a phone it renders off
+          // the bottom of the view, so bring it into sight when it launches.
+          if (ckt) setTimeout(function () { ckt.scrollIntoView({ behavior: "smooth", block: "center" }); }, 60);
         } else {
           if (ckt) ckt.style.display = "none";
           if (timer) timer.style.display = "none";
