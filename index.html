@@ -3527,10 +3527,6 @@
     cardio: ["Run", "Walk", "Hike", "Swim", "Bike", "Other"],
     stretch: ["Full body", "Mobility", "Wind-down", "Other"]
   };
-  // MuscleWiki video proxy (Supabase edge fn holds the API key server-side and
-  // streams the branded demo clip). A stretch may carry a `video` filename; the
-  // circuit panel plays it via this proxy. POC: only one move wired up so far.
-  const MW_PROXY = "https://ihhctwmgfleihlnfnfsv.supabase.co/functions/v1/musclewiki-proxy?file=";
   // Guided stretch protocols — single-pass circuits (one time through the list,
   // each move held for workSec with a bell to switch). The user rotates through
   // them by choosing a type; "Other" is a free-logged stretch with no timer.
@@ -3539,7 +3535,7 @@
     "Full body": {
       title: "Full-body stretch", unit: "Stretch", singlePass: true, durationMin: 25,
       exercises: [
-        { name: "Neck release", workSec: 45, note: "roll slow, both sides", video: "male-Recovery-neck-mobility-side-flexions-standing-front.mp4" },
+        { name: "Neck release", workSec: 45, note: "roll slow, both sides" },
         { name: "Shoulder & chest opener", workSec: 45, note: "clasp hands behind back" },
         { name: "Standing forward fold", workSec: 75, note: "soft knees, let the head hang" },
         { name: "Standing quad — right", workSec: 45, note: "heel to glute" },
@@ -3724,27 +3720,6 @@
     }
     if (roundsEl) roundsEl.textContent = CKT.rounds;
     if (totalEl) totalEl.textContent = cktFmt(CKT.totalSec);
-    // Demo video for the current move (if it carries one). cktRender fires every
-    // second, so only touch the <video> when the move actually changes — otherwise
-    // it would restart the clip on every tick.
-    var vid = document.getElementById("fckVideo");
-    if (vid) {
-      var curEx = (!CKT.done && CKT.phase === "work") ? exs[CKT.exIdx] : null;
-      var wantFile = (curEx && curEx.video) ? curEx.video : null;
-      if (wantFile !== CKT._videoFile) {
-        CKT._videoFile = wantFile;
-        if (wantFile) {
-          // Fail quietly: if the proxy/quota errors, hide the clip rather than
-          // showing a broken box — the timed stretch still works without it.
-          vid.onerror = function () { vid.style.display = "none"; };
-          vid.src = MW_PROXY + encodeURIComponent(wantFile);
-          vid.style.display = "";
-          vid.play().catch(function () {}); // autoplay may be deferred until Start tap
-        } else {
-          vid.pause(); vid.removeAttribute("src"); vid.load(); vid.style.display = "none";
-        }
-      }
-    }
     if (toggle) {
       var running = !!CKT.interval;
       toggle.textContent = CKT.done ? "Done" : running ? "Pause" : (CKT.started ? "Resume" : "Start");
@@ -3952,8 +3927,6 @@
         <div class="fck-phase" id="fckPhase">Get ready</div>
         <div class="fck-ex" id="fckEx">—</div>
         <div class="fck-reps" id="fckReps"></div>
-        <video id="fckVideo" playsinline muted loop preload="none"
-               style="display:none;width:100%;max-width:320px;border-radius:12px;margin:8px auto;background:#000;"></video>
         <div class="fck-count" id="fckCount">30</div>
         <div class="fck-next" id="fckNext"></div>
         <div class="fck-meta">
