@@ -4151,6 +4151,29 @@
         setPresetsOpen(!open);
         if (!open) { var pw = document.getElementById("fitPresets"); if (pw) setTimeout(function () { pw.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 60); }
       });
+      // Guided stretch: show the circuit runner loaded with the chosen protocol,
+      // or (for "Other" / no match) tear it down and clear the protocol state.
+      // Defined in THIS block so the fitTypeRow handler below can see it.
+      const applyStretchProtocol = function (type) {
+        const timer = document.getElementById("fitTimer");
+        const ckt = document.getElementById("fitCircuit");
+        const barRow = document.getElementById("fckBarRow");
+        const proto = STRETCH_PROTOCOLS[type] || null;
+        currentStretchProto = proto ? type : null;
+        if (barRow) barRow.style.display = "none";
+        if (proto) {
+          if (timer) timer.style.display = "none";
+          if (ckt) ckt.style.display = "";
+          cktInit(proto);
+          // The circuit panel sits below the pickers — on a phone it renders off
+          // the bottom of the view, so bring it into sight when it launches.
+          if (ckt) setTimeout(function () { ckt.scrollIntoView({ behavior: "smooth", block: "center" }); }, 60);
+        } else {
+          if (ckt) ckt.style.display = "none";
+          if (timer) timer.style.display = "none";
+          if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+        }
+      };
       if (fitTypeRow) fitTypeRow.addEventListener("click", function (e) {
         var b = e.target.closest("[data-fittype]"); if (!b) return;
         currentFitnessType = b.dataset.fittype;
@@ -4264,28 +4287,6 @@
         sel.disabled = false;
         if (vars.indexOf(currentFitnessVariation) >= 0) { sel.value = currentFitnessVariation; }
         else { currentFitnessVariation = vars[0]; sel.value = vars[0]; }
-      };
-      // Guided stretch: show the circuit runner loaded with the chosen protocol,
-      // or (for "Other" / no match) tear it down and clear the protocol state.
-      const applyStretchProtocol = function (type) {
-        const timer = document.getElementById("fitTimer");
-        const ckt = document.getElementById("fitCircuit");
-        const barRow = document.getElementById("fckBarRow");
-        const proto = STRETCH_PROTOCOLS[type] || null;
-        currentStretchProto = proto ? type : null;
-        if (barRow) barRow.style.display = "none";
-        if (proto) {
-          if (timer) timer.style.display = "none";
-          if (ckt) ckt.style.display = "";
-          cktInit(proto);
-          // The circuit panel sits below the pickers — on a phone it renders off
-          // the bottom of the view, so bring it into sight when it launches.
-          if (ckt) setTimeout(function () { ckt.scrollIntoView({ behavior: "smooth", block: "center" }); }, 60);
-        } else {
-          if (ckt) ckt.style.display = "none";
-          if (timer) timer.style.display = "none";
-          if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
-        }
       };
       // Show the right timer for a preset: guided circuit runner if it has a
       // `circuit` config, otherwise the plain count-up stopwatch.
