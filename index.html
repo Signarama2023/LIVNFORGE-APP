@@ -3539,7 +3539,7 @@
     "Full body": {
       title: "Full-body stretch", unit: "Stretch", singlePass: true, durationMin: 25,
       exercises: [
-        { name: "Neck release", workSec: 45, note: "roll slow, both sides", video: "male-Recovery-neck-mobility-side-flexions-standing-front.mp4" },
+        { name: "Neck release", workSec: 45, note: "roll slow, both sides" },
         { name: "Shoulder & chest opener", workSec: 45, note: "clasp hands behind back" },
         { name: "Standing forward fold", workSec: 75, note: "soft knees, let the head hang" },
         { name: "Standing quad — right", workSec: 45, note: "heel to glute" },
@@ -3598,6 +3598,48 @@
       ]
     }
   };
+  // Per-move demo clips (MuscleWiki, streamed via MW_PROXY). Keyed by the
+  // exercise's base name — the "— right/left" suffix is stripped, so a L/R pair
+  // shares one clip. male/front variant. Rest steps (breathing, legs-up) have
+  // none by design. See supabase/functions/musclewiki-proxy.
+  const STRETCH_VIDEOS = {
+    "Neck release": "male-Recovery-neck-mobility-side-flexions-standing-front.mp4",
+    "Shoulder & chest opener": "male-chest-stretch-variation-4-front.mp4",
+    "Standing forward fold": "male-yoga-standing-forward-bend-blocks-front.mp4",
+    "Standing quad": "male-Recovery-quad-stretch-kneeling-front.mp4",
+    "Low-lunge hip flexor": "male-Recovery-hip-flexor-stretch-kneeling-lunge-1-front.mp4",
+    "Seated hamstring": "male-Recovery-hamstring-stretch-seated-single-leg-isometric-front.mp4",
+    "Figure-4 glute": "male-Recovery-glute-hip-rotator-stretch-supine-front.mp4",
+    "Butterfly / inner thigh": "male-Recovery-adductor-stretch-seated-bilateral-static-front.mp4",
+    "Seated spinal twist": "male-yoga-seated-twist-front.mp4",
+    "Child's pose": "male-Recovery-prayer-stretch-1-front.mp4",
+    "Cobra / low-back": "male-Yoga-cobra-pose-front.mp4",
+    "Cat-cow flow": "male-yoga-cat-pose-front.mp4",
+    "World's greatest stretch": "male-yoga-revolved-side-angle-pose-with-prayer-hands-beginner-front.mp4",
+    "Deep squat hold": "male-Recovery-hip-openers-front.mp4",
+    "90/90 hip": "male-yoga-double-pigeon-pose-front.mp4",
+    "Thoracic rotation": "male-yoga-thread-the-needle-hip-over-knees-front.mp4",
+    "Shoulder opener": "male-Recovery-shoulder-flexion-stretch-wall-standing-front.mp4",
+    "Wrist & forearm stretch": "male-Recovery-wrist-flexor-stretch-seated-front.mp4",
+    "Calf & ankle": "male-Recovery-gastrocnemius-stretch-unilateral-on-wall-front.mp4",
+    "Hip circles (CARs)": "male-Recovery-infinity-loop-standing-hip-mobility-front.mp4",
+    "Standing side bend": "male-Recovery-lateral-line-stretch-and-lumbar-spine-rotation-seated-front.mp4",
+    "Downward dog": "male-yoga-downward-dog-front.mp4",
+    "Neck side stretch": "male-Recovery-neck-mobility-side-flexions-standing-front.mp4",
+    "Seated forward fold": "male-yoga-Paschimottanasana-seated-forward-fall-front.mp4",
+    "Reclined figure-4": "male-yoga-reclining-pigeon-pose-front.mp4",
+    "Supine spinal twist": "male-yoga-supine-twist-lying-front.mp4",
+    "Happy baby": "male-yoga-happy-baby-front.mp4",
+    "Reclined butterfly": "male-Recovery-adductor-stretch-seated-bilateral-static-front.mp4",
+    "Knees to chest": "male-Recovery-lumbar-flexion-knee-pull-bilateral-floor-front.mp4",
+    "Final relaxation": "male-yoga-core-pose-front.mp4"
+  };
+  Object.keys(STRETCH_PROTOCOLS).forEach(function (k) {
+    STRETCH_PROTOCOLS[k].exercises.forEach(function (ex) {
+      var f = STRETCH_VIDEOS[ex.name.split(" — ")[0]];
+      if (f) ex.video = f;
+    });
+  });
   function presetDef(id) { return build().presets[id] || null; }
   let timerInterval = null;
   let timerStartMs = 0;
