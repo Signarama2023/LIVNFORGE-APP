@@ -3521,9 +3521,78 @@
   let currentFitnessCategory = ""; // "" | "strength" | "cardio"
   let currentFitnessType = "";     // Gym training / Body Weight / Run / Walk / Hike / Swim / Bike / Other
   let currentFitnessOther = "";    // free text when the cardio type is "Other"
+  let currentStretchProto = null;  // active guided-stretch protocol name, or null
   const FIT_TYPES = {
     strength: ["Gym training", "Body Weight"],
-    cardio: ["Run", "Walk", "Hike", "Swim", "Bike", "Other"]
+    cardio: ["Run", "Walk", "Hike", "Swim", "Bike", "Other"],
+    stretch: ["Full body", "Mobility", "Wind-down", "Other"]
+  };
+  // Guided stretch protocols — single-pass circuits (one time through the list,
+  // each move held for workSec with a bell to switch). The user rotates through
+  // them by choosing a type; "Other" is a free-logged stretch with no timer.
+  // Keyed by the FIT_TYPES.stretch labels above.
+  const STRETCH_PROTOCOLS = {
+    "Full body": {
+      title: "Full-body stretch", unit: "Stretch", singlePass: true, durationMin: 25,
+      exercises: [
+        { name: "Neck release", workSec: 45, note: "roll slow, both sides" },
+        { name: "Shoulder & chest opener", workSec: 45, note: "clasp hands behind back" },
+        { name: "Standing forward fold", workSec: 75, note: "soft knees, let the head hang" },
+        { name: "Standing quad — right", workSec: 45, note: "heel to glute" },
+        { name: "Standing quad — left", workSec: 45, note: "heel to glute" },
+        { name: "Low-lunge hip flexor — right", workSec: 60, note: "sink the hips forward" },
+        { name: "Low-lunge hip flexor — left", workSec: 60, note: "sink the hips forward" },
+        { name: "Seated hamstring — right", workSec: 60, note: "reach for the toes" },
+        { name: "Seated hamstring — left", workSec: 60, note: "reach for the toes" },
+        { name: "Figure-4 glute — right", workSec: 60, note: "ankle over knee" },
+        { name: "Figure-4 glute — left", workSec: 60, note: "ankle over knee" },
+        { name: "Butterfly / inner thigh", workSec: 75, note: "soles together, knees fall open" },
+        { name: "Seated spinal twist — right", workSec: 45, note: "lengthen, then twist" },
+        { name: "Seated spinal twist — left", workSec: 45, note: "lengthen, then twist" },
+        { name: "Child's pose", workSec: 75, note: "arms long, breathe into the back" },
+        { name: "Cobra / low-back", workSec: 45, note: "press up gently, open the chest" }
+      ]
+    },
+    "Mobility": {
+      title: "Mobility flow", unit: "Stretch", singlePass: true, durationMin: 25,
+      exercises: [
+        { name: "Cat-cow flow", workSec: 60, note: "move with the breath" },
+        { name: "World's greatest stretch — right", workSec: 60, note: "lunge, reach to the sky" },
+        { name: "World's greatest stretch — left", workSec: 60, note: "lunge, reach to the sky" },
+        { name: "Deep squat hold", workSec: 75, note: "heels down, chest tall" },
+        { name: "90/90 hip — right", workSec: 60, note: "rotate front and back shin" },
+        { name: "90/90 hip — left", workSec: 60, note: "rotate front and back shin" },
+        { name: "Thoracic rotation — right", workSec: 45, note: "open the top arm wide" },
+        { name: "Thoracic rotation — left", workSec: 45, note: "open the top arm wide" },
+        { name: "Shoulder opener", workSec: 45, note: "pass-through, keep arms long" },
+        { name: "Wrist & forearm stretch", workSec: 45, note: "flex and extend, both sides" },
+        { name: "Calf & ankle — right", workSec: 45, note: "rock the ankle, drive the heel" },
+        { name: "Calf & ankle — left", workSec: 45, note: "rock the ankle, drive the heel" },
+        { name: "Hip circles (CARs)", workSec: 75, note: "slow, controlled, both hips" },
+        { name: "Standing side bend — right", workSec: 45, note: "reach up and over" },
+        { name: "Standing side bend — left", workSec: 45, note: "reach up and over" },
+        { name: "Downward dog", workSec: 90, note: "pedal the heels, long spine" }
+      ]
+    },
+    "Wind-down": {
+      title: "Wind-down stretch", unit: "Stretch", singlePass: true, durationMin: 25,
+      exercises: [
+        { name: "Seated breathing", workSec: 60, note: "slow inhale, longer exhale" },
+        { name: "Neck side stretch — right", workSec: 45, note: "ear toward shoulder" },
+        { name: "Neck side stretch — left", workSec: 45, note: "ear toward shoulder" },
+        { name: "Seated forward fold", workSec: 75, note: "fold from the hips, let go" },
+        { name: "Reclined figure-4 — right", workSec: 75, note: "draw the thigh in gently" },
+        { name: "Reclined figure-4 — left", workSec: 75, note: "draw the thigh in gently" },
+        { name: "Supine spinal twist — right", workSec: 75, note: "knees fall right, gaze left" },
+        { name: "Supine spinal twist — left", workSec: 75, note: "knees fall left, gaze right" },
+        { name: "Happy baby", workSec: 60, note: "hold the feet, rock side to side" },
+        { name: "Reclined butterfly", workSec: 75, note: "soles together, arms relaxed" },
+        { name: "Knees to chest", workSec: 60, note: "hug in, release the low back" },
+        { name: "Child's pose", workSec: 75, note: "forehead down, breathe slow" },
+        { name: "Legs up / rest", workSec: 90, note: "let the legs be heavy" },
+        { name: "Final relaxation", workSec: 90, note: "still, soft, full breaths" }
+      ]
+    }
   };
   function presetDef(id) { return build().presets[id] || null; }
   let timerInterval = null;
@@ -3613,18 +3682,21 @@
   function cktRender() {
     var card = document.getElementById("fitCircuit");
     if (!card || !CKT.cfg) return;
-    var exs = CKT.cfg.exercises;
+    var exs = CKT.cfg.exercises, single = !!CKT.cfg.singlePass, unit = CKT.cfg.unit || "Exercise";
     card.classList.remove("phase-work", "phase-rest", "phase-done");
     var roundEl = document.getElementById("fckRound"), phaseEl = document.getElementById("fckPhase"),
         exEl = document.getElementById("fckEx"), repsEl = document.getElementById("fckReps"),
         countEl = document.getElementById("fckCount"), nextEl = document.getElementById("fckNext"),
         roundsEl = document.getElementById("fckRounds"), totalEl = document.getElementById("fckTotal"),
+        roundsMeta = document.getElementById("fckRoundsMeta"), capMeta = document.getElementById("fckCapMeta"),
         toggle = document.getElementById("fckToggle");
+    if (roundsMeta) roundsMeta.style.display = single ? "none" : "";
+    if (capMeta) capMeta.textContent = single ? "" : " / " + cktFmt(cktCapSec());
     if (CKT.done) {
       card.classList.add("phase-done");
       roundEl.textContent = "Complete";
       phaseEl.textContent = "Well done";
-      exEl.textContent = CKT.rounds + (CKT.rounds === 1 ? " round" : " rounds");
+      exEl.textContent = single ? (exs.length + " stretches") : (CKT.rounds + (CKT.rounds === 1 ? " round" : " rounds"));
       repsEl.textContent = "in " + cktFmt(CKT.totalSec);
       countEl.textContent = "✓"; nextEl.textContent = "";
     } else if (CKT.phase === "rest") {
@@ -3638,13 +3710,13 @@
     } else {
       card.classList.add("phase-work");
       var ex = exs[CKT.exIdx];
-      roundEl.textContent = "Round " + CKT.round;
-      phaseEl.textContent = "Exercise " + (CKT.exIdx + 1) + " of " + exs.length;
+      roundEl.textContent = single ? (CKT.cfg.title || "Stretch") : ("Round " + CKT.round);
+      phaseEl.textContent = unit + " " + (CKT.exIdx + 1) + " of " + exs.length;
       exEl.textContent = ex.name;
-      repsEl.textContent = ex.reps + " reps" + (ex.note ? " (" + ex.note + ")" : "");
+      repsEl.textContent = ex.reps ? (ex.reps + " reps" + (ex.note ? " (" + ex.note + ")" : "")) : (ex.note ? ex.note : "Hold — breathe slow");
       countEl.textContent = CKT.remain;
       var nx = exs[CKT.exIdx + 1];
-      nextEl.textContent = nx ? ("Next: " + nx.name) : "Next: rest, then round " + (CKT.round + 1);
+      nextEl.textContent = nx ? ("Next: " + nx.name) : (single ? "Last one — finish strong" : ("Next: rest, then round " + (CKT.round + 1)));
     }
     if (roundsEl) roundsEl.textContent = CKT.rounds;
     if (totalEl) totalEl.textContent = cktFmt(CKT.totalSec);
@@ -3663,8 +3735,10 @@
     }
     // finished an exercise
     CKT.exIdx++;
-    if (CKT.exIdx >= exs.length) { // round complete
-      CKT.rounds++;
+    if (CKT.exIdx >= exs.length) {
+      // Single-pass (stretch protocol): one time through the list, then done.
+      if (CKT.cfg.singlePass) { CKT.rounds = 1; cktFinish(); return; }
+      CKT.rounds++; // AMRAP: a round is complete
       var rest = CKT.cfg.restBetweenRoundsSec || 0;
       if (rest > 0) { CKT.phase = "rest"; CKT.remain = rest; }
       else { CKT.round++; CKT.exIdx = 0; CKT.phase = "work"; CKT.remain = exs[0].workSec; }
@@ -3675,7 +3749,8 @@
   }
   function cktTick() {
     CKT.totalSec++;
-    if (CKT.totalSec >= cktCapSec()) { cktFinish(); return; }
+    // AMRAP has a hard time cap; a single-pass stretch protocol runs to its end.
+    if (!CKT.cfg.singlePass && CKT.totalSec >= cktCapSec()) { cktFinish(); return; }
     CKT.remain--;
     if (CKT.remain <= 0) cktAdvance();
     cktRender();
@@ -3813,6 +3888,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
             Cardio
           </button>
+          <button type="button" class="fit-cat-btn" data-fitcat="stretch">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="1.6"/><path d="M12 7v6M12 9l-5-1M12 9l5-1M12 13l-3 6M12 13l3 6"/></svg>
+            Stretching
+          </button>
         </div>
         <div class="fit-type-wrap" id="fitTypeWrap" style="display:none;">
           <div class="fit-opt-label" id="fitTypeLabel">Pick one</div>
@@ -3851,8 +3930,8 @@
         <div class="fck-count" id="fckCount">30</div>
         <div class="fck-next" id="fckNext"></div>
         <div class="fck-meta">
-          <span>Rounds done: <b id="fckRounds">0</b></span>
-          <span>Time: <b id="fckTotal">0:00</b> / 30:00</span>
+          <span id="fckRoundsMeta">Rounds done: <b id="fckRounds">0</b></span>
+          <span>Time: <b id="fckTotal">0:00</b><span id="fckCapMeta"> / 30:00</span></span>
         </div>
         <div class="fck-controls">
           <button type="button" id="fckToggle" class="idle">Start</button>
@@ -4017,6 +4096,7 @@
       currentFitnessIntensity = "Medium"; currentFitnessTime = "Morning";
       currentFitnessVariation = "As prescribed";
       currentFitnessCategory = ""; currentFitnessType = ""; currentFitnessOther = "";
+      currentStretchProto = null;
       // Category (Cardio / Strength) -> type (Gym training, Body Weight / Run, Walk, …).
       var fitTypeWrap = document.getElementById("fitTypeWrap");
       var fitTypeRow = document.getElementById("fitTypeRow");
@@ -4025,13 +4105,16 @@
       function renderFitTypes() {
         if (!fitTypeRow) return;
         var types = FIT_TYPES[currentFitnessCategory] || [];
-        fitTypeLabel.textContent = currentFitnessCategory === "cardio" ? "What kind of cardio?" : "What kind of strength?";
+        fitTypeLabel.textContent = currentFitnessCategory === "cardio" ? "What kind of cardio?"
+          : currentFitnessCategory === "stretch" ? "What kind of stretching?" : "What kind of strength?";
         fitTypeRow.innerHTML = types.map(function (t) {
           return '<button type="button" class="fit-type-btn' + (t === currentFitnessType ? " active" : "") + '" data-fittype="' + escapeHtml(t) + '">' + escapeHtml(t) + '</button>';
         }).join("");
         fitTypeWrap.style.display = currentFitnessCategory ? "" : "none";
         if (fitOther) {
-          var showOther = currentFitnessCategory === "cardio" && currentFitnessType === "Other";
+          fitOther.placeholder = currentFitnessCategory === "stretch" ? "What kind of stretching?"
+            : currentFitnessCategory === "strength" ? "What kind of strength work?" : "What kind of cardio?";
+          var showOther = currentFitnessType === "Other";
           fitOther.style.display = showOther ? "" : "none";
           if (!showOther) fitOther.value = currentFitnessOther = "";
         }
@@ -4041,6 +4124,14 @@
         var b = e.target.closest("[data-fitcat]"); if (!b) return;
         currentFitnessCategory = b.dataset.fitcat; currentFitnessType = "";
         catRow.querySelectorAll(".fit-cat-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
+        // Leaving stretch (no type picked yet in the new category) — tear down any
+        // guided-stretch runner so it doesn't linger under a different category.
+        if (currentFitnessCategory !== "stretch" && currentStretchProto) {
+          currentStretchProto = null;
+          var ckt = document.getElementById("fitCircuit");
+          if (ckt && !currentFitnessPreset) ckt.style.display = "none";
+          if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+        }
         renderFitTypes();
       });
       // Show/hide the preset body-weight workouts.
@@ -4060,12 +4151,15 @@
         currentFitnessType = b.dataset.fittype;
         fitTypeRow.querySelectorAll(".fit-type-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
         if (fitOther) {
-          var showOther = currentFitnessCategory === "cardio" && currentFitnessType === "Other";
+          var showOther = currentFitnessType === "Other";
           fitOther.style.display = showOther ? "" : "none";
           if (showOther) fitOther.focus();
         }
         // Body Weight -> the preset workouts ARE body-weight routines, so surface them.
         if (currentFitnessCategory === "strength" && currentFitnessType === "Body Weight") setPresetsOpen(true);
+        // Stretching -> launch the matching guided single-pass protocol (timed
+        // holds with a bell to switch). "Other" is a free-logged stretch instead.
+        if (currentFitnessCategory === "stretch") applyStretchProtocol(currentFitnessType);
       });
       if (fitOther) fitOther.addEventListener("input", function () { currentFitnessOther = fitOther.value; });
       // The nutrition question (q3) reflects the day in the afternoon, but in the
@@ -4165,6 +4259,25 @@
         sel.disabled = false;
         if (vars.indexOf(currentFitnessVariation) >= 0) { sel.value = currentFitnessVariation; }
         else { currentFitnessVariation = vars[0]; sel.value = vars[0]; }
+      };
+      // Guided stretch: show the circuit runner loaded with the chosen protocol,
+      // or (for "Other" / no match) tear it down and clear the protocol state.
+      const applyStretchProtocol = function (type) {
+        const timer = document.getElementById("fitTimer");
+        const ckt = document.getElementById("fitCircuit");
+        const barRow = document.getElementById("fckBarRow");
+        const proto = STRETCH_PROTOCOLS[type] || null;
+        currentStretchProto = proto ? type : null;
+        if (barRow) barRow.style.display = "none";
+        if (proto) {
+          if (timer) timer.style.display = "none";
+          if (ckt) ckt.style.display = "";
+          cktInit(proto);
+        } else {
+          if (ckt) ckt.style.display = "none";
+          if (timer) timer.style.display = "none";
+          if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
+        }
       };
       // Show the right timer for a preset: guided circuit runner if it has a
       // `circuit` config, otherwise the plain count-up stopwatch.
@@ -6015,9 +6128,17 @@
         answers.unshift({ q: "Bar weight", a: currentBarWeight + " lbs" });
       }
       answers.unshift({ q: "Time of day", a: currentFitnessTime }, { q: "Intensity", a: currentFitnessIntensity });
-      // Category + type (Strength — Body Weight / Cardio — Run), from the picker.
+      // Guided stretch result: which stretches finished + total time.
+      if (currentStretchProto && CKT.cfg && CKT.cfg.singlePass) {
+        var totalStretch = CKT.cfg.exercises.length;
+        var doneStretch = CKT.done ? totalStretch : CKT.exIdx; // finished vs. how far they got
+        answers.unshift({ q: "Stretches", a: doneStretch + " of " + totalStretch + (CKT.done ? " — complete" : "") });
+        if (CKT.totalSec > 0) answers.unshift({ q: "Stretch time", a: cktFmt(CKT.totalSec) });
+      }
+      // Category + type (Strength — Body Weight / Cardio — Run / Stretching — Full body).
       if (currentFitnessCategory) {
-        var catLabel = currentFitnessCategory === "cardio" ? "Cardio" : "Strength training";
+        var catLabel = currentFitnessCategory === "cardio" ? "Cardio"
+          : currentFitnessCategory === "stretch" ? "Stretching" : "Strength training";
         var typeLabel = currentFitnessType;
         if (currentFitnessType === "Other" && currentFitnessOther.trim()) typeLabel = currentFitnessOther.trim();
         answers.unshift({ q: "Workout", a: catLabel + (typeLabel ? " — " + typeLabel : "") });
@@ -6045,9 +6166,14 @@
         entry.durationMs = timerElapsedMs;
         entry.durationText = fmtTimer(timerElapsedMs);
       }
+    } else if (currentType === "fitness" && currentStretchProto && CKT.cfg && CKT.totalSec > 0) {
+      // Guided stretch has no preset, but still carries a duration for the entry.
+      entry.durationMs = CKT.totalSec * 1000;
+      entry.durationText = cktFmt(CKT.totalSec);
     }
     // reset preset + timer after capturing the entry
     currentFitnessPreset = null;
+    currentStretchProto = null;
     currentFitnessVariation = "As prescribed";
     currentFitnessCategory = ""; currentFitnessType = ""; currentFitnessOther = "";
     resetTimerState();
