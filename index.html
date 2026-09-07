@@ -3594,47 +3594,6 @@
       ]
     }
   };
-  // Per-move demonstration photos (public-domain, self-hosted under assets/stretches).
-  // Keyed by the exercise's base name — the "— right/left" suffix is stripped, so a
-  // L/R pair shares one photo. Rest steps (breathing, legs-up, final relaxation)
-  // have none by design. Source: free-exercise-db (Unlicense).
-  const STRETCH_IMAGES = {
-    "Neck release": "assets/stretches/neck-release.svg",
-    "Shoulder & chest opener": "assets/stretches/shoulder-chest-opener.svg",
-    "Standing forward fold": "assets/stretches/standing-forward-fold.svg",
-    "Standing quad": "assets/stretches/standing-quad.svg",
-    "Low-lunge hip flexor": "assets/stretches/low-lunge-hip-flexor.svg",
-    "Seated hamstring": "assets/stretches/seated-hamstring.svg",
-    "Figure-4 glute": "assets/stretches/figure-4-glute.svg",
-    "Butterfly / inner thigh": "assets/stretches/butterfly-inner-thigh.svg",
-    "Seated spinal twist": "assets/stretches/seated-spinal-twist.svg",
-    "Child's pose": "assets/stretches/child-pose.svg",
-    "Cobra / low-back": "assets/stretches/cobra-low-back.svg",
-    "Cat-cow flow": "assets/stretches/cat-cow.svg",
-    "World's greatest stretch": "assets/stretches/world-greatest-stretch.svg",
-    "Deep squat hold": "assets/stretches/deep-squat-hold.svg",
-    "90/90 hip": "assets/stretches/90-90-hip.svg",
-    "Thoracic rotation": "assets/stretches/thoracic-rotation.svg",
-    "Shoulder opener": "assets/stretches/shoulder-opener.svg",
-    "Wrist & forearm stretch": "assets/stretches/wrist-forearm.svg",
-    "Calf & ankle": "assets/stretches/calf-ankle.svg",
-    "Hip circles (CARs)": "assets/stretches/hip-circles-cars.svg",
-    "Standing side bend": "assets/stretches/standing-side-bend.svg",
-    "Downward dog": "assets/stretches/downward-dog.svg",
-    "Neck side stretch": "assets/stretches/neck-side-stretch.svg",
-    "Seated forward fold": "assets/stretches/seated-forward-fold.svg",
-    "Reclined figure-4": "assets/stretches/reclined-figure-4.svg",
-    "Supine spinal twist": "assets/stretches/supine-spinal-twist.svg",
-    "Happy baby": "assets/stretches/happy-baby.svg",
-    "Reclined butterfly": "assets/stretches/reclined-butterfly.svg",
-    "Knees to chest": "assets/stretches/knees-to-chest.svg"
-  };
-  Object.keys(STRETCH_PROTOCOLS).forEach(function (k) {
-    STRETCH_PROTOCOLS[k].exercises.forEach(function (ex) {
-      var img = STRETCH_IMAGES[ex.name.split(" — ")[0]];
-      if (img) ex.image = img;
-    });
-  });
   function presetDef(id) { return build().presets[id] || null; }
   let timerInterval = null;
   let timerStartMs = 0;
@@ -3761,24 +3720,6 @@
     }
     if (roundsEl) roundsEl.textContent = CKT.rounds;
     if (totalEl) totalEl.textContent = cktFmt(CKT.totalSec);
-    // Demonstration photo for the current move (if it has one). Only touch the
-    // <img> when the move changes, and hide it (or on load error) rather than
-    // showing a broken frame — the timed stretch works without it.
-    var img = document.getElementById("fckImg");
-    if (img) {
-      var curEx = (!CKT.done && CKT.phase === "work") ? exs[CKT.exIdx] : null;
-      var wantImg = (curEx && curEx.image) ? curEx.image : null;
-      if (wantImg !== CKT._imgFile) {
-        CKT._imgFile = wantImg;
-        if (wantImg) {
-          img.onerror = function () { img.style.display = "none"; };
-          img.src = wantImg;
-          img.style.display = "";
-        } else {
-          img.removeAttribute("src"); img.style.display = "none";
-        }
-      }
-    }
     if (toggle) {
       var running = !!CKT.interval;
       toggle.textContent = CKT.done ? "Done" : running ? "Pause" : (CKT.started ? "Resume" : "Start");
@@ -3986,8 +3927,6 @@
         <div class="fck-phase" id="fckPhase">Get ready</div>
         <div class="fck-ex" id="fckEx">—</div>
         <div class="fck-reps" id="fckReps"></div>
-        <img id="fckImg" alt="" loading="lazy"
-             style="display:none;width:100%;max-width:280px;aspect-ratio:10/9;object-fit:contain;border-radius:12px;margin:8px auto;background:#f4efe4;">
         <div class="fck-count" id="fckCount">30</div>
         <div class="fck-next" id="fckNext"></div>
         <div class="fck-meta">
