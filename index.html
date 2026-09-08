@@ -3594,6 +3594,26 @@
       ]
     }
   };
+  // Per-move demonstration images. Source: the CC0 (public-domain) "red" set
+  // from the yoga-api project — free for commercial use, no attribution. Only
+  // the poses that have a clean matching CC0 image are mapped; every other move
+  // (and the rest steps) simply shows its text cue. Keyed by base name; L/R
+  // halves share one image. See assets/stretches/SOURCE.txt.
+  const STRETCH_IMAGES = {
+    "Downward dog": "assets/stretches/downward-dog.png",
+    "Child's pose": "assets/stretches/child-pose.png",
+    "Seated forward fold": "assets/stretches/seated-forward-fold.png",
+    "Cobra / low-back": "assets/stretches/cobra-low-back.png",
+    "Cat-cow flow": "assets/stretches/cat-cow.png",
+    "Figure-4 glute": "assets/stretches/figure-4-glute.png",
+    "Shoulder opener": "assets/stretches/shoulder-opener.png"
+  };
+  Object.keys(STRETCH_PROTOCOLS).forEach(function (k) {
+    STRETCH_PROTOCOLS[k].exercises.forEach(function (ex) {
+      var img = STRETCH_IMAGES[ex.name.split(" — ")[0]];
+      if (img) ex.image = img;
+    });
+  });
   function presetDef(id) { return build().presets[id] || null; }
   let timerInterval = null;
   let timerStartMs = 0;
@@ -3720,6 +3740,20 @@
     }
     if (roundsEl) roundsEl.textContent = CKT.rounds;
     if (totalEl) totalEl.textContent = cktFmt(CKT.totalSec);
+    // Demonstration image for the current move (only some moves have one). Swap
+    // src only when the move changes; hide on rest/done or on a load error.
+    var img = document.getElementById("fckImg");
+    if (img) {
+      var curEx = (!CKT.done && CKT.phase === "work") ? exs[CKT.exIdx] : null;
+      var wantImg = (curEx && curEx.image) ? curEx.image : null;
+      if (wantImg !== CKT._imgFile) {
+        CKT._imgFile = wantImg;
+        if (wantImg) {
+          img.onerror = function () { img.style.display = "none"; };
+          img.src = wantImg; img.style.display = "";
+        } else { img.removeAttribute("src"); img.style.display = "none"; }
+      }
+    }
     if (toggle) {
       var running = !!CKT.interval;
       toggle.textContent = CKT.done ? "Done" : running ? "Pause" : (CKT.started ? "Resume" : "Start");
@@ -3927,6 +3961,8 @@
         <div class="fck-phase" id="fckPhase">Get ready</div>
         <div class="fck-ex" id="fckEx">—</div>
         <div class="fck-reps" id="fckReps"></div>
+        <img id="fckImg" alt="" loading="lazy"
+             style="display:none;width:100%;max-width:230px;aspect-ratio:1/1;object-fit:contain;border-radius:50%;margin:6px auto;background:#fdecd6;"></img>
         <div class="fck-count" id="fckCount">30</div>
         <div class="fck-next" id="fckNext"></div>
         <div class="fck-meta">
