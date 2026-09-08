@@ -1,3 +1,8 @@
-Stretch illustrations: the CC0 (public-domain) "red" set from the yoga-api
-project (github.com/alexcumplido/yoga-api). CC0 = free for commercial use,
-no attribution required. Only the CC0 red-style images are used here.
+Stretch illustrations (flat, figure on a cream circle):
+- 7 poses use the CC0 public-domain "red" set from the yoga-api project
+  (github.com/alexcumplido/yoga-api): downward-dog, child-pose,
+  seated-forward-fold, cobra-low-back, cat-cow, figure-4-glute, shoulder-opener.
+  CC0 = free for commercial use, no attribution.
+- The remaining 22 are a custom set generated to match that style, then
+  background-cleaned and resized to 512px. Owned by the project.
+No attribution-required (Flaticon pink/green) assets are used.
