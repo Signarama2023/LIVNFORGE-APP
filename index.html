@@ -4954,7 +4954,7 @@
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
   function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderTrialBanner(); renderRateBanner(); renderRewards(); applyAdminUI(); showTab(__activeTab); maybeShowTutorial(); }
-  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
+  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; if (typeof dismissToast === "function") dismissToast(); renderScore(); }
 
   // ----- Free 7-day trial (app-controlled, no card) -----
   // Every account gets 7 days of full access from the moment it was created.
@@ -6475,11 +6475,20 @@
     window.scrollTo(0, 0);
   });
 
+  let __toastTimer = null;
+  function dismissToast() {
+    if (__toastTimer) { clearTimeout(__toastTimer); __toastTimer = null; }
+    if (__tabTipTimer) { clearTimeout(__tabTipTimer); __tabTipTimer = null; }
+    const toast = document.getElementById("toast");
+    if (toast) toast.classList.remove("show");
+  }
   function showToast(msg) {
     const toast = document.getElementById("toast");
+    if (!toast) return;
+    if (__toastTimer) clearTimeout(__toastTimer);
     toast.textContent = msg;
     toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2600);
+    __toastTimer = setTimeout(function () { __toastTimer = null; toast.classList.remove("show"); }, 2600);
   }
 
   // ----- History rendering -----
@@ -8552,16 +8561,22 @@
   // ---- Bottom tab navigation ----
   let __activeTab = "today";
   const TAB_TIPS = {
-    journal: "Choose the kind of reflection that fits what you need today.",
     circles: "Join a circle to pray, encourage, and stay accountable together.",
     progress: "Journey shows your weekly growth, goals, challenges, and rewards."
   };
+  let __tabTipTimer = null;
   function maybeShowTabTip(name) {
+    if (__tabTipTimer) { clearTimeout(__tabTipTimer); __tabTipTimer = null; }
     const msg = TAB_TIPS[name];
     if (!msg || !currentEmail()) return;
     const key = APP + ":tabtip:" + name + ":" + currentEmail().toLowerCase();
     try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch (e) {}
-    setTimeout(function () { if (typeof showToast === "function") showToast(msg); }, 120);
+    __tabTipTimer = setTimeout(function () {
+      __tabTipTimer = null;
+      if (__activeTab !== name) return;
+      if (appView && appView.style.display === "block") return;
+      if (typeof showToast === "function") showToast(msg);
+    }, 120);
   }
   function showTab(name) {
     __activeTab = name;
