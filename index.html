@@ -1199,15 +1199,16 @@
   .mcq-explain { display: none; font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 8px; padding-left: 2px; }
   .bs-mcq.answered .mcq-explain { display: block; }
   .field-group textarea {
-    width: 100%; background: var(--field); border: 1px solid var(--field-border); border-radius: 12px;
-    color: var(--text); font-family: inherit; font-size: 15px; padding: 14px 16px; resize: vertical;
-    min-height: 54px; transition: border-color 0.15s ease;
+    width: 100%; background: var(--field); border: 1px solid var(--field-border); border-radius: 8px;
+    color: var(--text); font-family: inherit; font-size: 16px; line-height: 1.55; padding: 14px 16px; resize: vertical;
+    min-height: 140px; transition: border-color 0.15s ease;
   }
   .field-group textarea::placeholder { color: var(--muted); }
   .field-group textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(217,169,62,0.18); }
   .meta-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--field-border); }
   .meta-row .field-group { flex: 1; min-width: 140px; margin-bottom: 0; }
   .meta-row .field-group label { font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); font-weight: 800; margin-bottom: 4px; }
+  .meta-row .meta-known { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
   .meta-row input {
     width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--field-border); border-radius: 0;
     color: var(--text); font-family: inherit; font-size: 15px; padding: 6px 0 8px;
@@ -3994,13 +3995,13 @@
     i = Math.max(0, Math.min(i, steps.length - 1));
     steps.forEach(function (s, idx) { s.style.display = idx === i ? "" : "none"; });
     const prog = document.getElementById("stepProgress");
-    if (prog) prog.textContent = "Question " + (i + 1) + " of " + steps.length;
+    if (prog) prog.textContent = (i + 1) + " of " + steps.length;
     const dw = document.getElementById("daypartWrap"); // daypart can only be set on the first question
     if (dw) dw.style.display = i === 0 ? "" : "none";
     const last = i >= steps.length - 1;
     const stepNext = document.getElementById("stepNext");
     const stepBack = document.getElementById("stepBack");
-    if (stepNext) stepNext.textContent = last ? "Submit" : "Next →"; // last question saves
+    if (stepNext) stepNext.textContent = last ? "Save entry" : "Next →"; // last question saves
     if (stepBack) stepBack.style.display = i > 0 ? "" : "none";      // back appears after the first question
   }
   function advanceStep() {
@@ -4258,7 +4259,7 @@
       html += data.fields.map((f, i) => `
         <div class="field-group guided-field">
           <label for="q${i}"><span class="gf-label">${f.label}</span><span class="gf-prompt">${f.prompt}</span></label>
-          <textarea id="q${i}" data-question="${(f.label + " — " + f.prompt).replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
+          <textarea id="q${i}" data-question="${(f.label + " — " + f.prompt).replace(/"/g, '&quot;')}" placeholder="Write it down."></textarea>
         </div>`).join("");
     } else {
       // Daily reflection types carry morning (forward-looking) + evening (reflective)
@@ -4284,7 +4285,7 @@
           <div class="qstep" data-step="${i}"${i === 0 ? "" : ' style="display:none"'}>
             <div class="field-group">
               <label for="q${i}">${q} <span class="opt">(optional)</span></label>
-              <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
+              <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write it down."></textarea>
             </div>
           </div>`).join("");
         html += '<div class="step-nav"><button type="button" class="step-back" id="stepBack" style="display:none">← Back</button><button type="button" class="submit-btn step-next" id="stepNext">Next →</button></div>';
@@ -4292,7 +4293,7 @@
         html += itemList.map((q, i) => `
         <div class="field-group">
           <label for="q${i}">${q} <span class="opt">(optional)</span></label>
-          <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
+          <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write it down."></textarea>
         </div>
       `).join("");
       }
@@ -5307,7 +5308,12 @@
     if (nameEl && !nameEl.value.trim() && typeof gKey === "function") {
       try {
         var savedName = localStorage.getItem(gKey("name"));
-        if (savedName) nameEl.value = savedName;
+        if (savedName) {
+          nameEl.value = savedName;
+          nameEl.tabIndex = -1;
+          var wrap = nameEl.closest(".field-group");
+          if (wrap) wrap.classList.add("meta-known");
+        }
       } catch (e) {}
     }
   }
