@@ -28,8 +28,19 @@
       tagOf({ cache: "force-cache" }, here),                       // what we're RUNNING (read from cache)
       tagOf({ method: "HEAD", cache: "no-store" }, here + "?cb=" + Date.now()), // what's LIVE now
     ]).then(function (t) {
-      if (t[0] && t[1] && t[0] !== t[1]) {                      // running an old build -> refresh
+      if (!(t[0] && t[1] && t[0] !== t[1])) return;            // running an old build -> refresh
+      // Wait until auth boot has finished restoring or clearing the session.
+      // Reloading mid-refresh can drop the new refresh token and sign the user out.
+      var went = false;
+      var go = function () {
+        if (went) return;
+        went = true;
         location.replace(location.pathname + "?v=" + Date.now());
+      };
+      if (window.__lfBooted) go();
+      else {
+        window.addEventListener("lf-booted", go, { once: true });
+        setTimeout(go, 8000);
       }
     });
   } catch (e) {}
@@ -311,7 +322,10 @@
   .fmission .m-l { flex:1; }
   .fmission .mtitle { font-size:18px; font-weight:800; margin-bottom:3px; }
   .fmission .msub { font-size:13px; color:var(--muted); line-height:1.4; }
+  .fmission .m-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; align-items:center; }
   .fmission .mbtn { margin-top:12px; background:var(--gold); color:var(--on-gold); border:none; font-family:inherit; font-weight:800; font-size:13.5px; padding:10px 18px; border-radius:99px; cursor:pointer; }
+  .fmission .m-actions .mbtn { margin-top:0; }
+  .fmission .mbtn-quiet { background:transparent; color:var(--gold-light); border:1.5px solid var(--gold); }
   .mring { position:relative; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
   .mring svg { width:82px; height:82px; transform:rotate(-90deg); }
   .mring .bg { fill:none; stroke:rgba(255,255,255,.09); stroke-width:7; }
@@ -994,7 +1008,9 @@
   }
 
   /* ---------- APP (write + history) ---------- */
-  #appView { display: none; }
+  /* Sign-in stays hidden until boot decides. A remembered session should
+     land in the journal, not flash the login form first. */
+  #signInView, #appView { display: none; }
   #landingView { display: none; }
   header { display: flex; align-items: center; gap: 10px; padding: 18px 22px; border-bottom: 1px solid #2a2c32; }
   .back-btn {
@@ -1632,9 +1648,18 @@
     <img src="LIVNFORGE%20Logo.png" alt="" class="intro-logo">
   </div>
   <script>
-  // Brief branded intro on cold launch, then fade into the app. Shows once per
-  // session; never interrupts the password-reset (#recovery) or Stripe-return
-  // (?checkout) flows, nor the cache-bust reload (?v=).
+  // Brief branded intro on cold launch. Stays up until auth boot decides where
+  // to land (so a returning session doesn't flash the login form), and never
+  // interrupts password-reset (#recovery) or Stripe-return (?checkout).
+  // The cache-bust reload (?v=) keeps the splash too — that reload is how a new
+  // deploy arrives, and dropping the splash there flashed the login screen.
+  window.__lfReveal = function () {
+    window.__lfBooted = true;
+    var el = document.getElementById("introSplash");
+    if (!el) return;
+    el.classList.add("intro-hide");
+    setTimeout(function () { if (el.parentNode) el.remove(); }, 650);
+  };
   (function () {
     var el = document.getElementById("introSplash");
     if (!el) return;
@@ -1642,14 +1667,19 @@
       var skip =
         (location.hash && /recovery/i.test(location.hash)) ||
         /checkout/i.test(location.search) ||
-        /[?&]v=/.test(location.search) ||
-        sessionStorage.getItem("lf_introshown");
+        (sessionStorage.getItem("lf_introshown") && !/[?&]v=/.test(location.search));
       if (skip) { el.remove(); return; }
       sessionStorage.setItem("lf_introshown", "1");
+      // Boot normally reveals the app. If auth hangs, don't trap the splash.
       setTimeout(function () {
-        el.classList.add("intro-hide");
-        setTimeout(function () { el.remove(); }, 750);
-      }, 1900);
+        if (window.__lfBooted) return;
+        window.__lfReveal();
+        var sign = document.getElementById("signInView");
+        var land = document.getElementById("landingView");
+        if (sign && land && land.style.display !== "block" && sign.style.display !== "block") {
+          sign.style.display = "block";
+        }
+      }, 8000);
     } catch (e) { el.remove(); }
   })();
   </script>
@@ -1721,8 +1751,11 @@
               <div class="m-l">
                 <div class="forge-clabel" style="margin-bottom:6px;">Today's mission</div>
                 <div class="mtitle">Forge your day</div>
-                <div class="msub" id="forgeMSub">Your daily rhythm, ready when you are.</div>
-                <button class="mbtn" id="forgeStartBtn" type="button">Start journey →</button>
+                <div class="msub" id="forgeMSub">Your next step is ready below.</div>
+                <div class="m-actions">
+                  <button class="mbtn" id="forgeNextBtn" type="button">Next: Read today’s Scripture</button>
+                  <button class="mbtn mbtn-quiet" id="forgeStartBtn" type="button">See today’s steps</button>
+                </div>
                 <button class="mbtn" id="forgeChBtn" type="button" style="display:none; background:transparent; border:1.5px solid var(--gold); color:var(--gold-light);">Get back to your 21-Day Challenge →</button>
               </div>
               <div class="mring">
@@ -5698,16 +5731,25 @@
     var ring = document.getElementById("forgeMRing"); if (ring) ring.setAttribute("stroke-dashoffset", String(Math.round(214 * (1 - frac))));
     var mf = document.getElementById("forgeMFrac"); if (mf) mf.textContent = done + "/" + steps.length;
     var mp = document.getElementById("forgeMPct"); if (mp) mp.textContent = Math.round(frac * 100) + "%";
+    var nextIx = steps.findIndex(function (s) { return !s.done; });
+    var nextBtn = document.getElementById("forgeNextBtn");
+    if (nextBtn) {
+      if (nextIx < 0) nextBtn.textContent = "Review today";
+      else nextBtn.textContent = "Next: " + steps[nextIx].title;
+    }
     var startBtn = document.getElementById("forgeStartBtn");
-    if (startBtn) startBtn.textContent = done === 0 ? "Start your journey" : (done === steps.length ? "Review today" : "Continue your journey");
+    if (startBtn) startBtn.textContent = "See today’s steps";
     var missionSub = document.getElementById("forgeMSub");
-    if (missionSub) missionSub.textContent = done === steps.length ? "Today’s rhythm is complete." : (done ? (steps.length - done) + " steps left for today." : "Five focused steps. Open when you’re ready.");
+    if (missionSub) {
+      missionSub.textContent = nextIx < 0
+        ? "Today’s rhythm is complete."
+        : "Do this next — " + steps[nextIx].title + ".";
+    }
     var modalBar = document.getElementById("forgeModalBar"); if (modalBar) modalBar.style.width = Math.round(frac * 100) + "%";
     var modalProgress = document.getElementById("forgeModalProgress"); if (modalProgress) modalProgress.textContent = done + " of " + steps.length + " complete";
     if (typeof updateForgeChallengeBtn === "function") updateForgeChallengeBtn();
     var jw = document.getElementById("forgeJourney");
     if (jw) {
-      var nextIx = steps.findIndex(function (s) { return !s.done; });
       var html = "";
       if (done === steps.length) html += '<div class="forge-complete"><div class="fc-t">Today’s Forge complete</div><div class="fc-s">You showed up. Well done — see you tomorrow.</div></div>';
       html += steps.map(function (s, i) {
@@ -5738,6 +5780,14 @@
     }
   }
   (function initForge() {
+    var nextBtn = document.getElementById("forgeNextBtn");
+    if (nextBtn) nextBtn.addEventListener("click", function () {
+      var steps = forgeSteps();
+      var next = null;
+      for (var i = 0; i < steps.length; i++) { if (!steps[i].done) { next = steps[i]; break; } }
+      if (next && next.act) next.act();
+      else openDailyMission();
+    });
     var sb2 = document.getElementById("forgeStartBtn");
     if (sb2) sb2.addEventListener("click", openDailyMission);
     var missionModal = document.getElementById("dailyMissionModal");
@@ -6030,6 +6080,12 @@
     const meta = (session.user && session.user.user_metadata) || {};
     BUILD = (meta.build === "women" || meta.build === "men") ? meta.build : "men";
     __currentUser = { id: session.user.id, email: session.user.email, build: meta.build || null, eula_v: meta.eula_v || 0, created_at: session.user.created_at || null };
+    // Email only — never the password — so a later login screen can greet them.
+    try {
+      if (session.user && session.user.email && typeof authStorage !== "undefined") {
+        authStorage.setItem(LF_EMAIL_KEY, String(session.user.email).toLowerCase());
+      }
+    } catch (e) {}
   }
   async function finishAuth() {
     const { data: { session } } = await sb.auth.getSession();
@@ -6118,11 +6174,16 @@
     if (sb) { try { await sb.auth.signOut(); } catch (e) { /* ignore */ } }
     __currentUser = null;
     __entries = [];
-    document.getElementById("emailInput").value = "";
     document.getElementById("passwordInput").value = "";
     document.getElementById("passwordConfirm").value = "";
     authMode = "login";
     applyAuthMode();
+    var emailInput = document.getElementById("emailInput");
+    emailInput.value = "";
+    try {
+      var remembered = await authStorage.getItem(LF_EMAIL_KEY);
+      if (remembered) emailInput.value = remembered;
+    } catch (e) {}
     updateCount();
     showSignIn();
     window.scrollTo(0, 0);
@@ -6176,6 +6237,7 @@
       try {
         Object.keys(localStorage).forEach(function (k) { if (k.indexOf(APP + ":") === 0) localStorage.removeItem(k); });
       } catch (e) { /* ignore */ }
+      try { await authStorage.removeItem(LF_EMAIL_KEY); } catch (e) { /* ignore */ }
       __currentUser = null; __entries = [];
       cancelBtn.disabled = false;
       closeModal();
@@ -6429,8 +6491,232 @@
   // ----- Group leaderboard (Supabase) -----
   const SB_URL = "https://ihhctwmgfleihlnfnfsv.supabase.co";
   const SB_KEY = "sb_publishable_CRtK7cSwNjDDgu31fulMIQ_rwptULXs";
+  // Remember a signed-in session for about a month. Supabase already keeps the
+  // refresh token (never the password) in localStorage, but the iOS app loads
+  // this page in a web view that can wipe localStorage between launches — that
+  // is why the app opened on the login screen every time. Mirror the same
+  // session into a cookie, IndexedDB, and Capacitor Preferences (UserDefaults)
+  // when that native plugin is present. Sign-out removes every copy.
+  const LF_SESSION_MS = 30 * 24 * 60 * 60 * 1000;
+  const LF_EMAIL_KEY = "lf_last_email";
+  const LF_COOKIE_AGE = 30 * 24 * 60 * 60;
+  const LF_CHUNK = 2800;
+  const lfEpoch = {};
+  function lfKeyEpoch(key) { return lfEpoch[key] || 0; }
+  function lfBumpKey(key) { lfEpoch[key] = lfKeyEpoch(key) + 1; return lfEpoch[key]; }
+  function lfHash(s) {
+    var h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+    return h.toString(36);
+  }
+  function lfCookieSecure() { return location.protocol === "https:" ? "; Secure" : ""; }
+  function lfCookieWrite(key, value) {
+    var base = "lf" + lfHash(key);
+    var secure = lfCookieSecure();
+    var enc = encodeURIComponent(value);
+    var n = Math.max(1, Math.ceil(enc.length / LF_CHUNK));
+    var i;
+    for (i = 0; i < n; i++) {
+      document.cookie = base + "_" + i + "=" + enc.slice(i * LF_CHUNK, (i + 1) * LF_CHUNK) +
+        "; Max-Age=" + LF_COOKIE_AGE + "; Path=/; SameSite=Lax" + secure;
+    }
+    document.cookie = base + "_n=" + n + "; Max-Age=" + LF_COOKIE_AGE + "; Path=/; SameSite=Lax" + secure;
+    for (i = n; i < 12; i++) document.cookie = base + "_" + i + "=; Max-Age=0; Path=/" + secure;
+  }
+  function lfCookieRead(key) {
+    var base = "lf" + lfHash(key);
+    var parts = document.cookie ? document.cookie.split("; ") : [];
+    var map = {};
+    for (var p = 0; p < parts.length; p++) {
+      var ix = parts[p].indexOf("=");
+      if (ix > 0) map[parts[p].slice(0, ix)] = parts[p].slice(ix + 1);
+    }
+    var n = parseInt(map[base + "_n"] || "0", 10);
+    if (!n || n < 1 || n > 12) return null;
+    var enc = "";
+    for (var i = 0; i < n; i++) {
+      if (map[base + "_" + i] == null) return null;
+      enc += map[base + "_" + i];
+    }
+    try { return decodeURIComponent(enc); } catch (e) { return null; }
+  }
+  function lfCookieRemove(key) {
+    var base = "lf" + lfHash(key);
+    var secure = lfCookieSecure();
+    document.cookie = base + "_n=; Max-Age=0; Path=/" + secure;
+    for (var i = 0; i < 12; i++) document.cookie = base + "_" + i + "=; Max-Age=0; Path=/" + secure;
+  }
+  var lfIdbPromise = null;
+  function lfIdb() {
+    if (lfIdbPromise) return lfIdbPromise;
+    lfIdbPromise = new Promise(function (resolve) {
+      try {
+        if (!window.indexedDB) { resolve(null); return; }
+        var req = indexedDB.open("lf-remember", 1);
+        req.onupgradeneeded = function () {
+          if (!req.result.objectStoreNames.contains("kv")) req.result.createObjectStore("kv");
+        };
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { resolve(null); };
+      } catch (e) { resolve(null); }
+    });
+    return lfIdbPromise;
+  }
+  function lfIdbGet(key) {
+    return lfIdb().then(function (db) {
+      if (!db) return null;
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction("kv", "readonly");
+          var r = tx.objectStore("kv").get(key);
+          r.onsuccess = function () { resolve(r.result == null ? null : String(r.result)); };
+          r.onerror = function () { resolve(null); };
+        } catch (e) { resolve(null); }
+      });
+    });
+  }
+  function lfIdbSet(key, value) {
+    var epoch = lfKeyEpoch(key);
+    return lfIdb().then(function (db) {
+      if (!db || epoch !== lfKeyEpoch(key)) return;
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction("kv", "readwrite");
+          var store = tx.objectStore("kv");
+          var cur = store.get(key);
+          cur.onsuccess = function () {
+            if (epoch !== lfKeyEpoch(key)) return;
+            store.put(String(value), key);
+          };
+          tx.oncomplete = function () { resolve(); };
+          tx.onerror = function () { resolve(); };
+        } catch (e) { resolve(); }
+      });
+    });
+  }
+  function lfIdbRemove(key) {
+    lfBumpKey(key);
+    return lfIdb().then(function (db) {
+      if (!db) return;
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction("kv", "readwrite");
+          tx.objectStore("kv").delete(key);
+          tx.oncomplete = function () { resolve(); };
+          tx.onerror = function () { resolve(); };
+        } catch (e) { resolve(); }
+      });
+    });
+  }
+  function lfPrefs() {
+    var C = window.Capacitor;
+    var P = C && C.Plugins && (C.Plugins.Preferences || C.Plugins.Storage);
+    return (P && typeof P.get === "function" && typeof P.set === "function" && typeof P.remove === "function") ? P : null;
+  }
+  function lfPrefGet(key) {
+    var P = lfPrefs();
+    if (!P) return Promise.resolve(null);
+    return lfPrefEnqueue(function () {
+      return Promise.resolve(P.get({ key: key })).then(function (r) {
+        return r && r.value != null && r.value !== "" ? String(r.value) : null;
+      });
+    }).catch(function () { return null; });
+  }
+  // Preferences calls are not transactional. Run them one at a time so a
+  // sign-out cannot be overwritten by an in-flight save of the same key.
+  var lfPrefChain = Promise.resolve();
+  function lfPrefEnqueue(fn) {
+    var run = lfPrefChain.then(fn, fn);
+    lfPrefChain = run.then(function () {}, function () {});
+    return run;
+  }
+  function lfPrefSet(key, value) {
+    var P = lfPrefs();
+    if (!P) return Promise.resolve();
+    var epoch = lfKeyEpoch(key);
+    return lfPrefEnqueue(function () {
+      if (epoch !== lfKeyEpoch(key)) return;
+      return Promise.resolve(P.set({ key: key, value: String(value) }));
+    }).catch(function () {});
+  }
+  function lfPrefRemove(key) {
+    lfBumpKey(key);
+    var P = lfPrefs();
+    if (!P) return Promise.resolve();
+    return lfPrefEnqueue(function () {
+      return Promise.resolve(P.remove({ key: key }));
+    }).catch(function () {});
+  }
+  // Supabase sessions hold a refresh token, not the password. Strip a password
+  // field if one ever shows up so a remembered session cannot become a stored password.
+  function lfSanitize(value) {
+    try {
+      var parsed = JSON.parse(value);
+      if (parsed && parsed.user && parsed.user.password) {
+        delete parsed.user.password;
+        return JSON.stringify(parsed);
+      }
+    } catch (e) {}
+    return value;
+  }
+  function lfNoteEmail(raw) {
+    if (!raw || raw.charAt(0) !== "{") return;
+    try {
+      var session = JSON.parse(raw);
+      var email = session && session.user && session.user.email;
+      if (!email) return;
+      var saved = String(email).toLowerCase();
+      try { localStorage.setItem(LF_EMAIL_KEY, saved); } catch (e) {}
+      try { lfCookieWrite(LF_EMAIL_KEY, saved); } catch (e) {}
+      lfIdbSet(LF_EMAIL_KEY, saved);
+      lfPrefSet(LF_EMAIL_KEY, saved);
+    } catch (e) {}
+  }
+  var lfMirrored = {};
+  const authStorage = {
+    getItem: function (key) {
+      return (async function () {
+        var value = null;
+        try { value = localStorage.getItem(key); } catch (e) {}
+        if (value == null) { try { value = lfCookieRead(key); } catch (e) {} }
+        if (value == null) value = await lfIdbGet(key);
+        if (value == null) value = await lfPrefGet(key);
+        if (value == null) return null;
+        value = lfSanitize(value);
+        try { if (localStorage.getItem(key) !== value) localStorage.setItem(key, value); } catch (e) {}
+        if (!lfMirrored[key]) {
+          lfMirrored[key] = 1;
+          try { lfCookieWrite(key, value); } catch (e) {}
+          lfIdbSet(key, value);
+          lfPrefSet(key, value);
+          if (key !== LF_EMAIL_KEY) lfNoteEmail(value);
+        }
+        return value;
+      })();
+    },
+    setItem: function (key, value) {
+      value = lfSanitize(value);
+      lfMirrored[key] = 1;
+      try { localStorage.setItem(key, value); } catch (e) {}
+      try { lfCookieWrite(key, value); } catch (e) {}
+      if (key !== LF_EMAIL_KEY) lfNoteEmail(value);
+      return Promise.all([lfIdbSet(key, value), lfPrefSet(key, value)]).then(function () {});
+    },
+    removeItem: function (key) {
+      delete lfMirrored[key];
+      try { localStorage.removeItem(key); } catch (e) {}
+      try { lfCookieRemove(key); } catch (e) {}
+      return Promise.all([lfIdbRemove(key), lfPrefRemove(key)]).then(function () {});
+    }
+  };
+  function sessionStillRemembered(session) {
+    var iso = session && session.user && session.user.last_sign_in_at;
+    var signedInAt = iso ? Date.parse(iso) : NaN;
+    if (!isFinite(signedInAt)) return true;
+    return (Date.now() - signedInAt) < LF_SESSION_MS;
+  }
   const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: window.localStorage }
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: authStorage }
   }) : null;
   const groupPanel = document.getElementById("groupPanel");
 
@@ -9460,13 +9746,42 @@
     if (m) m.addEventListener("click", function (e) { if (e.target === m) glCloseModal(); });
   })();
 
+  function finishBoot() {
+    if (window.__lfBootFinished) return;
+    window.__lfBootFinished = true;
+    window.__lfBooted = true;
+    try { window.dispatchEvent(new Event("lf-booted")); } catch (e) {}
+    if (typeof window.__lfReveal === "function") {
+      try { window.__lfReveal(); } catch (e) {}
+    }
+  }
+  async function rememberedEmail() {
+    try { return (await authStorage.getItem(LF_EMAIL_KEY)) || ""; } catch (e) { return ""; }
+  }
+  async function showLoginForReturning(email) {
+    authMode = "login";
+    applyAuthMode();
+    var input = document.getElementById("emailInput");
+    if (input && email) input.value = email;
+    showSignIn();
+  }
+
   (async function boot() {
-    if (!sb) { showSignIn(); return; }
+    if (!sb) { showSignIn(); finishBoot(); return; }
     // Detect password-reset redirect (Supabase puts type=recovery in the URL hash)
     const hash = window.location.hash || "";
     const isRecovery = /[#&]type=recovery(?:&|$)/.test(hash);
     try {
-      const { data: { session } } = await sb.auth.getSession();
+      let session = (await sb.auth.getSession()).data.session;
+      // A refresh token can outlive the month he asked for. After about 30 days
+      // from the last real sign-in, drop it and show the login screen.
+      if (session && session.user && !isRecovery && !sessionStillRemembered(session)) {
+        try { await sb.auth.signOut({ scope: "local" }); } catch (e) {}
+        session = null;
+      }
+      // Session storage is settled. The auto-updater may reload now without
+      // aborting a token refresh that hadn't been saved yet.
+      finishBoot();
       if (session && session.user) {
         setUserFromSession(session);
         if (isRecovery) {
@@ -9496,22 +9811,27 @@
           try { const K = window.Capacitor.Plugins.Keyboard; if (K && K.setAccessoryBarVisible) K.setAccessoryBarVisible({ isVisible: false }); } catch (e) {}
         }
       } else {
-        // On the public website, introduce LIVN FORGE before asking a first-time
-        // visitor to create an account. Native apps continue directly to auth.
-        // Explicit entry links preserve signup, login and password-recovery flows.
+        // First-time visitors on the public site see the marketing page.
+        // Anyone we've seen before (or the native app) gets the login screen.
         const wantsSignup = /[?&]start=1(?:&|$)/.test(location.search);
         const wantsLogin = /[?&]login=1(?:&|$)/.test(location.search);
-        if (!IN_NATIVE_APP && !isRecovery && !wantsSignup && !wantsLogin) {
+        const email = await rememberedEmail();
+        if (!IN_NATIVE_APP && !isRecovery && !wantsSignup && !wantsLogin && !email) {
           location.replace("welcome.html");
           return;
         }
-        if (wantsLogin) {
-          authMode = "login";
-          applyAuthMode();
-        }
+        if (email || wantsLogin) await showLoginForReturning(email);
+        else showSignIn();
+      }
+    } catch (err) {
+      console.error(err);
+      finishBoot();
+      if (__currentUser) {
+        try { await gateEntry(); } catch (e2) { try { showLanding(); } catch (e3) {} }
+      } else {
         showSignIn();
       }
-    } catch (err) { console.error(err); showSignIn(); }
+    }
   })();
 </script>
 </body>
