@@ -58,7 +58,7 @@
 })();
 </script>
 <meta name="description" content="A faith-driven daily journal for men and women — journaling, scripture devotionals, fitness, prayer, gratitude, and an AI weekly review. Start your 7-day free trial.">
-<meta name="theme-color" content="#15161a">
+<meta name="theme-color" content="#14120e">
 <!-- Link preview (Open Graph) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LIVN FORGE">
@@ -81,17 +81,18 @@
 <link rel="manifest" href="manifest.json">
 <style>
   :root {
-    --bg: #15161a;
-    --panel: #1d1f24;
-    --field: #25272d;
-    --field-border: #34373f;
-    --text: #f2f2f4;
-    --muted: #9a9aa0;
-    --accent-start: #34d399;
-    --accent-end: #6ee7b7;
-    --gold: #d9a93e;
-    --gold-light: #f0c674;
-    --gold-hover: #e6b94f;
+    /* Iron and ember — a forge, not a cool-gray dashboard. */
+    --bg: #14120e;
+    --panel: #1c1914;
+    --field: #262219;
+    --field-border: #3e362b;
+    --text: #f4efe6;
+    --muted: #a89c8c;
+    --accent-start: #d7a441;
+    --accent-end: #f0c56a;
+    --gold: #e0a63a;
+    --gold-light: #f2c56a;
+    --gold-hover: #c9922e;
     --star: #d9a93e;
     /* ---- Semantic tone tokens ----
        These used to be literal hex values scattered through the rules below, which
@@ -125,11 +126,11 @@
     /* Tinted glow steps for the gold accent, used by the workbench hero + accent
        cards. Kept separate from --gold so the women's build below can re-tint the
        glow without touching every literal rgba(217,169,62,...) in the sheet. */
-    --gold-glow-12: rgba(217,169,62,.12);
-    --gold-glow-20: rgba(217,169,62,.20);
-    --gold-glow-24: rgba(217,169,62,.24);
-    --gold-glow-26: rgba(217,169,62,.26);
-    --gold-glow-65: rgba(217,169,62,.65);
+    --gold-glow-12: rgba(224,166,58,.14);
+    --gold-glow-20: rgba(224,166,58,.22);
+    --gold-glow-24: rgba(224,166,58,.26);
+    --gold-glow-26: rgba(224,166,58,.28);
+    --gold-glow-65: rgba(224,166,58,.7);
   }
   /* ---------- Women's (Daughters) soft-light theme ---------- */
   body[data-build="women"] {
@@ -207,7 +208,9 @@
   }
   body {
     margin: 0;
-    background: #0c0d10;
+    background:
+      radial-gradient(ellipse 70% 36% at 50% -6%, rgba(224,166,58,.16), transparent 58%),
+      #090807;
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.5;
@@ -218,7 +221,8 @@
     margin: 0 auto;
     background: var(--bg);
     border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+    border-top: 2px solid var(--gold);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.55);
     overflow: hidden;
   }
 
@@ -310,8 +314,40 @@
   /* ---------- LANDING ---------- */
   .landing-body { padding: 22px 24px 30px; }
   /* ===== Forge home (Today) ===== */
-  .forge-greet { font-size:27px; font-weight:800; letter-spacing:.2px; margin:6px 0 5px; line-height:1.15; }
+  .forge-greet { font-size:30px; font-weight:800; letter-spacing:-.4px; margin:6px 0 5px; line-height:1.08; }
   .forge-date { font-size:13.5px; color:var(--muted); margin-bottom:24px; }
+  /* Today leads with the next rep, then the order. The verse sits under the work. */
+  .day-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin:2px 0 16px; }
+  .day-head-copy { min-width:0; flex:1; }
+  .day-kicker { font-size:10.5px; font-weight:800; letter-spacing:1.7px; text-transform:uppercase; color:var(--gold-light); margin-bottom:7px; }
+  .day-head .forge-greet { margin:0 0 4px; }
+  .day-head .forge-date { margin:0 0 10px; }
+  .forge-pulse { display:flex; flex-wrap:wrap; gap:6px 14px; }
+  .forge-pulse span { display:flex; align-items:baseline; gap:5px; color:var(--muted); }
+  .forge-pulse b { color:var(--text); font-size:16px; font-weight:800; letter-spacing:-.2px; }
+  .forge-pulse em { font-style:normal; font-size:10px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; }
+  .next-plate {
+    background:linear-gradient(165deg, var(--gold-glow-24), var(--gold-glow-12) 55%, transparent);
+    border:1px solid var(--gold); border-radius:10px; padding:14px 14px 12px; margin-bottom:18px;
+  }
+  .next-kicker { font-size:10.5px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:var(--gold-light); margin-bottom:8px; }
+  .forge-go {
+    width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--gold); color:var(--on-gold); border:none; border-radius:6px;
+    font-family:inherit; font-weight:800; font-size:16.5px; letter-spacing:.1px;
+    padding:15px 16px; cursor:pointer; text-align:left; line-height:1.25;
+  }
+  .forge-go::after { content:"→"; font-size:18px; flex:0 0 auto; }
+  .forge-go:hover { background:var(--gold-hover); }
+  .next-plate .msub { margin-top:8px; font-size:13px; color:var(--muted); }
+  #forgeStartBtn { display:none !important; }
+  .rail-label { font-size:11px; letter-spacing:1.8px; text-transform:uppercase; color:var(--muted); font-weight:800; margin:2px 2px 10px; }
+  .forge-side {
+    display:block; width:100%; margin:0 0 16px; background:none; border:none; color:var(--gold-light);
+    font-family:inherit; font-size:13.5px; font-weight:700; text-align:left; cursor:pointer; padding:6px 2px;
+    text-decoration:underline; text-underline-offset:3px;
+  }
+  .verse-plate { margin-top:4px; }
   .forge-card { background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:18px; padding:19px 20px; margin-bottom:16px; }
   .forge-card.accent { border-left:3px solid var(--gold); }
   .forge-clabel { font-size:11px; letter-spacing:1.7px; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
@@ -328,7 +364,7 @@
   .fmission .mbtn-quiet { background:transparent; color:var(--gold-light); border:1.5px solid var(--gold); }
   .mring { position:relative; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
   .mring svg { width:82px; height:82px; transform:rotate(-90deg); }
-  .mring .bg { fill:none; stroke:rgba(255,255,255,.09); stroke-width:7; }
+  .mring .bg { fill:none; stroke:var(--ring-track); stroke-width:7; }
   .mring .fg { fill:none; stroke:var(--gold); stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset .8s cubic-bezier(.3,1,.4,1); }
   .mring .ctr { position:absolute; text-align:center; }
   .mring .ctr .frac { font-size:19px; font-weight:800; line-height:1; }
@@ -373,22 +409,27 @@
   .fqj .pen { width:38px; height:38px; flex:0 0 auto; border-radius:10px; background:rgba(217,169,62,.16); color:var(--gold-light); display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; }
   .fqj .pen svg { width:18px; height:18px; }
   .fjourney { margin:2px 0 6px; }
-  .fstep { display:flex; align-items:center; gap:10px; width:100%; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:16px; margin-bottom:11px; transition:transform .1s ease; color:var(--text); }
+  .fstep { display:flex; align-items:center; gap:10px; width:100%; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:13px 12px; margin-bottom:8px; transition:transform .1s ease; color:var(--text); }
   .fstep:active { transform:scale(.99); }
   .fstep-open { flex:1; min-width:0; display:flex; align-items:center; gap:13px; background:none; border:none; padding:0; color:inherit; font-family:inherit; text-align:left; cursor:pointer; }
   .fstep .sico { width:34px; height:34px; flex:0 0 auto; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--field); color:var(--muted); }
   .fstep .sico svg { width:19px; height:19px; }
-  .fstep .stitle { display:block; font-size:15px; font-weight:700; }
+  .fstep .snum { flex:0 0 auto; width:26px; font-variant-numeric:tabular-nums; font-weight:800; font-size:12px; letter-spacing:.4px; color:var(--muted); }
+  .fstep .scopy { min-width:0; }
+  .fstep .stitle { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:15px; font-weight:800; }
   .fstep .ssub { display:block; font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .snow { font-size:10px; letter-spacing:1.1px; text-transform:uppercase; font-weight:800; color:var(--on-gold); background:var(--gold); padding:2px 6px; border-radius:3px; line-height:1.4; }
   /* Tap-to-complete check — mark a step done without writing anything. */
   .fstep-check { flex:0 0 auto; width:30px; height:30px; border-radius:50%; border:2px solid var(--field-border); background:none; display:flex; align-items:center; justify-content:center; color:transparent; cursor:pointer; padding:0; transition:border-color .15s, background .15s; }
   .fstep-check svg { width:17px; height:17px; }
   .fstep-check:hover { border-color:var(--gold); }
-  .fstep.done { opacity:.7; }
-  .fstep.done .sico { background:rgba(52,211,153,.16); color:var(--success); }
-  .fstep.done .fstep-check { background:linear-gradient(135deg,#34d399,#6ee7b7); border-color:transparent; color:#0c0d10; }
-  .fstep.next { border-color:var(--gold); background:linear-gradient(135deg,rgba(217,169,62,.16),rgba(217,169,62,.04)); }
-  .fstep.next .sico { background:rgba(217,169,62,.2); color:var(--gold-light); }
+  .fstep.done { opacity:.72; }
+  .fstep.done .snum { color:var(--gold); }
+  .fstep.done .sico { background:var(--gold-glow-20); color:var(--gold-light); }
+  .fstep.done .fstep-check { background:var(--gold); border-color:transparent; color:var(--on-gold); }
+  .fstep.next { border-color:var(--gold); border-left-width:3px; background:linear-gradient(90deg, var(--gold-glow-24), transparent 70%); }
+  .fstep.next .snum { color:var(--gold-light); }
+  .fstep.next .sico { background:var(--gold-glow-20); color:var(--gold-light); }
   .forge-complete { text-align:center; background:linear-gradient(135deg,rgba(217,169,62,.18),rgba(217,169,62,.05)); border:1px solid var(--gold); border-radius:16px; padding:18px; margin-bottom:14px; }
   .forge-complete .fc-t { font-size:18px; font-weight:800; color:var(--gold-light); }
   .forge-complete .fc-s { font-size:13px; color:var(--muted); margin-top:4px; }
@@ -561,7 +602,10 @@
   .rw-error { color:var(--danger-link); font-size:13px; margin-top:8px; min-height:1em; }
   .rw-claim-item { border-top:1px solid var(--field-border); padding:10px 0; font-size:13px; line-height:1.5; }
   /* Bottom tab navigation */
-  .bottom-nav { position: fixed; left:0; right:0; bottom:0; z-index:900; display:flex; background:var(--panel); border-top:1px solid var(--field-border); padding:8px 4px calc(8px + max(env(safe-area-inset-bottom,0px), 16px)); box-shadow:0 -4px 16px rgba(0,0,0,0.18); }
+  .bottom-nav { position: fixed; left:0; right:0; bottom:0; z-index:900; display:flex; background:var(--panel); border-top:1px solid var(--field-border); padding:8px 4px calc(8px + max(env(safe-area-inset-bottom,0px), 16px)); box-shadow:0 -8px 24px rgba(0,0,0,0.28); }
+  @media (min-width: 820px) {
+    .bottom-nav { left:50%; right:auto; width:760px; transform:translateX(-50%); border-left:1px solid var(--field-border); border-right:1px solid var(--field-border); }
+  }
   .bottom-nav button { position:relative; flex:1; min-height:48px; background:none; border:none; color:var(--muted); font-family:inherit; font-size:11px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
   .bottom-nav .bn-ico { width:23px; height:23px; }
   .bottom-nav button.active { color:var(--gold-light); }
@@ -831,7 +875,7 @@
   .pillar-cards { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
   .pillar-card {
     --jc:var(--gold); --jg:var(--gold-glow-12);
-    position:relative; overflow:hidden; text-align:left; padding:18px; border-radius:18px;
+    position:relative; overflow:hidden; text-align:left; padding:18px; border-radius:10px;
     background:radial-gradient(circle at 95% 0, var(--jg), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
     border:1px solid rgba(255,255,255,.09); cursor:pointer;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
@@ -869,16 +913,17 @@
   .quick-journal-row .pc-pts { position:absolute; right:14px; top:13px; }
   .quick-card-action { display:flex; align-items:center; gap:6px; margin-top:auto; padding-top:13px; color:var(--jc); font-size:12px; font-weight:800; }
   .quick-card-action svg { width:14px; height:14px; }
-  .pc-freeflow { --jc:#60a5fa; --jg:rgba(96,165,250,.13); }
-  .pc-guided { --jc:#34d399; --jg:rgba(52,211,153,.13); }
-  .pc-reframe { --jc:#e0ad42; --jg:rgba(217,169,62,.13); }
-  .pc-devotional { --jc:#a78bfa; --jg:rgba(167,139,250,.13); }
-  .pc-prayer { --jc:#f08a9c; --jg:rgba(240,138,156,.13); }
-  .pc-fitness { --jc:#34c2c2; --jg:rgba(52,194,194,.13); }
-  .pc-gratitude { --jc:#fbbf24; --jg:rgba(251,191,36,.13); }
-  .pc-drift { --jc:#8fbd83; --jg:rgba(143,189,131,.13); }
-  .pc-family { --jc:#fb923c; --jg:rgba(251,146,60,.13); }
-  .pc-finances { --jc:#22c55e; --jg:rgba(34,197,94,.13); }
+  /* Men's plates stay in the metal: bone, ember, copper, heat. Not a pastel grid. */
+  .pc-freeflow { --jc:#cbbfa8; --jg:rgba(203,191,168,.14); }
+  .pc-guided { --jc:#e0b15a; --jg:rgba(224,177,90,.14); }
+  .pc-reframe { --jc:#d4a24a; --jg:rgba(212,162,74,.14); }
+  .pc-devotional { --jc:#f0c56a; --jg:rgba(240,197,106,.14); }
+  .pc-prayer { --jc:#d08a45; --jg:rgba(208,138,69,.16); }
+  .pc-fitness { --jc:#e07a3a; --jg:rgba(224,122,58,.16); }
+  .pc-gratitude { --jc:#e0a63a; --jg:rgba(224,166,58,.14); }
+  .pc-drift { --jc:#9aaa90; --jg:rgba(154,170,144,.14); }
+  .pc-family { --jc:#c49a6c; --jg:rgba(196,154,108,.16); }
+  .pc-finances { --jc:#8faf78; --jg:rgba(143,175,120,.14); }
   /* Light build: same hues, deepened so the points chip and card action clear AA
      against their own 13%-tint background over cream (they read 1.5-2.5:1 before). */
   body[data-build="women"] .pc-freeflow   { --jc:#1f5f96; }
@@ -995,13 +1040,13 @@
   .pillar .p-ico { margin-bottom: 8px; }
   .pillar .p-name { font-size: 12.5px; letter-spacing: 2px; color: var(--text-soft); }
   .verse {
-    display: flex; align-items: center; gap: 16px; margin: 28px 0 18px; padding: 16px 20px;
-    border: 1px solid var(--field-border); border-radius: 12px; background: var(--panel);
+    display: flex; align-items: center; gap: 16px; margin: 18px 0 8px; padding: 8px 2px 0;
+    border: none; border-radius: 0; background: transparent; border-top: 1px solid var(--field-border);
   }
   .verse .v-crown { color: var(--gold); flex-shrink: 0; }
   .verse .v-text { font-size: 12.5px; color: var(--text-soft); letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.6; }
   .verse .v-ref { color: var(--gold); white-space: nowrap; font-size: 12px; letter-spacing: 1px; }
-  .landing-footer { text-align: center; color: var(--muted); letter-spacing: 3px; font-size: 13px; margin-top: 10px; }
+  .landing-footer { text-align: center; color: var(--gold); letter-spacing: 2.6px; font-size: 11px; font-weight: 800; margin-top: 8px; }
   .landing-history {
     display: block; margin: 22px auto 0; background: none; border: none; color: var(--gold);
     font-size: 14px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
@@ -1012,7 +1057,8 @@
      land in the journal, not flash the login form first. */
   #signInView, #appView { display: none; }
   #landingView { display: none; }
-  header { display: flex; align-items: center; gap: 10px; padding: 18px 22px; border-bottom: 1px solid #2a2c32; }
+  header { display: flex; align-items: center; gap: 10px; padding: 16px 22px; border-bottom: 1px solid var(--field-border); background:linear-gradient(180deg, var(--gold-glow-12), transparent 80%); }
+  body[data-build="women"] header { background: transparent; }
   .back-btn {
     background: none; border: 1px solid var(--field-border); color: var(--text); border-radius: 8px;
     padding: 7px 12px; font-size: 14px; font-family: inherit; cursor: pointer; transition: border-color 0.15s ease;
@@ -1035,7 +1081,8 @@
   .type-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 26px; }
   /* The activity is chosen before entering compose — hide the in-entry type switcher. */
   #typeSelector { display: none; }
-  .write-title { font-size: 20px; font-weight: 700; letter-spacing: .3px; color: var(--text); margin: 2px 0 20px; }
+  .write-kicker { font-size:11px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:var(--gold-light); margin:2px 0 6px; }
+  .write-title { font-size: 28px; font-weight: 800; letter-spacing: -.4px; color: var(--text); margin: 0 0 16px; line-height:1.1; }
   /* Morning / End-of-day daypart toggle inside an entry */
   .daypart-wrap { margin-bottom: 22px; }
   .daypart-row { display: flex; gap: 8px; }
@@ -1152,22 +1199,24 @@
   .mcq-explain { display: none; font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 8px; padding-left: 2px; }
   .bs-mcq.answered .mcq-explain { display: block; }
   .field-group textarea {
-    width: 100%; background: var(--field); border: 1px solid var(--field-border); border-radius: 12px;
-    color: var(--text); font-family: inherit; font-size: 15px; padding: 14px 16px; resize: vertical;
-    min-height: 54px; transition: border-color 0.15s ease;
+    width: 100%; background: var(--field); border: 1px solid var(--field-border); border-radius: 8px;
+    color: var(--text); font-family: inherit; font-size: 16px; line-height: 1.55; padding: 14px 16px; resize: vertical;
+    min-height: 140px; transition: border-color 0.15s ease;
   }
   .field-group textarea::placeholder { color: var(--muted); }
   .field-group textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(217,169,62,0.18); }
-  .meta-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
-  .meta-row .field-group { flex: 1; min-width: 180px; margin-bottom: 0; }
+  .meta-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--field-border); }
+  .meta-row .field-group { flex: 1; min-width: 140px; margin-bottom: 0; }
+  .meta-row .field-group label { font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); font-weight: 800; margin-bottom: 4px; }
+  .meta-row .meta-known { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
   .meta-row input {
-    width: 100%; background: var(--field); border: 1px solid var(--field-border); border-radius: 12px;
-    color: var(--text); font-family: inherit; font-size: 15px; padding: 13px 16px;
+    width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--field-border); border-radius: 0;
+    color: var(--text); font-family: inherit; font-size: 15px; padding: 6px 0 8px;
   }
   .meta-row input:focus { outline: none; border-color: var(--gold); }
   .submit-btn {
-    width: 100%; margin-top: 10px; padding: 15px; border: none; border-radius: 12px;
-    background: var(--gold); color: var(--on-gold); font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.15s ease;
+    width: 100%; margin-top: 10px; padding: 15px; border: none; border-radius: 6px;
+    background: var(--gold); color: var(--on-gold); font-size: 16px; font-weight: 800; letter-spacing: .3px; cursor: pointer; transition: background 0.15s ease;
   }
   .submit-btn:hover { background: var(--gold-hover); }
   .hint { text-align: center; color: var(--muted); font-size: 13px; margin-top: 14px; }
@@ -1699,7 +1748,7 @@
       </div>
       <div class="signin-body">
         <h2 id="authTitle">Create your account</h2>
-        <p id="authSubtitle">Sign up with an email and password. Your journals, points and streak sync securely to your account.</p>
+        <p id="authSubtitle">Email and a password. Your entries, points, and streak stay on this account.</p>
         <label class="sr-only" for="emailInput">Email address</label>
         <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
         <div class="pw-wrap" id="pwWrap">
@@ -1735,44 +1784,49 @@
 
       <div class="landing-body">
         <div id="forgeHome" data-tab="today">
-          <h1 class="forge-greet" id="forgeGreet">Good morning</h1>
-          <div class="forge-date" id="forgeDate"></div>
+          <div class="day-head">
+            <div class="day-head-copy">
+              <div class="day-kicker">Forged in faith. Refined in purpose.</div>
+              <h1 class="forge-greet" id="forgeGreet">Good morning</h1>
+              <div class="forge-date" id="forgeDate"></div>
+              <div class="forge-pulse" aria-label="Your standing">
+                <span><b id="forgeStreak">0</b><em>day streak</em></span>
+                <span><b id="forgePoints">0</b><em>pts</em></span>
+                <span><b id="forgeEntries">0</b><em>entries</em></span>
+              </div>
+            </div>
+            <div class="mring" aria-hidden="true">
+              <svg viewBox="0 0 82 82"><circle class="bg" cx="41" cy="41" r="34"></circle><circle class="fg" id="forgeMRing" cx="41" cy="41" r="34" stroke-dasharray="214" stroke-dashoffset="214"></circle></svg>
+              <div class="ctr"><div class="frac" id="forgeMFrac">0/5</div><div class="pct" id="forgeMPct">0%</div></div>
+            </div>
+          </div>
 
-          <div class="forge-card accent">
+          <div class="next-plate" id="missionCard">
+            <div class="next-kicker" id="forgeNextKicker">Do this next</div>
+            <button class="forge-go" id="forgeNextBtn" type="button">Read today’s Scripture</button>
+            <div class="msub" id="forgeMSub">Devotional</div>
+            <button class="mbtn mbtn-quiet" id="forgeStartBtn" type="button">See today’s steps</button>
+          </div>
+
+          <div class="rail-label">Today’s order</div>
+          <div class="fjourney forge-rail" id="forgeRail"></div>
+          <button class="forge-side" id="forgeChBtn" type="button" style="display:none;">Get back to your 21-Day Challenge →</button>
+
+          <div class="forge-card verse-plate">
             <div class="forge-clabel">Verse of the day <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
             <div class="fv-text" id="forgeVerseText"></div>
             <div class="fv-ref" id="forgeVerseRef"></div>
           </div>
 
           <div class="forge-card accent" id="mfTodayCard" style="display:none;"></div>
-
-          <div class="forge-card accent" id="missionCard">
-            <div class="fmission">
-              <div class="m-l">
-                <div class="forge-clabel" style="margin-bottom:6px;">Today's mission</div>
-                <div class="mtitle">Forge your day</div>
-                <div class="msub" id="forgeMSub">Your next step is ready below.</div>
-                <div class="m-actions">
-                  <button class="mbtn" id="forgeNextBtn" type="button">Next: Read today’s Scripture</button>
-                  <button class="mbtn mbtn-quiet" id="forgeStartBtn" type="button">See today’s steps</button>
-                </div>
-                <button class="mbtn" id="forgeChBtn" type="button" style="display:none; background:transparent; border:1.5px solid var(--gold); color:var(--gold-light);">Get back to your 21-Day Challenge →</button>
-              </div>
-              <div class="mring">
-                <svg viewBox="0 0 82 82"><circle class="bg" cx="41" cy="41" r="34"></circle><circle class="fg" id="forgeMRing" cx="41" cy="41" r="34" stroke-dasharray="214" stroke-dashoffset="214"></circle></svg>
-                <div class="ctr"><div class="frac" id="forgeMFrac">0/5</div><div class="pct" id="forgeMPct">0%</div></div>
-              </div>
-            </div>
-          </div>
-
         </div>
 
         <div id="profileHome" data-tab="settings">
           <div class="journal-intro">
             <div class="ji-copy">
-              <div class="ji-kicker">Your profile</div>
-              <h1>Own your rhythm.</h1>
-              <p>Track your progress, manage your circle settings, and keep LIVN FORGE working the way you need it to.</p>
+              <div class="ji-kicker">Your standing</div>
+              <h1>Hold the line.</h1>
+              <p>Your name, your level, and the account behind the work.</p>
             </div>
             <svg class="ji-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.2a7.5 7.5 0 0 1 15 0"/></svg>
           </div>
@@ -2075,15 +2129,15 @@
         <div class="prayer-circles" id="prayerCircles" data-tab="circles"></div>
 
         <div class="journal-intro" data-tab="journal">
-          <div class="ji-copy">
-            <div class="ji-kicker">The workbench</div>
-            <h1>Put it on the page.</h1>
-            <p>Start with a blank page, follow a few prompts, or choose the part of life you want to shape today.</p>
-          </div>
+            <div class="ji-copy">
+              <div class="ji-kicker">The workbench</div>
+              <h1>Choose the work.</h1>
+              <p>Faith, family, or the body. Write it down and move.</p>
+            </div>
           <svg class="ji-mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 46h34M20 46l4-12h16l4 12M27 34v-9h10v9M19 25h26M25 18h14l6 7H19z"/></svg>
         </div>
         <div class="quick-journal" data-tab="journal">
-          <div class="qj-head"><div><div class="qj-label">Quick start</div><div class="qj-sub">Two ways in. No overthinking.</div></div></div>
+          <div class="qj-head"><div><div class="qj-label">Quick start</div><div class="qj-sub">A blank page, or a few hard questions.</div></div></div>
           <div class="quick-journal-row">
             <div class="pillar-card pc-freeflow" data-type="freeflow">
               <div class="pc-icon">
@@ -2107,7 +2161,7 @@
         </div>
         <div class="journal-library" data-tab="journal">
         <div class="journal-section-head">
-          <div><div class="journal-section-eyebrow">The forge library</div><h2>Choose a guided path</h2></div>
+          <div><div class="journal-section-eyebrow">The forge library</div><h2>Pick the work</h2></div>
           <button class="reorder-btn" id="reorderToggle" type="button">✎ Customize</button>
         </div>
         <div class="pillar-tabs">
@@ -2257,7 +2311,7 @@
     <!-- ===================== APP VIEW ===================== -->
     <div id="appView">
       <header>
-        <button class="back-btn" id="homeBtn">&larr; Home</button>
+        <button class="back-btn" id="homeBtn">&larr; Today</button>
         <h1>LIVN <span class="accent">FORGE</span></h1>
         <span class="pts-chip" id="ptsChip">0 pts</span>
         <button class="hist-btn" id="historyToggle">History <span class="count" id="historyCount">0</span></button>
@@ -2277,6 +2331,7 @@
             <div class="type-option" data-type="gratitude"><span class="radio"></span> Gratitude Journal</div>
             <div class="type-option" data-type="drift"><span class="radio"></span> Drift Fix</div>
           </div>
+          <div class="write-kicker" id="writeKicker"></div>
           <div class="write-title" id="writeTitle"></div>
 
           <div class="meta-row">
@@ -2292,7 +2347,7 @@
 
           <form id="journalForm">
             <div id="questions"></div>
-            <button type="submit" class="submit-btn">Submit</button>
+            <button type="submit" class="submit-btn">Save entry</button>
             <div class="hint">Your entries sync securely to your account and stay private unless you choose to share them.</div>
           </form>
         </div>
@@ -3940,13 +3995,13 @@
     i = Math.max(0, Math.min(i, steps.length - 1));
     steps.forEach(function (s, idx) { s.style.display = idx === i ? "" : "none"; });
     const prog = document.getElementById("stepProgress");
-    if (prog) prog.textContent = "Question " + (i + 1) + " of " + steps.length;
+    if (prog) prog.textContent = (i + 1) + " of " + steps.length;
     const dw = document.getElementById("daypartWrap"); // daypart can only be set on the first question
     if (dw) dw.style.display = i === 0 ? "" : "none";
     const last = i >= steps.length - 1;
     const stepNext = document.getElementById("stepNext");
     const stepBack = document.getElementById("stepBack");
-    if (stepNext) stepNext.textContent = last ? "Submit" : "Next →"; // last question saves
+    if (stepNext) stepNext.textContent = last ? "Save entry" : "Next →"; // last question saves
     if (stepBack) stepBack.style.display = i > 0 ? "" : "none";      // back appears after the first question
   }
   function advanceStep() {
@@ -4204,7 +4259,7 @@
       html += data.fields.map((f, i) => `
         <div class="field-group guided-field">
           <label for="q${i}"><span class="gf-label">${f.label}</span><span class="gf-prompt">${f.prompt}</span></label>
-          <textarea id="q${i}" data-question="${(f.label + " — " + f.prompt).replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
+          <textarea id="q${i}" data-question="${(f.label + " — " + f.prompt).replace(/"/g, '&quot;')}" placeholder="Write it down."></textarea>
         </div>`).join("");
     } else {
       // Daily reflection types carry morning (forward-looking) + evening (reflective)
@@ -4230,7 +4285,7 @@
           <div class="qstep" data-step="${i}"${i === 0 ? "" : ' style="display:none"'}>
             <div class="field-group">
               <label for="q${i}">${q} <span class="opt">(optional)</span></label>
-              <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
+              <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write it down."></textarea>
             </div>
           </div>`).join("");
         html += '<div class="step-nav"><button type="button" class="step-back" id="stepBack" style="display:none">← Back</button><button type="button" class="submit-btn step-next" id="stepNext">Next →</button></div>';
@@ -4238,7 +4293,7 @@
         html += itemList.map((q, i) => `
         <div class="field-group">
           <label for="q${i}">${q} <span class="opt">(optional)</span></label>
-          <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write your text here"></textarea>
+          <textarea id="q${i}" data-question="${q.replace(/"/g, '&quot;')}" placeholder="Write it down."></textarea>
         </div>
       `).join("");
       }
@@ -4877,6 +4932,12 @@
     }
     selector.querySelectorAll(".type-option").forEach(o => o.classList.toggle("active", o.dataset.type === type));
     const wt = document.getElementById("writeTitle"); if (wt) wt.textContent = (QUESTIONS[type] && QUESTIONS[type].title) || "";
+    var wk = document.getElementById("writeKicker");
+    if (wk) wk.textContent = ({
+      freeflow: "Blank page", guided: "Guided reflection", reframe: "Re-frame",
+      devotional: "Scripture", prayer: "Prayer", family: "Family",
+      fitness: "Steward the body", gratitude: "Gratitude", drift: "Drift fix"
+    })[type] || "The entry";
     if (type !== "fitness") { currentFitnessPreset = null; resetTimerState(); }
     // Start the Drift Fix flow fresh when there's no in-progress audit (or the last one finished).
     if (type === "drift" && (!DF || DF.done)) driftInit();
@@ -4893,7 +4954,7 @@
   const paywallView = document.getElementById("paywallView");
   function showSignIn() { signInView.style.display = "block"; landingView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; }
   function showLanding() { signInView.style.display = "none"; appView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; landingView.style.display = "block"; applyBuild(); renderScore(); renderGroup(); renderWeeklyBanner(); renderFinancesBanner(); renderTrialBanner(); renderRateBanner(); renderRewards(); applyAdminUI(); showTab(__activeTab); maybeShowTutorial(); }
-  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; renderScore(); }
+  function showApp() { signInView.style.display = "none"; landingView.style.display = "none"; buildChooser.style.display = "none"; paywallView.style.display = "none"; appView.style.display = "block"; if (typeof dismissToast === "function") dismissToast(); renderScore(); }
 
   // ----- Free 7-day trial (app-controlled, no card) -----
   // Every account gets 7 days of full access from the moment it was created.
@@ -5243,6 +5304,18 @@
   function showWrite() {
     writeView.style.display = "block"; historyView.style.display = "none"; summaryView.style.display = "none";
     historyToggle.firstChild.textContent = "History "; showingHistory = false;
+    var nameEl = document.getElementById("entryName");
+    if (nameEl && !nameEl.value.trim() && typeof gKey === "function") {
+      try {
+        var savedName = localStorage.getItem(gKey("name"));
+        if (savedName) {
+          nameEl.value = savedName;
+          nameEl.tabIndex = -1;
+          var wrap = nameEl.closest(".field-group");
+          if (wrap) wrap.classList.add("meta-known");
+        }
+      } catch (e) {}
+    }
   }
   function showHistory() {
     renderHistory(); writeView.style.display = "none"; summaryView.style.display = "none"; historyView.style.display = "block";
@@ -5733,51 +5806,53 @@
     var mp = document.getElementById("forgeMPct"); if (mp) mp.textContent = Math.round(frac * 100) + "%";
     var nextIx = steps.findIndex(function (s) { return !s.done; });
     var nextBtn = document.getElementById("forgeNextBtn");
-    if (nextBtn) {
-      if (nextIx < 0) nextBtn.textContent = "Review today";
-      else nextBtn.textContent = "Next: " + steps[nextIx].title;
-    }
+    if (nextBtn) nextBtn.textContent = nextIx < 0 ? "Review today" : steps[nextIx].title;
+    var kicker = document.getElementById("forgeNextKicker");
+    if (kicker) kicker.textContent = nextIx < 0 ? "Day complete" : "Do this next";
     var startBtn = document.getElementById("forgeStartBtn");
     if (startBtn) startBtn.textContent = "See today’s steps";
     var missionSub = document.getElementById("forgeMSub");
     if (missionSub) {
       missionSub.textContent = nextIx < 0
-        ? "Today’s rhythm is complete."
-        : "Do this next — " + steps[nextIx].title + ".";
+        ? "You showed up. That’s the work."
+        : steps[nextIx].sub;
     }
     var modalBar = document.getElementById("forgeModalBar"); if (modalBar) modalBar.style.width = Math.round(frac * 100) + "%";
     var modalProgress = document.getElementById("forgeModalProgress"); if (modalProgress) modalProgress.textContent = done + " of " + steps.length + " complete";
     if (typeof updateForgeChallengeBtn === "function") updateForgeChallengeBtn();
-    var jw = document.getElementById("forgeJourney");
-    if (jw) {
-      var html = "";
-      if (done === steps.length) html += '<div class="forge-complete"><div class="fc-t">Today’s Forge complete</div><div class="fc-s">You showed up. Well done — see you tomorrow.</div></div>';
-      html += steps.map(function (s, i) {
-        var cls = s.done ? "done" : (i === nextIx ? "next" : "");
-        var check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
-        return '<div class="fstep ' + cls + '">' +
-          '<button type="button" class="fstep-open" data-fstep="' + i + '">' +
-            '<span class="sico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="' + s.icon + '"/></svg></span>' +
-            '<span><span class="stitle">' + s.title + '</span><span class="ssub">' + (s.done ? "Done" : s.sub) + '</span></span>' +
-          '</button>' +
-          '<button type="button" class="fstep-check" data-fdone="' + i + '" aria-label="' + (s.done ? "Completed" : "Mark done") + '" aria-pressed="' + (s.done ? "true" : "false") + '">' + check + '</button>' +
-        '</div>';
-      }).join("");
-      jw.innerHTML = html;
-      jw.querySelectorAll("[data-fstep]").forEach(function (el) {
+    var html = "";
+    if (done === steps.length) html += '<div class="forge-complete"><div class="fc-t">Today’s Forge complete</div><div class="fc-s">You showed up. Well done — see you tomorrow.</div></div>';
+    html += steps.map(function (s, i) {
+      var cls = s.done ? "done" : (i === nextIx ? "next" : "");
+      var num = (i < 9 ? "0" : "") + (i + 1);
+      var now = (!s.done && i === nextIx) ? '<span class="snow">Now</span>' : "";
+      var check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+      return '<div class="fstep ' + cls + '">' +
+        '<button type="button" class="fstep-open" data-fstep="' + i + '">' +
+          '<span class="snum">' + num + '</span>' +
+          '<span class="sico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="' + s.icon + '"/></svg></span>' +
+          '<span class="scopy"><span class="stitle">' + s.title + now + '</span><span class="ssub">' + (s.done ? "Done" : s.sub) + '</span></span>' +
+        '</button>' +
+        '<button type="button" class="fstep-check" data-fdone="' + i + '" aria-label="' + (s.done ? "Completed" : "Mark done") + '" aria-pressed="' + (s.done ? "true" : "false") + '">' + check + '</button>' +
+      '</div>';
+    }).join("");
+    ["forgeRail", "forgeJourney"].forEach(function (id) {
+      var root = document.getElementById(id);
+      if (!root) return;
+      root.innerHTML = html;
+      root.querySelectorAll("[data-fstep]").forEach(function (el) {
         el.addEventListener("click", function () {
           var s = forgeSteps()[+el.getAttribute("data-fstep")];
           if (s && s.act) { closeDailyMission(false); s.act(); }
         });
       });
-      // Tap the check to complete a step without writing anything.
-      jw.querySelectorAll("[data-fdone]").forEach(function (el) {
+      root.querySelectorAll("[data-fdone]").forEach(function (el) {
         el.addEventListener("click", function (e) {
           e.stopPropagation();
           quickCompleteStep(+el.getAttribute("data-fdone"));
         });
       });
-    }
+    });
   }
   (function initForge() {
     var nextBtn = document.getElementById("forgeNextBtn");
@@ -6026,12 +6101,12 @@
     const login = authMode === "login";
     const newPw = authMode === "newPassword";
     document.getElementById("authTitle").textContent =
-      signup ? "Create your account" : reset ? "Reset password" : newPw ? "Set a new password" : "Welcome back";
+      signup ? "Create your account" : reset ? "Reset password" : newPw ? "Set a new password" : "Pick up the work";
     document.getElementById("authSubtitle").textContent =
-      signup ? "Sign up with an email and password. Your journals, points and streak sync securely to your account."
+      signup ? "Email and a password. Your entries, points, and streak stay on this account."
       : reset ? "Enter your email and we'll send you a reset link."
       : newPw ? "Choose a new password to finish resetting your account."
-      : "Log in to your account.";
+      : "Your work is still here.";
     document.getElementById("emailInput").style.display = newPw ? "none" : "block";
     document.getElementById("pwWrap").style.display = reset ? "none" : "block";
     document.getElementById("pwConfirmWrap").style.display = (signup || newPw) ? "block" : "none";
@@ -6400,11 +6475,20 @@
     window.scrollTo(0, 0);
   });
 
+  let __toastTimer = null;
+  function dismissToast() {
+    if (__toastTimer) { clearTimeout(__toastTimer); __toastTimer = null; }
+    if (__tabTipTimer) { clearTimeout(__tabTipTimer); __tabTipTimer = null; }
+    const toast = document.getElementById("toast");
+    if (toast) toast.classList.remove("show");
+  }
   function showToast(msg) {
     const toast = document.getElementById("toast");
+    if (!toast) return;
+    if (__toastTimer) clearTimeout(__toastTimer);
     toast.textContent = msg;
     toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2600);
+    __toastTimer = setTimeout(function () { __toastTimer = null; toast.classList.remove("show"); }, 2600);
   }
 
   // ----- History rendering -----
@@ -8477,22 +8561,28 @@
   // ---- Bottom tab navigation ----
   let __activeTab = "today";
   const TAB_TIPS = {
-    journal: "Choose the kind of reflection that fits what you need today.",
     circles: "Join a circle to pray, encourage, and stay accountable together.",
     progress: "Journey shows your weekly growth, goals, challenges, and rewards."
   };
+  let __tabTipTimer = null;
   function maybeShowTabTip(name) {
+    if (__tabTipTimer) { clearTimeout(__tabTipTimer); __tabTipTimer = null; }
     const msg = TAB_TIPS[name];
     if (!msg || !currentEmail()) return;
     const key = APP + ":tabtip:" + name + ":" + currentEmail().toLowerCase();
     try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch (e) {}
-    setTimeout(function () { if (typeof showToast === "function") showToast(msg); }, 120);
+    __tabTipTimer = setTimeout(function () {
+      __tabTipTimer = null;
+      if (__activeTab !== name) return;
+      if (appView && appView.style.display === "block") return;
+      if (typeof showToast === "function") showToast(msg);
+    }, 120);
   }
   function showTab(name) {
     __activeTab = name;
     document.body.setAttribute("data-activetab", name);
     var __ht = document.getElementById("heroTitle");
-    if (__ht) __ht.textContent = ({ journal: "Journal", circles: "Circles", rewards: "Rewards", progress: "Journey", settings: "Profile" })[name] || "";
+    if (__ht) __ht.textContent = ({ today: "Today", journal: "Journal", circles: "Circles", rewards: "Rewards", progress: "Journey", settings: "Profile" })[name] || "";
     document.querySelectorAll("#landingView [data-tab]").forEach(function (el) {
       const tabs = (el.getAttribute("data-tab") || "").split(/\s+/);
       el.classList.toggle("tab-off", tabs.indexOf(name) < 0);
