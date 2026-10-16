@@ -5691,10 +5691,16 @@
   document.addEventListener("click", function (e) {
     const img = e.target && e.target.closest ? e.target.closest(".pc-att-img, [data-zoom]") : null;
     if (!img) return;
-    const src = img.getAttribute("data-zoom") || img.getAttribute("src");
-    if (!src) return;
+    const raw = img.getAttribute("data-zoom") || img.getAttribute("src");
+    if (!raw) return;
+    // data-zoom is DOM text. Only an http(s) or blob image URL may become the
+    // lightbox address — javascript: and data: URLs are not opened.
+    var parsed;
+    try { parsed = new URL(String(raw).trim(), window.location.href); }
+    catch (err) { return; }
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:" && parsed.protocol !== "blob:") return;
     const lb = document.getElementById("imgLightbox"), li = document.getElementById("imgLightboxImg");
-    if (lb && li) { li.src = src; lb.style.display = "flex"; }
+    if (lb && li) { li.src = parsed.href; lb.style.display = "flex"; }
   });
   (function () {
     const lb = document.getElementById("imgLightbox");
@@ -9706,7 +9712,7 @@
       const iconSrc = customImg || t.img;
       const zoomSrc = customImg || t.hero || t.img;
       const photo = iconSrc
-        ? '<img src="' + iconSrc + '" data-zoom="' + zoomSrc + '" alt="' + escapeHtml(t.name) + '">'
+        ? '<img src="' + escapeHtml(iconSrc) + '" data-zoom="' + escapeHtml(zoomSrc) + '" alt="' + escapeHtml(t.name) + '">'
         : '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><path d="M20 12v9H4v-9 M2 7h20v5H2z M12 21V7 M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>';
       const photoCtl = isOwner
         ? '<button class="rw-photo-btn" data-rwphoto="' + t.key + '" type="button" title="Update photo"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3.5"/></svg></button>' +
@@ -10297,15 +10303,89 @@
   // coming back keeps your text (and the dare check). Local per marriage+day;
   // cleared when the day is sealed.
   function mfDraftKey(day) { return APP + ":mfdraft:" + ((__mf && __mf.id) || "") + ":" + day; }
-  function mfLoadDraft(day) { try { return JSON.parse(localStorage.getItem(mfDraftKey(day)) || "{}") || {}; } catch (e) { return {}; } }
+  function mfBytesToB64(bytes) {
+    var bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  function mfB64ToBytes(b64) {
+    var bin = atob(b64);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  var __mfDraftKeyPromise = null;
+  function mfDraftCryptoKey() {
+    if (__mfDraftKeyPromise) return __mfDraftKeyPromise;
+    __mfDraftKeyPromise = new Promise(function (resolve, reject) {
+      if (!window.indexedDB || !window.crypto || !crypto.subtle) { reject(new Error("no crypto")); return; }
+      var req = indexedDB.open("lf-draft-keys", 1);
+      req.onupgradeneeded = function () { req.result.createObjectStore("keys"); };
+      req.onerror = function () { reject(req.error || new Error("key store")); };
+      req.onsuccess = function () {
+        var db = req.result;
+        var read = db.transaction("keys", "readonly").objectStore("keys").get("marriage");
+        read.onsuccess = function () {
+          if (read.result) { resolve(read.result); return; }
+          crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]).then(function (key) {
+            var put = db.transaction("keys", "readwrite").objectStore("keys").put(key, "marriage");
+            put.onsuccess = function () { resolve(key); };
+            put.onerror = function () { reject(put.error || new Error("key store")); };
+          }).catch(reject);
+        };
+        read.onerror = function () { reject(read.error || new Error("key store")); };
+      };
+    }).catch(function (err) { __mfDraftKeyPromise = null; throw err; });
+    return __mfDraftKeyPromise;
+  }
+  // AES-GCM. The key stays non-extractable in IndexedDB, so a localStorage
+  // dump does not contain the private note or the key that opens it.
+  async function encryptDraftText(plain) {
+    var key = await mfDraftCryptoKey();
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, new TextEncoder().encode(String(plain))));
+    return JSON.stringify({ v: 1, iv: mfBytesToB64(iv), ct: mfBytesToB64(ct) });
+  }
+  async function decryptDraftText(packed) {
+    var key = await mfDraftCryptoKey();
+    var plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: mfB64ToBytes(packed.iv) }, key, mfB64ToBytes(packed.ct));
+    return new TextDecoder().decode(plain);
+  }
+  async function mfLoadDraft(day) {
+    var key = mfDraftKey(day);
+    var raw = "";
+    try { raw = localStorage.getItem(key) || ""; } catch (e) { return {}; }
+    if (!raw) return {};
+    try {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.v === 1 && parsed.iv && parsed.ct) {
+        return JSON.parse(await decryptDraftText(parsed)) || {};
+      }
+      // Older builds stored the note in clear text. Restore it once, then
+      // replace that copy with ciphertext.
+      if (parsed && (typeof parsed.priv === "string" || typeof parsed.note === "string" || parsed.dare)) {
+        var legacy = { priv: parsed.priv || "", note: parsed.note || "", dare: !!parsed.dare };
+        try { localStorage.setItem(key, await encryptDraftText(JSON.stringify(legacy))); } catch (e2) {}
+        return legacy;
+      }
+    } catch (e) {}
+    return {};
+  }
+  var __mfDraftWrite = 0;
   function mfSaveDraft(day) {
     try {
       var priv = (document.getElementById("mfPrivate") || {}).value || "";
       var note = (document.getElementById("mfToSpouse") || {}).value || "";
       var box = document.getElementById("mfDareBox");
       var dare = !!(box && box.classList.contains("mf-on"));
-      if (!priv && !note && !dare) { localStorage.removeItem(mfDraftKey(day)); return; }
-      localStorage.setItem(mfDraftKey(day), JSON.stringify({ priv: priv, note: note, dare: dare }));
+      var key = mfDraftKey(day);
+      if (!priv && !note && !dare) { localStorage.removeItem(key); __mfDraftWrite++; return; }
+      var seq = ++__mfDraftWrite;
+      var payload = JSON.stringify({ priv: priv, note: note, dare: dare });
+      encryptDraftText(payload).then(function (packed) {
+        if (seq !== __mfDraftWrite) return;
+        try { localStorage.setItem(key, packed); } catch (e) {}
+      }).catch(function () {});
     } catch (e) {}
   }
   function mfClearDraft(day) { try { localStorage.removeItem(mfDraftKey(day)); } catch (e) {} }
@@ -10383,10 +10463,12 @@
     // Restore any in-progress draft (text + dare check) and keep it saved as you type.
     var privEl = document.getElementById("mfPrivate"), noteEl = document.getElementById("mfToSpouse");
     if (privEl || noteEl) {
-      var draft = mfLoadDraft(day);
-      if (privEl && draft.priv) privEl.value = draft.priv;
-      if (noteEl && draft.note) noteEl.value = draft.note;
-      if (draft.dare) mfMarkDareBox(true);
+      mfLoadDraft(day).then(function (draft) {
+        if (!draft) return;
+        if (privEl && draft.priv && privEl.value === "") privEl.value = draft.priv;
+        if (noteEl && draft.note && noteEl.value === "") noteEl.value = draft.note;
+        if (draft.dare) mfMarkDareBox(true);
+      }).catch(function () {});
       if (privEl) privEl.addEventListener("input", function () { mfSaveDraft(day); });
       if (noteEl) noteEl.addEventListener("input", function () { mfSaveDraft(day); });
     }
@@ -10947,6 +11029,49 @@
     }));
     clearJournalDraftsFor("user-a");
     check("logout clears that account's drafts", !journalDraftBag()["user-a"]);
+    var zoomBad = document.createElement("img");
+    zoomBad.className = "pc-att-img";
+    zoomBad.setAttribute("data-zoom", "javascript:alert(1)");
+    document.body.appendChild(zoomBad);
+    zoomBad.click();
+    var zoomLb = document.getElementById("imgLightbox");
+    var zoomLi = document.getElementById("imgLightboxImg");
+    check("javascript zoom url is not opened", zoomLb.style.display !== "flex" && (zoomLi.getAttribute("src") || "").indexOf("javascript:") !== 0);
+    var zoomGood = document.createElement("img");
+    zoomGood.className = "pc-att-img";
+    zoomGood.setAttribute("data-zoom", "https://example.com/hat.png");
+    document.body.appendChild(zoomGood);
+    zoomGood.click();
+    check("https zoom url opens", zoomLi.src === "https://example.com/hat.png" && zoomLb.style.display === "flex");
+    zoomLb.style.display = "none";
+    zoomLi.src = "";
+    zoomBad.remove();
+    zoomGood.remove();
+    var mfHold = document.createElement("div");
+    mfHold.innerHTML = '<textarea id="mfPrivate"></textarea><textarea id="mfToSpouse"></textarea><span id="mfDareBox"></span>';
+    document.body.appendChild(mfHold);
+    __mf = { id: "mf-selftest" };
+    document.getElementById("mfPrivate").value = "private reflection SECRET";
+    document.getElementById("mfToSpouse").value = "note for spouse";
+    mfSaveDraft(3);
+    var mfStored = "";
+    for (var mfWait = 0; mfWait < 40 && (!mfStored || mfStored.indexOf("SECRET") !== -1); mfWait++) {
+      await new Promise(function (r) { setTimeout(r, 25); });
+      mfStored = localStorage.getItem(mfDraftKey(3)) || "";
+    }
+    check("marriage draft is not stored in clear text", !!mfStored && mfStored.indexOf("SECRET") === -1 && mfStored.indexOf("private reflection") === -1);
+    document.getElementById("mfPrivate").value = "";
+    document.getElementById("mfToSpouse").value = "";
+    var mfBack = await mfLoadDraft(3);
+    check("encrypted marriage draft restores", mfBack.priv === "private reflection SECRET" && mfBack.note === "note for spouse");
+    localStorage.setItem(mfDraftKey(4), JSON.stringify({ priv: "old private", note: "old note", dare: true }));
+    var mfLegacy = await mfLoadDraft(4);
+    var mfLegacyStored = localStorage.getItem(mfDraftKey(4)) || "";
+    check("legacy marriage draft still restores", mfLegacy.priv === "old private" && mfLegacy.dare === true && mfLegacyStored.indexOf("old private") === -1);
+    mfClearDraft(3);
+    mfClearDraft(4);
+    __mf = null;
+    mfHold.remove();
     var pass = logs.filter(function (l) { return l.indexOf("PASS") === 0; }).length;
     var fail = logs.length - pass;
     var pre = document.createElement("pre");
