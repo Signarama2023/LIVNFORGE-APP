@@ -15,7 +15,7 @@
   try {
     if (!/^https?:$/.test(location.protocol)) return;          // served over http(s) only
     if (/[?&]v=/.test(location.search)) return;                // already a fresh, cache-busted load
-    if (location.hash || /checkout/.test(location.search)) return; // don't disrupt reset/checkout
+    if (location.hash || /checkout|lfselftest|lfpreview/.test(location.search)) return; // don't disrupt reset/checkout/local checks
     if (sessionStorage.getItem("lf_updchk")) return;           // once per launch
     sessionStorage.setItem("lf_updchk", "1");
     var here = location.origin + location.pathname;
@@ -239,6 +239,7 @@
   .hero .mountains { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; opacity: 0.5; pointer-events: none; }
   .hero-inner { position: relative; z-index: 1; }
   .logo { display: block; width: 100%; max-width: 320px; height: auto; margin: 0 auto 10px; mix-blend-mode: normal; }
+  #signInView .logo, body[data-build="women"] #signInView .logo { max-width: 112px; margin-bottom: 0; }
   @media (max-width: 480px) { .logo { max-width: 260px; } }
   .hero-title { display: none; }
   /* Slim the hero to a left-aligned bar (small logo + page name) on every tab —
@@ -304,33 +305,39 @@
   }
   .auth-forgot button:hover { color: var(--gold-light); }
   .signin-btn {
-    width: 100%; margin-top: 14px; padding: 15px; border: none; border-radius: 12px;
+    width: 100%; margin-top: 14px; padding: 15px; min-height: 48px; border: none; border-radius: 12px;
     background: var(--gold); color: var(--on-gold); font-size: 16px; font-weight: 700; cursor: pointer;
     transition: background 0.15s ease;
   }
   .signin-btn:hover { background: var(--gold-hover); }
-  .signin-note { color: var(--muted); font-size: 12px; margin-top: 16px; line-height: 1.5; }
+  .signin-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .signin-btn:disabled { opacity: 0.7; cursor: default; }
+  .signin-note { color: var(--muted); font-size: 14px; margin-top: 16px; line-height: 1.5; }
+  .auth-label { display: block; font-size: 14px; font-weight: 700; margin: 12px 0 6px; color: var(--text); }
+  .auth-back { display: inline-flex; align-items: center; min-height: 44px; margin-top: 8px; color: var(--gold-light); font-weight: 700; font-size: 14px; text-decoration: none; }
+  .auth-back:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+  .trial-inline { color: var(--muted); font-size: 14px; line-height: 1.45; margin: 10px 0 0; text-align: center; }
 
   /* ---------- LANDING ---------- */
   .landing-body { padding: 22px 24px 30px; }
   /* ===== Forge home (Today) ===== */
   .forge-greet { font-size:30px; font-weight:800; letter-spacing:-.4px; margin:6px 0 5px; line-height:1.08; }
-  .forge-date { font-size:13.5px; color:var(--muted); margin-bottom:24px; }
+  .forge-date { font-size:14px; color:var(--muted); margin-bottom:24px; }
   /* Today leads with the next rep, then the order. The verse sits under the work. */
   .day-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin:2px 0 16px; }
   .day-head-copy { min-width:0; flex:1; }
-  .day-kicker { font-size:10.5px; font-weight:800; letter-spacing:1.7px; text-transform:uppercase; color:var(--gold-light); margin-bottom:7px; }
+  .day-kicker { font-size:14px; font-weight:800; letter-spacing:1.1px; text-transform:uppercase; color:var(--gold-light); margin-bottom:7px; }
   .day-head .forge-greet { margin:0 0 4px; }
   .day-head .forge-date { margin:0 0 10px; }
   .forge-pulse { display:flex; flex-wrap:wrap; gap:6px 14px; }
   .forge-pulse span { display:flex; align-items:baseline; gap:5px; color:var(--muted); }
   .forge-pulse b { color:var(--text); font-size:16px; font-weight:800; letter-spacing:-.2px; }
-  .forge-pulse em { font-style:normal; font-size:10px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; }
+  .forge-pulse em { font-style:normal; font-size:14px; font-weight:800; letter-spacing:.2px; text-transform:uppercase; }
   .next-plate {
     background:linear-gradient(165deg, var(--gold-glow-24), var(--gold-glow-12) 55%, transparent);
     border:1px solid var(--gold); border-radius:10px; padding:14px 14px 12px; margin-bottom:18px;
   }
-  .next-kicker { font-size:10.5px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:var(--gold-light); margin-bottom:8px; }
+  .next-kicker { font-size:14px; font-weight:800; letter-spacing:1.1px; text-transform:uppercase; color:var(--gold-light); margin-bottom:8px; }
   .forge-go {
     width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
     background:var(--gold); color:var(--on-gold); border:none; border-radius:6px;
@@ -341,7 +348,7 @@
   .forge-go:hover { background:var(--gold-hover); }
   .next-plate .msub { margin-top:8px; font-size:13px; color:var(--muted); }
   #forgeStartBtn { display:none !important; }
-  .rail-label { font-size:11px; letter-spacing:1.8px; text-transform:uppercase; color:var(--muted); font-weight:800; margin:2px 2px 10px; }
+  .rail-label { font-size:14px; letter-spacing:1.1px; text-transform:uppercase; color:var(--muted); font-weight:800; margin:2px 2px 10px; }
   .forge-side {
     display:block; width:100%; margin:0 0 16px; background:none; border:none; color:var(--gold-light);
     font-family:inherit; font-size:13.5px; font-weight:700; text-align:left; cursor:pointer; padding:6px 2px;
@@ -350,7 +357,7 @@
   .verse-plate { margin-top:4px; }
   .forge-card { background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:18px; padding:19px 20px; margin-bottom:16px; }
   .forge-card.accent { border-left:3px solid var(--gold); }
-  .forge-clabel { font-size:11px; letter-spacing:1.7px; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+  .forge-clabel { font-size:14px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
   .forge-clabel svg { width:17px; height:17px; color:var(--muted); }
   .fv-text { font-size:16px; line-height:1.6; color:var(--text); }
   .fv-ref { font-size:13px; color:var(--gold-light); font-weight:700; margin-top:9px; }
@@ -368,7 +375,7 @@
   .mring .fg { fill:none; stroke:var(--gold); stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset .8s cubic-bezier(.3,1,.4,1); }
   .mring .ctr { position:absolute; text-align:center; }
   .mring .ctr .frac { font-size:19px; font-weight:800; line-height:1; }
-  .mring .ctr .pct { font-size:10px; color:var(--muted); margin-top:2px; }
+  .mring .ctr .pct { font-size:14px; color:var(--muted); margin-top:1px; }
   .forge-stats { display:flex; gap:12px; margin-bottom:16px; }
   .forge-stat { flex:1; background:var(--panel); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:18px 8px; text-align:center; }
   .forge-stat .num { font-size:23px; font-weight:800; color:var(--gold-light); line-height:1; }
@@ -414,15 +421,21 @@
   .fstep-open { flex:1; min-width:0; display:flex; align-items:center; gap:13px; background:none; border:none; padding:0; color:inherit; font-family:inherit; text-align:left; cursor:pointer; }
   .fstep .sico { width:34px; height:34px; flex:0 0 auto; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--field); color:var(--muted); }
   .fstep .sico svg { width:19px; height:19px; }
-  .fstep .snum { flex:0 0 auto; width:26px; font-variant-numeric:tabular-nums; font-weight:800; font-size:12px; letter-spacing:.4px; color:var(--muted); }
+  .fstep .snum { flex:0 0 auto; width:28px; font-variant-numeric:tabular-nums; font-weight:800; font-size:14px; letter-spacing:.2px; color:var(--muted); }
   .fstep .scopy { min-width:0; }
   .fstep .stitle { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:15px; font-weight:800; }
-  .fstep .ssub { display:block; font-size:12.5px; color:var(--muted); margin-top:2px; }
-  .snow { font-size:10px; letter-spacing:1.1px; text-transform:uppercase; font-weight:800; color:var(--on-gold); background:var(--gold); padding:2px 6px; border-radius:3px; line-height:1.4; }
-  /* Tap-to-complete check — mark a step done without writing anything. */
-  .fstep-check { flex:0 0 auto; width:30px; height:30px; border-radius:50%; border:2px solid var(--field-border); background:none; display:flex; align-items:center; justify-content:center; color:transparent; cursor:pointer; padding:0; transition:border-color .15s, background .15s; }
-  .fstep-check svg { width:17px; height:17px; }
+  .fstep .ssub { display:block; font-size:14px; color:var(--muted); margin-top:2px; line-height:1.35; }
+  .snow { font-size:14px; letter-spacing:.4px; text-transform:uppercase; font-weight:800; color:var(--on-gold); background:var(--gold); padding:2px 6px; border-radius:3px; line-height:1.3; }
+  /* Tap-to-complete check — 44px hit area. The circle is the control, not a decoration. */
+  .fstep-check { flex:0 0 auto; width:44px; height:44px; border-radius:50%; border:2px solid var(--field-border); background:none; display:flex; align-items:center; justify-content:center; color:transparent; cursor:pointer; padding:0; transition:border-color .15s, background .15s; }
+  .fstep-check svg { width:22px; height:22px; }
   .fstep-check:hover { border-color:var(--gold); }
+  .fstep-check:focus-visible { outline:2px solid var(--gold-light); outline-offset:3px; }
+  .fstep-check:active { transform:scale(.96); }
+  .checkin-undo { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:-2px 0 10px; padding:8px 12px; border-radius:8px; background:rgba(217,169,62,.12); border:1px solid var(--gold); font-size:14px; color:var(--text); }
+  .checkin-undo button { min-height:44px; min-width:44px; padding:0 14px; border-radius:8px; border:1px solid var(--field-border); background:var(--panel); color:var(--text); font-family:inherit; font-weight:800; font-size:14px; cursor:pointer; }
+  .checkin-undo button:focus-visible { outline:2px solid var(--gold-light); outline-offset:2px; }
+  .pts-note { margin:8px 0 0; font-size:14px; line-height:1.4; color:var(--muted); }
   .fstep.done { opacity:.72; }
   .fstep.done .snum { color:var(--gold); }
   .fstep.done .sico { background:var(--gold-glow-20); color:var(--gold-light); }
@@ -432,7 +445,7 @@
   .fstep.next .sico { background:var(--gold-glow-20); color:var(--gold-light); }
   .forge-complete { text-align:center; background:linear-gradient(135deg,rgba(217,169,62,.18),rgba(217,169,62,.05)); border:1px solid var(--gold); border-radius:16px; padding:18px; margin-bottom:14px; }
   .forge-complete .fc-t { font-size:18px; font-weight:800; color:var(--gold-light); }
-  .forge-complete .fc-s { font-size:13px; color:var(--muted); margin-top:4px; }
+  .forge-complete .fc-s { font-size:14px; color:var(--muted); margin-top:4px; }
   .forge-more { font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted); font-weight:700; margin:24px 2px 12px; }
   /* Focused daily mission: a centered, responsive dialog at every screen size. */
   body.mission-open { overflow:hidden; }
@@ -452,15 +465,15 @@
   .mission-mark { width:42px; height:42px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border-radius:13px; color:var(--gold-light); background:rgba(217,169,62,.13); border:1px solid rgba(217,169,62,.30); }
   .mission-mark svg { width:22px; height:22px; }
   .mission-copy { min-width:0; flex:1; }
-  .mission-kicker { color:var(--gold-light); font-size:10px; line-height:1.2; font-weight:800; letter-spacing:1.7px; text-transform:uppercase; margin-bottom:4px; }
+  .mission-kicker { color:var(--gold-light); font-size:14px; line-height:1.2; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
   .mission-title { font-size:22px; line-height:1.12; margin:0; font-weight:850; }
-  .mission-sub { color:var(--muted); font-size:13px; margin-top:5px; }
+  .mission-sub { color:var(--muted); font-size:14px; margin-top:5px; }
   .mission-close { width:38px; height:38px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid var(--field-border); background:rgba(255,255,255,.04); color:var(--text); cursor:pointer; }
   .mission-close svg { width:19px; height:19px; }
   .mission-progress { display:flex; align-items:center; gap:12px; padding:12px 14px; margin-bottom:16px; border-radius:14px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.06); }
   .mission-progress-track { height:7px; flex:1; overflow:hidden; border-radius:99px; background:rgba(255,255,255,.09); }
   .mission-progress-track span { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--gold),var(--gold-light)); transition:width .45s ease; }
-  .mission-progress-text { font-size:12px; color:var(--muted); white-space:nowrap; }
+  .mission-progress-text { font-size:14px; color:var(--muted); white-space:nowrap; }
   .mission-sheet .fjourney { display:block !important; }
   .mission-sheet .fstep { background:rgba(255,255,255,.035); margin-bottom:9px; }
   .mission-sheet #goalsTodayCard { margin:18px 0 0; background:rgba(255,255,255,.035); }
@@ -606,7 +619,8 @@
   @media (min-width: 820px) {
     .bottom-nav { left:50%; right:auto; width:760px; transform:translateX(-50%); border-left:1px solid var(--field-border); border-right:1px solid var(--field-border); }
   }
-  .bottom-nav button { position:relative; flex:1; min-height:48px; background:none; border:none; color:var(--muted); font-family:inherit; font-size:11px; letter-spacing:.2px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px 2px; cursor:pointer; transition:color .15s ease; }
+  .bottom-nav button { position:relative; flex:1; min-height:48px; background:none; border:none; color:var(--muted); font-family:inherit; font-size:14px; letter-spacing:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:4px 1px; cursor:pointer; transition:color .15s ease; }
+  .bottom-nav button:focus-visible { outline:2px solid var(--gold-light); outline-offset:-2px; }
   .bottom-nav .bn-ico { width:23px; height:23px; }
   .bottom-nav button.active { color:var(--gold-light); }
   .bn-badge { display:none; position:absolute; top:-1px; left:calc(50% + 7px); min-width:16px; height:16px; padding:0 4px; box-sizing:border-box; background:#d13239; color:#fff; font-size:10px; font-weight:800; line-height:16px; text-align:center; border-radius:9px; box-shadow:0 0 0 2px var(--panel); }
@@ -1138,7 +1152,7 @@
   .bs-btn { background: var(--gold); color: var(--on-gold); border: none; padding: 12px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; letter-spacing: 0.5px; }
   .bs-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .bs-btn:hover:not(:disabled) { background: var(--gold-light); }
-  .bs-status { font-size: 13px; color: var(--muted); min-height: 18px; }
+  .bs-status { font-size: 14px; color: var(--muted); min-height: 20px; line-height: 1.4; }
   /* Bible-in-a-year reading plan card */
   /* Devotional reading history */
   .bs-history { background: var(--field); border: 1px solid var(--field-border); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
@@ -1215,11 +1229,36 @@
   }
   .meta-row input:focus { outline: none; border-color: var(--gold); }
   .submit-btn {
-    width: 100%; margin-top: 10px; padding: 15px; border: none; border-radius: 6px;
+    width: 100%; margin-top: 10px; padding: 15px; min-height: 48px; border: none; border-radius: 6px;
     background: var(--gold); color: var(--on-gold); font-size: 16px; font-weight: 800; letter-spacing: .3px; cursor: pointer; transition: background 0.15s ease;
+    scroll-margin-bottom: 28px;
   }
   .submit-btn:hover { background: var(--gold-hover); }
-  .hint { text-align: center; color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .submit-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .submit-btn:disabled { opacity: 0.72; cursor: default; }
+  .save-status { min-height: 1.35em; margin-top: 10px; text-align: center; font-size: 14px; line-height: 1.45; color: var(--muted); }
+  .save-status.err { color: var(--danger-text); }
+  .save-status.ok { color: var(--gold-light); }
+  .draft-banner { margin: 0 0 14px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--gold); background: rgba(217,169,62,.1); font-size: 14px; line-height: 1.45; }
+  .draft-banner p { margin: 0 0 10px; }
+  .draft-banner .draft-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .draft-banner button { min-height: 44px; padding: 0 14px; border-radius: 8px; font-family: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .draft-banner .draft-resume { background: var(--gold); color: var(--on-gold); border: none; }
+  .draft-banner .draft-discard { background: transparent; color: var(--text); border: 1px solid var(--field-border); }
+  .draft-banner button:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+  .entries-banner { margin: 0 0 14px; padding: 12px 14px; border-radius: 10px; font-size: 14px; line-height: 1.45; border: 1px solid var(--field-border); background: var(--panel); }
+  .entries-banner.stale { border-color: var(--gold); }
+  .entries-banner.failed { border-color: var(--danger); color: var(--text); }
+  .entries-banner button { min-height: 44px; margin-top: 8px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--field-border); background: var(--field); color: var(--text); font-family: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .entries-banner button:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+  .name-prompt { margin: 0 0 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--field-border); background: var(--panel); }
+  .name-prompt label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .name-prompt input { width: 100%; box-sizing: border-box; background: var(--field); border: 1px solid var(--field-border); color: var(--text); border-radius: 9px; padding: 11px 13px; font-family: inherit; font-size: 16px; margin-bottom: 10px; }
+  .name-prompt .name-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .name-prompt button { min-height: 44px; padding: 0 14px; border-radius: 8px; font-family: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .name-prompt .name-save { background: var(--gold); color: var(--on-gold); border: none; }
+  .name-prompt .name-later { background: transparent; color: var(--text); border: 1px solid var(--field-border); }
+  .hint { text-align: center; color: var(--muted); font-size: 14px; margin-top: 14px; line-height: 1.45; }
 
   #historyView { display: none; }
   .history-empty { text-align: center; color: var(--muted); padding: 50px 20px; font-size: 15px; }
@@ -1231,7 +1270,9 @@
   .entry-badge { font-size: 12px; font-weight: 600; color: var(--on-gold); background: linear-gradient(135deg, var(--gold), var(--gold-light)); padding: 3px 10px; border-radius: 999px; flex-shrink: 0; }
   .entry-meta { flex: 1; min-width: 0; }
   .entry-title { font-size: 15px; color: var(--text); }
-  .entry-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .entry-sub { font-size: 14px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+  .entry-kind { background: transparent; color: var(--gold-light); border: 1px solid var(--gold); }
+  .entry-kind-written { color: var(--text); border-color: var(--field-border); }
   .entry-chevron { color: var(--muted); transition: transform 0.2s ease; flex-shrink: 0; }
   .entry-card.open .entry-chevron { transform: rotate(90deg); }
   .entry-body { display: none; padding: 4px 18px 18px; border-top: 1px solid var(--field-border); }
@@ -1241,9 +1282,10 @@
   .qa .a { font-size: 15px; color: var(--text); white-space: pre-wrap; word-wrap: break-word; }
   .entry-actions { display: flex; gap: 10px; margin-top: 18px; }
   .mini-btn {
-    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--field-border); background: transparent;
-    color: var(--text); font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.15s ease;
+    padding: 8px 14px; min-height: 44px; border-radius: 8px; border: 1px solid var(--field-border); background: transparent;
+    color: var(--text); font-size: 14px; font-family: inherit; cursor: pointer; transition: all 0.15s ease;
   }
+  .mini-btn:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
   .mini-btn:hover { border-color: var(--gold); }
   .mini-btn.danger { color: var(--danger-link); }
   .mini-btn.danger:hover { border-color: var(--danger-link); background: rgba(241,148,138,0.08); }
@@ -1251,10 +1293,16 @@
     position: fixed; z-index: 1200; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); left: 50%;
     width: max-content; max-width: calc(100vw - 32px); text-align: center; transform: translateX(-50%) translateY(20px);
     background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--on-gold); font-weight: 700;
-    padding: 13px 22px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); opacity: 0;
-    pointer-events: none; transition: all 0.3s ease;
+    padding: 10px 14px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); opacity: 0;
+    pointer-events: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; font-size: 14px;
   }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .toast button { min-height: 44px; min-width: 44px; padding: 0 12px; border: none; border-radius: 8px; background: var(--on-gold); color: var(--gold); font-family: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .toast button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .bs-prev-label { font-size: 14px; font-weight: 800; color: var(--danger-text); margin-bottom: 8px; }
+  .bs-translation-note { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .forge-go:focus-visible, .gp-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .gp-btn, .bs-btn, .pcc-btn, .invite-btn { min-height: 44px; }
 
   /* ---------- GROUP LEADERBOARD ---------- */
   .group-panel { background: var(--panel); border: 1px solid var(--field-border); border-radius: 14px; padding: 18px; margin-bottom: 26px; }
@@ -1415,7 +1463,7 @@
     .card { border-radius: 0; box-shadow: none; max-width: 100%; }
     .hero { padding: max(80px, calc(38px + env(safe-area-inset-top, 0px))) 18px 30px; }
     #signInView .hero { padding: max(28px, calc(18px + env(safe-area-inset-top, 0px))) 18px 18px; }
-    #signInView .logo, body[data-build="women"] #signInView .logo { max-width: 150px; margin-bottom: 0; }
+    #signInView .logo, body[data-build="women"] #signInView .logo { max-width: 112px; margin-bottom: 0; }
     .brand-title .rise { font-size: 40px; }
     .brand-title .kings { font-size: 46px; }
     .brand-sub { letter-spacing: 3px; font-size: 14px; margin-bottom: 18px; }
@@ -1716,7 +1764,9 @@
       var skip =
         (location.hash && /recovery/i.test(location.hash)) ||
         /checkout/i.test(location.search) ||
-        (sessionStorage.getItem("lf_introshown") && !/[?&]v=/.test(location.search));
+        (sessionStorage.getItem("lf_introshown") && !/[?&]v=/.test(location.search)) ||
+        /[?&]lfpreview=/.test(location.search) ||
+        /[?&]lfselftest=1/.test(location.search);
       if (skip) { el.remove(); return; }
       sessionStorage.setItem("lf_introshown", "1");
       // Boot normally reveals the app. If auth hangs, don't trap the splash.
@@ -1749,23 +1799,25 @@
       <div class="signin-body">
         <h2 id="authTitle">Create your account</h2>
         <p id="authSubtitle">Email and a password. Your entries, points, and streak stay on this account.</p>
-        <label class="sr-only" for="emailInput">Email address</label>
+        <label class="auth-label" for="emailInput">Email</label>
         <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
         <div class="pw-wrap" id="pwWrap">
-          <label class="sr-only" for="passwordInput">Password</label>
+          <label class="auth-label" for="passwordInput">Password</label>
           <input type="password" id="passwordInput" placeholder="Password (min 6 characters)" autocomplete="current-password">
           <button type="button" class="pw-eye" data-pwtoggle="passwordInput" aria-label="Show password"></button>
         </div>
         <div class="pw-wrap" id="pwConfirmWrap">
-          <label class="sr-only" for="passwordConfirm">Confirm password</label>
+          <label class="auth-label" for="passwordConfirm">Confirm password</label>
           <input type="password" id="passwordConfirm" placeholder="Confirm password" autocomplete="new-password">
           <button type="button" class="pw-eye" data-pwtoggle="passwordConfirm" aria-label="Show password"></button>
         </div>
         <div class="auth-error" id="authError" role="alert" aria-live="polite"></div>
         <button class="signin-btn" id="signInBtn">Create account</button>
+        <p class="trial-inline" id="authTrialNote">7 days free. No card required to begin.</p>
         <div class="auth-switch"><span id="authSwitchLabel">Already have an account?</span> <button type="button" id="authToggle">Log in</button></div>
         <div class="auth-forgot" id="authForgot" style="display: none;"><button type="button" id="authForgotBtn">Forgot password?</button></div>
         <div class="signin-note">Your password is securely handled by our authentication provider. LIVN FORGE never stores it as plain text.</div>
+        <a class="auth-back" href="welcome.html">Back to the LIVN FORGE site</a>
       </div>
     </div>
 
@@ -1792,8 +1844,9 @@
               <div class="forge-pulse" aria-label="Your standing">
                 <span><b id="forgeStreak">0</b><em>day streak</em></span>
                 <span><b id="forgePoints">0</b><em>pts</em></span>
-                <span><b id="forgeEntries">0</b><em>entries</em></span>
+                <span><b id="forgeEntries">0</b><em id="forgeEntriesLabel">written</em></span>
               </div>
+              <p class="pts-note" id="ptsNote">Points mark that you showed up. They are not a measure of your faith.</p>
             </div>
             <div class="mring" aria-hidden="true">
               <svg viewBox="0 0 82 82"><circle class="bg" cx="41" cy="41" r="34"></circle><circle class="fg" id="forgeMRing" cx="41" cy="41" r="34" stroke-dasharray="214" stroke-dashoffset="214"></circle></svg>
@@ -1801,6 +1854,17 @@
             </div>
           </div>
 
+          <div id="entriesStatusToday" class="entries-status" role="status"></div>
+          <div class="name-prompt" id="namePrompt" hidden>
+            <div class="sc-title">What should we call you?</div>
+            <p class="pts-note">This name is used in your greeting. It is saved on this device, and on your account when we can reach it.</p>
+            <label for="namePromptInput">Preferred name</label>
+            <input id="namePromptInput" type="text" autocomplete="given-name" maxlength="40">
+            <div class="name-actions">
+              <button type="button" class="name-save" id="namePromptSave">Save name</button>
+              <button type="button" class="name-later" id="namePromptLater">Not now</button>
+            </div>
+          </div>
           <div class="next-plate" id="missionCard">
             <div class="next-kicker" id="forgeNextKicker">Do this next</div>
             <button class="forge-go" id="forgeNextBtn" type="button">Read today’s Scripture</button>
@@ -1844,7 +1908,7 @@
         <div class="profile-bar" data-tab="settings">
           <span>Signed in as <b id="profileEmail"></b></span>
           <span style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button id="showTutorial" title="Replay the welcome walkthrough">How to use</button>
+            <button id="showTutorial" title="Replay the welcome walkthrough">Replay welcome</button>
             <button id="buildToggle" title="Switch between the men's and women's build">Men's build</button>
             <button id="manageBilling" title="Manage your subscription" style="display:none;">Manage billing</button>
             <button id="recoverBtn" title="Look in this device's local storage for entries that didn't reach the cloud">Recover entries</button>
@@ -2333,6 +2397,7 @@
           </div>
           <div class="write-kicker" id="writeKicker"></div>
           <div class="write-title" id="writeTitle"></div>
+          <div id="draftBanner" class="draft-banner" hidden></div>
 
           <div class="meta-row">
             <div class="field-group">
@@ -2348,12 +2413,14 @@
           <form id="journalForm">
             <div id="questions"></div>
             <button type="submit" class="submit-btn">Save entry</button>
-            <div class="hint">Your entries sync securely to your account and stay private unless you choose to share them.</div>
+            <div id="saveStatus" class="save-status" role="status"></div>
+            <div class="hint">Your entries sync securely to your account and stay private unless you choose to share them. An unfinished draft stays on this device only until you save.</div>
           </form>
         </div>
 
         <!-- HISTORY VIEW -->
         <div id="historyView">
+          <div id="entriesStatusHistory" class="entries-status" role="status"></div>
           <div class="history-controls">
             <span class="count-label" id="historyCountLabel">No entries yet</span>
           </div>
@@ -2419,7 +2486,7 @@
       </div>
     </div>
   </div>
-  <div class="toast" id="toast" role="status" aria-live="polite">Saved to your history</div>
+  <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg">Saved to your history</span><button type="button" id="toastAction" hidden>Undo</button></div>
 
   <div id="tutorialOverlay" class="tut-overlay">
     <div class="tut-card">
@@ -3379,6 +3446,57 @@
     return { id: bookId + "." + chapter + "." + vStart, label: ref };
   }
   let __devo = { passage: "", reference: "", translation: "", keyVerse: "", keyVerseRef: "", author: "", context: "", meaning: "", teacherInsights: [], reflection: [], shownPastor: null };
+  var BIBLE_TIMEOUT_MS = 15000;
+  function classifyBibleFailure(err) {
+    var msg = String((err && (err.detail || err.message)) || err || "");
+    var status = err && typeof err.status === "number" ? err.status : 0;
+    var offline = (typeof navigator !== "undefined" && navigator.onLine === false) ||
+      (err && (err.code === "OFFLINE" || err.name === "TypeError" || /Failed to fetch|NetworkError|Load failed|network/i.test(msg)));
+    if (err && (err.code === "TIMEOUT" || err.name === "AbortError" || /timeout/i.test(msg))) {
+      return { code: "timeout", message: "The request timed out. Your reference and translation are still selected — try again." };
+    }
+    if (offline && status < 400) {
+      return { code: "offline", message: "You appear to be offline. Reconnect, then retry. Your reference was not the problem." };
+    }
+    if ((err && err.code === "AUTH") || status === 401 || status === 403 || /sign in again|jwt|unauthorized|invalid token|Missing BIBLE_API_KEY|api key/i.test(msg)) {
+      return { code: "auth", message: "The Bible service rejected the session or key. Sign in again and retry. This is not a bad reference." };
+    }
+    if (status === 429 || /rate limit|too many requests/i.test(msg)) {
+      return { code: "rate", message: "The Bible service is limiting requests right now. Wait a moment and retry. Your reference is fine." };
+    }
+    if ((err && err.code === "TRANSLATION") || /invalid bible|unavailable translation|bible_id/i.test(msg) || (status === 400 && /bible/i.test(msg))) {
+      return { code: "translation", message: "That translation isn’t available. Choose another one and retry. Your reference is still here." };
+    }
+    if ((err && err.code === "REFERENCE") || status === 404 || /couldn't read that reference|no content returned|not found|passage identifier/i.test(msg)) {
+      return { code: "reference", message: "That reference couldn’t be found. Check the book, chapter, and verses — for example John 3:16 or Psalm 23." };
+    }
+    if (status >= 500 || /provider|could not complete|passage service/i.test(msg)) {
+      return { code: "provider", message: "The Bible provider didn’t complete the request. It’s not your reference. Try again in a moment." };
+    }
+    return { code: "provider", message: "The passage couldn’t be loaded. If the reference looks right, the service may be down — try again." };
+  }
+  function bibleSelectedLabel() {
+    var sel = document.getElementById("bsTranslation");
+    if (sel && sel.selectedOptions && sel.selectedOptions[0]) return sel.selectedOptions[0].textContent || "";
+    return "";
+  }
+  function markPreviousPassage(failed) {
+    var label = document.getElementById("bsPrevLabel");
+    var wrap = document.getElementById("bsPassageWrap");
+    var showing = wrap && wrap.style.display !== "none" && ((document.getElementById("bsPassageText") || {}).textContent || "").trim();
+    if (!label) return;
+    if (!showing) { label.hidden = true; label.textContent = ""; return; }
+    label.hidden = false;
+    label.textContent = failed
+      ? "Previous passage — the new request didn’t load. This is not the passage you just asked for."
+      : "Previous passage — still showing until the new one loads.";
+  }
+  function setBibleStatus(message, isError) {
+    var status = document.getElementById("bsStatus");
+    var retry = document.getElementById("bsRetryBtn");
+    if (status) status.textContent = message || "";
+    if (retry) retry.hidden = !isError;
+  }
   async function loadBiblePassage() {
     const refEl = document.getElementById("bsReference");
     // The picker is the source of truth whenever a book + chapter are selected and the
@@ -3397,40 +3515,64 @@
     }
     const translation = (document.getElementById("bsTranslation") || {}).value || "78a9f6124f344018-01";
     const status = document.getElementById("bsStatus");
-    if (!refRaw.trim()) { status.textContent = "Type a passage like John 3:16, Romans 8:28-39, or Psalm 23."; return; }
+    if (!refRaw.trim()) { setBibleStatus("Type a passage like John 3:16, Romans 8:28-39, or Psalm 23.", true); return; }
     const parsed = parseReference(refRaw);
-    if (!parsed) { status.textContent = "Couldn't read that reference. Try: John 3:16 · Romans 8:28-39 · Psalm 23"; return; }
-    status.textContent = "Loading passage…";
-    const btn = document.getElementById("bsLoadBtn"); btn.disabled = true;
+    if (!parsed) {
+      var badRef = new Error("Couldn't read that reference");
+      badRef.code = "REFERENCE";
+      setBibleStatus(classifyBibleFailure(badRef).message, true);
+      return;
+    }
+    setBibleStatus("Loading passage…", false);
+    markPreviousPassage(false);
+    const btn = document.getElementById("bsLoadBtn");
+    if (btn) btn.disabled = true;
+    const ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(function () { ctrl.abort(); }, BIBLE_TIMEOUT_MS) : null;
     try {
-      const session = (await sb.auth.getSession()).data.session;
-      if (!session) throw new Error("Please sign in again.");
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        var off = new Error("offline"); off.code = "OFFLINE"; throw off;
+      }
+      const session = sb ? (await sb.auth.getSession()).data.session : null;
+      if (!session) { var authErr = new Error("Please sign in again."); authErr.code = "AUTH"; throw authErr; }
       const resp = await fetch(EDGE_FN_URL, {
         method: "POST",
+        signal: ctrl ? ctrl.signal : undefined,
         headers: { "Authorization": "Bearer " + session.access_token, "apikey": EDGE_FN_APIKEY, "Content-Type": "application/json" },
         body: JSON.stringify({ action: "passage", bible_id: translation, passage_id: parsed.id })
       });
       if (!resp.ok) {
         const failure = await resp.json().catch(function () { return {}; });
-        throw new Error(failure.error || ("Passage service returned " + resp.status));
+        var httpErr = new Error(failure.error || ("Passage service returned " + resp.status));
+        httpErr.status = resp.status;
+        httpErr.detail = failure.error || "";
+        throw httpErr;
       }
       const json = await resp.json();
       const text = (json.data && json.data.content || "").trim();
       const reference = (json.data && json.data.reference) || parsed.label;
       const copyright = (json.data && json.data.copyright) || "";
-      if (!text) throw new Error("No content returned");
+      if (!text) { var emptyErr = new Error("No content returned"); emptyErr.code = "REFERENCE"; emptyErr.status = 404; throw emptyErr; }
       document.getElementById("bsPassageRef").textContent = reference;
       document.getElementById("bsPassageText").textContent = text;
       document.getElementById("bsCopyright").textContent = copyright;
+      var tNote = document.getElementById("bsTranslationNote");
+      if (tNote) tNote.textContent = bibleSelectedLabel() ? ("Translation: " + bibleSelectedLabel()) : "";
       document.getElementById("bsPassageWrap").style.display = "block";
       document.getElementById("bsQuestionsWrap").style.display = "none";
-      status.textContent = "";
-      __devo = { passage: text, reference: reference, translation: translation, keyVerse: "", keyVerseRef: "", author: "", context: "", meaning: "", teacherInsights: [], reflection: [], shownPastor: null };
+      var prev = document.getElementById("bsPrevLabel"); if (prev) { prev.hidden = true; prev.textContent = ""; }
+      setBibleStatus("", false);
+      __devo = { passage: text, reference: reference, translation: translation, translationLabel: bibleSelectedLabel(), keyVerse: "", keyVerseRef: "", author: "", context: "", meaning: "", teacherInsights: [], reflection: [], shownPastor: null };
       logDevoRead(reference, translation); // remember what was read, for the history
     } catch (err) {
-      status.textContent = "Couldn't load that passage. Check the reference and try again.";
+      if (err && err.name === "AbortError") { err.code = "TIMEOUT"; }
+      markPreviousPassage(true);
+      setBibleStatus(classifyBibleFailure(err).message, true);
       console.error(err);
-    } finally { btn.disabled = false; }
+    } finally {
+      if (timer) clearTimeout(timer);
+      if (btn) btn.disabled = false;
+    }
   }
   // Rotate which pastor's take is shown — advances one step per study generated.
   function devoPastorKey() { return APP + ":devopastor:" + (currentEmail() || "").toLowerCase(); }
@@ -3454,7 +3596,7 @@
       const resp = await fetch(EDGE_FN_URL, {
         method: "POST",
         headers: { "Authorization": "Bearer " + session.access_token, "apikey": EDGE_FN_APIKEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ passage: __devo.passage, reference: __devo.reference, teachers: (typeof WHITELABEL !== "undefined" && WHITELABEL && WHITELABEL.teachers) ? WHITELABEL.teachers : undefined })
+        body: JSON.stringify({ passage: __devo.passage, reference: __devo.reference, bible_id: __devo.translation || "", translation: __devo.translationLabel || bibleSelectedLabel(), teachers: (typeof WHITELABEL !== "undefined" && WHITELABEL && WHITELABEL.teachers) ? WHITELABEL.teachers : undefined })
       });
       if (!resp.ok) { const t = await resp.text(); throw new Error(t || "Edge function returned " + resp.status); }
       const data = await resp.json();
@@ -3483,8 +3625,8 @@
         var pIdx = nextDevoPastorIdx(__devo.teacherInsights.length);
         var t = __devo.teacherInsights[pIdx] || __devo.teacherInsights[0];
         __devo.shownPastor = t;
-        qHtml += '<div class="bs-section-label">A pastor’s take · ' + escapeHtml(t.teacher || "") + '</div>';
-        qHtml += '<div class="bs-teacher"><div class="bs-teacher-insight">' + escapeHtml(t.insight || "") + '</div></div>';
+        qHtml += '<div class="bs-section-label">AI-generated reflection</div>';
+        qHtml += '<div class="bs-teacher"><div class="bs-teacher-name">Written by AI in the style of ' + escapeHtml(t.teacher || "a teacher") + '. Not a quotation and not their actual teaching.</div><div class="bs-teacher-insight">' + escapeHtml(t.insight || "") + '</div></div>';
       }
       if (__devo.reflection.length) {
         qHtml += '<div class="bs-section-label">Reflect &amp; apply</div>';
@@ -3504,17 +3646,74 @@
 
   // ----- Cloud auth (Supabase) + entries cache -----
   let __currentUser = null; // { id, email }
-  let __entries = [];       // in-memory cache, refreshed from cloud on sign-in & after writes
+  let __entries = [];       // last-known cache for __entriesOwner only
+  let __entriesOwner = null;
+  let __entriesStatus = "loading"; // loading | loaded | loaded-empty | stale | failed
+  let __entriesPartial = false;
+  let __entriesConfirmed = false;
+  let __inflightOps = {};
+  var SAVE_TIMEOUT_MS = 20000;
+  var CHECKIN_NOTE = "Completed today — no notes added.";
   function currentEmail() { return __currentUser ? __currentUser.email : null; }
   function loadEntries() { return __entries; } // sync read of cache (used by renderScore/streak/history)
+  function entriesWritable() {
+    return !__entriesPartial && (__entriesStatus === "loaded" || __entriesStatus === "loaded-empty");
+  }
+  function entryCacheKey(userId) { return APP + ":entrycache:" + userId; }
+  function newOpId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "op-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  }
+  function isHiddenAnswer(a) { return !!(a && typeof a.q === "string" && a.q.charAt(0) === "_"); }
+  function visibleAnswers(answers) { return (answers || []).filter(function (a) { return a && !isHiddenAnswer(a); }); }
+  function entryOpId(e) {
+    if (!e) return "";
+    if (e.clientOpId) return e.clientOpId;
+    var hit = (e.answers || []).find(function (a) { return a && a.q === "_clientOp"; });
+    return hit ? String(hit.a || "") : "";
+  }
+  function isCheckinEntry(e) {
+    if (!e) return false;
+    if (e.kind === "checkin") return true;
+    var answers = e.answers || [];
+    for (var i = 0; i < answers.length; i++) {
+      var a = answers[i];
+      if (!a) continue;
+      if (a.q === "_kind" && a.a === "checkin") return true;
+      if (a.q === "Marked complete") return true;
+      if (a.q === "Check-in") return true;
+    }
+    return false;
+  }
+  function hasMeaningfulWriting(e) {
+    if (!e || isCheckinEntry(e)) return false;
+    return visibleAnswers(e.answers).some(function (a) {
+      var t = String(a.a || "").trim();
+      return t.length >= 2 && t !== CHECKIN_NOTE;
+    });
+  }
+  function isWrittenEntry(e) { return hasMeaningfulWriting(e); }
+  function answerSig(answers) {
+    return visibleAnswers(answers).map(function (a) { return (a.q || "") + "\u0001" + (a.a || ""); }).join("\u0002");
+  }
+  function withOpAnswer(answers, opId, kind) {
+    var out = (answers || []).filter(function (a) { return a && a.q !== "_clientOp" && a.q !== "_kind"; });
+    if (kind) out.push({ q: "_kind", a: kind });
+    if (opId) out.push({ q: "_clientOp", a: opId });
+    return out;
+  }
   function entryFromRow(r) {
+    var answers = r.answers || [];
+    var kindHit = answers.find(function (a) { return a && a.q === "_kind"; });
     return {
       id: r.id, type: r.type, typeTitle: r.type_title,
       name: r.name || "", date: r.date || "",
       points: r.points || 0, savedAt: r.saved_at,
       preset: r.preset || undefined, presetName: r.preset_name || undefined,
       durationMs: r.duration_ms || undefined, durationText: r.duration_text || undefined,
-      answers: r.answers || []
+      answers: answers,
+      kind: (kindHit && kindHit.a) || (isCheckinEntry({ answers: answers }) ? "checkin" : undefined),
+      clientOpId: entryOpId({ answers: answers, clientOpId: r.client_op_id })
     };
   }
   function rowFromEntry(e) {
@@ -3525,29 +3724,220 @@
       points: e.points || 0, saved_at: e.savedAt,
       preset: e.preset || null, preset_name: e.presetName || null,
       duration_ms: e.durationMs || null, duration_text: e.durationText || null,
-      answers: e.answers || []
+      answers: withOpAnswer(e.answers, e.clientOpId, e.kind === "checkin" ? "checkin" : null)
     };
   }
-  async function fetchEntriesFromCloud() {
-    if (!__currentUser || !sb) { __entries = []; return; }
+  function readEntryCache(userId) {
     try {
-      const { data, error } = await sb.from("entries").select("*").eq("user_id", __currentUser.id).order("saved_at", { ascending: false });
+      var raw = JSON.parse(localStorage.getItem(entryCacheKey(userId)) || "null");
+      if (!raw || raw.userId !== userId || !Array.isArray(raw.entries) || !raw.confirmed) return null;
+      return raw;
+    } catch (e) { return null; }
+  }
+  function persistEntryCache() {
+    if (!__entriesOwner) return;
+    try {
+      if (__entriesStatus === "failed" || __entriesStatus === "loading") return;
+      localStorage.setItem(entryCacheKey(__entriesOwner), JSON.stringify({
+        userId: __entriesOwner, entries: __entries, confirmed: __entriesStatus === "loaded" || __entriesStatus === "loaded-empty" || __entriesConfirmed, savedAt: Date.now()
+      }));
+    } catch (e) {}
+  }
+  function clearEntryMemory() {
+    __entries = [];
+    __entriesOwner = null;
+    __entriesStatus = "loading";
+    __entriesPartial = false;
+    __entriesConfirmed = false;
+  }
+  function forgetSignedInUser() {
+    var uid = __currentUser && __currentUser.id;
+    if (uid) {
+      try { localStorage.removeItem(entryCacheKey(uid)); } catch (e) {}
+      clearJournalDraftsFor(uid);
+    }
+    __journalSubmission = null;
+    __undoCheckin = null;
+    clearEntryMemory();
+  }
+  function renderEntriesStatus() {
+    var html = "";
+    if (__entriesStatus === "stale") {
+      html = '<div class="entries-banner stale">' +
+        (__entriesPartial
+          ? "Some of your history couldn’t be refreshed, so what’s shown may be incomplete."
+          : (__entries.length
+            ? "Couldn’t refresh your history. Showing the last copy loaded for this account."
+            : "Couldn’t refresh. The last confirmed load for this account had no saved entries.")) +
+        ' <button type="button" data-entries-retry>Retry</button></div>';
+    } else if (__entriesStatus === "failed") {
+      html = '<div class="entries-banner failed">Your history is unavailable right now. This does not mean the account is empty. <button type="button" data-entries-retry>Retry</button></div>';
+    } else if (__entriesStatus === "loading") {
+      html = '<div class="entries-banner">Loading your history…</div>';
+    }
+    ["entriesStatusToday", "entriesStatusHistory"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    });
+  }
+  function statsUnavailable() {
+    return __entriesStatus === "failed" || (__entriesStatus === "loading" && __entries.length === 0);
+  }
+  async function queryEntries(userId) {
+    if (window.__lfEntriesQuery) return window.__lfEntriesQuery(userId);
+    return sb.from("entries").select("*").eq("user_id", userId).order("saved_at", { ascending: false });
+  }
+  async function fetchEntriesFromCloud() {
+    if (!__currentUser || !sb) { clearEntryMemory(); renderEntriesStatus(); return; }
+    var uid = __currentUser.id;
+    if (__entriesOwner && __entriesOwner !== uid) {
+      __entries = [];
+      __entriesPartial = false;
+      __entriesConfirmed = false;
+      __entriesStatus = "loading";
+    }
+    __entriesOwner = uid;
+    if (!__entriesConfirmed && __entries.length === 0) {
+      var cached = readEntryCache(uid);
+      if (cached) {
+        __entries = cached.entries;
+        __entriesConfirmed = true;
+        __entriesStatus = "stale";
+        __entriesPartial = false;
+      } else {
+        __entriesStatus = "loading";
+      }
+    }
+    renderEntriesStatus();
+    try {
+      const { data, error } = await queryEntries(uid);
+      if (!__currentUser || __currentUser.id !== uid) return;
       if (error) throw error;
       __entries = (data || []).map(entryFromRow);
-    } catch (err) { console.error("loadEntries failed:", err); __entries = []; }
+      __entriesOwner = uid;
+      __entriesPartial = false;
+      __entriesConfirmed = true;
+      __entriesStatus = __entries.length ? "loaded" : "loaded-empty";
+      persistEntryCache();
+    } catch (err) {
+      console.error("loadEntries failed:", err);
+      if (!__currentUser || __currentUser.id !== uid) return;
+      if (__entriesOwner === uid && (__entries.length || __entriesConfirmed)) __entriesStatus = "stale";
+      else { __entries = []; __entriesOwner = uid; __entriesStatus = "failed"; __entriesPartial = false; __entriesConfirmed = false; }
+    }
+    renderEntriesStatus();
+    try { updateCount(); } catch (e) {}
+    try { renderScore(); } catch (e) {}
+    try { if (typeof renderForge === "function") renderForge(); } catch (e) {}
+    try { if (showingHistory && typeof renderHistory === "function") renderHistory(); } catch (e) {}
+  }
+  function rememberEntry(row) {
+    var entry = row && row.user_id ? entryFromRow(row) : row;
+    if (entry && entry.answers && !entry.user_id && row && row.id && row.type_title && !row.typeTitle) entry = entryFromRow(row);
+    var op = entryOpId(entry);
+    var idx = __entries.findIndex(function (e) { return (entry.id && e.id === entry.id) || (op && entryOpId(e) === op); });
+    if (idx >= 0) __entries[idx] = entry;
+    else __entries.unshift(entry);
+    if (__entriesStatus === "loaded" || __entriesStatus === "loaded-empty") {
+      __entriesStatus = "loaded";
+      __entriesPartial = false;
+    } else {
+      __entriesStatus = "stale";
+      __entriesPartial = true;
+    }
+    if (__entriesOwner) persistEntryCache();
+    return entry;
+  }
+  function isNetworkError(err) {
+    var msg = String((err && err.message) || err || "");
+    return !!(err && (err.code === "NETWORK" || err.name === "TypeError" || /Failed to fetch|NetworkError|Load failed|network/i.test(msg)));
+  }
+  function withTimeout(promise, ms) {
+    return new Promise(function (resolve, reject) {
+      var done = false;
+      var t = setTimeout(function () {
+        if (done) return;
+        done = true;
+        var e = new Error("timeout");
+        e.code = "TIMEOUT";
+        reject(e);
+      }, ms);
+      Promise.resolve(promise).then(function (v) {
+        if (done) return;
+        done = true; clearTimeout(t); resolve(v);
+      }, function (e) {
+        if (done) return;
+        done = true; clearTimeout(t); reject(e);
+      });
+    });
+  }
+  async function findEntryByOp(opId) {
+    if (!opId || !__currentUser) return null;
+    if (window.__lfFindOp) return window.__lfFindOp(opId);
+    const { data, error } = await sb.from("entries").select("*").eq("user_id", __currentUser.id).contains("answers", [{ q: "_clientOp", a: opId }]).limit(1);
+    if (error) throw error;
+    return (data && data[0]) ? entryFromRow(data[0]) : null;
   }
   async function insertEntryToCloud(entry) {
     if (!__currentUser || !sb) throw new Error("Not signed in");
-    const { data, error } = await sb.from("entries").insert(rowFromEntry(entry)).select().single();
-    if (error) throw error;
-    __entries.unshift(entryFromRow(data));
-    return data;
+    if (!entry.clientOpId) entry.clientOpId = newOpId();
+    if (!entry.savedAt) entry.savedAt = new Date().toISOString();
+    var opId = entry.clientOpId;
+    if (__inflightOps[opId]) return __inflightOps[opId];
+    var run = (async function () {
+      var existing = null;
+      try { existing = await findEntryByOp(opId); } catch (lookupErr) { existing = null; }
+      if (existing) return rememberEntry(existing);
+      var row = rowFromEntry(entry);
+      var insertPromise = window.__lfInsertQuery ? window.__lfInsertQuery(row) : sb.from("entries").insert(row).select().single();
+      var timeoutMs = window.__lfSaveTimeoutMs || SAVE_TIMEOUT_MS;
+      var result;
+      try {
+        result = await withTimeout(insertPromise, timeoutMs);
+      } catch (err) {
+        var found = null;
+        try { found = await findEntryByOp(opId); } catch (e2) { found = null; }
+        if (found) return rememberEntry(found);
+        if (err && err.code === "TIMEOUT") {
+          var amb = new Error("Could not confirm the save.");
+          amb.code = "AMBIGUOUS";
+          amb.opId = opId;
+          throw amb;
+        }
+        if (isNetworkError(err)) {
+          var net = new Error("Couldn’t reach the server.");
+          net.code = "NETWORK";
+          net.opId = opId;
+          throw net;
+        }
+        throw err;
+      }
+      if (result && result.error) {
+        var foundErr = null;
+        try { foundErr = await findEntryByOp(opId); } catch (e3) { foundErr = null; }
+        if (foundErr) return rememberEntry(foundErr);
+        throw result.error;
+      }
+      return rememberEntry(result && result.data ? result.data : result);
+    })();
+    __inflightOps[opId] = run;
+    try { return await run; }
+    finally { delete __inflightOps[opId]; }
   }
   async function deleteEntryFromCloud(id) {
     if (!__currentUser || !sb) throw new Error("Not signed in");
-    const { error } = await sb.from("entries").delete().eq("id", id).eq("user_id", __currentUser.id);
-    if (error) throw error;
+    if (window.__lfDeleteQuery) {
+      var del = await window.__lfDeleteQuery(id);
+      if (del && del.error) throw del.error;
+    } else {
+      const { error } = await sb.from("entries").delete().eq("id", id).eq("user_id", __currentUser.id);
+      if (error) throw error;
+    }
     __entries = __entries.filter(e => e.id !== id);
+    if (__entriesStatus === "loaded" || __entriesStatus === "loaded-empty") {
+      __entriesStatus = __entries.length ? "loaded" : "loaded-empty";
+      persistEntryCache();
+    } else if (__entriesOwner) persistEntryCache();
   }
   // One-time migration: read local entries+local-auth-record for this email and push to cloud
   async function migrateLocalEntriesIfNeeded() {
@@ -4035,6 +4425,15 @@
   function backStep() {
     if (currentStep > 0) { currentStep--; showStep(currentStep); window.scrollTo(0, 0); } // answers are retained
   }
+  questionsEl.addEventListener("input", function (e) {
+    if (e.target && e.target.tagName === "TEXTAREA") scheduleJournalDraft();
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") writeJournalDraftFromForm();
+  });
+  window.addEventListener("pagehide", function () { writeJournalDraftFromForm(); });
+  var entryDateEl = document.getElementById("entryDate");
+  if (entryDateEl) entryDateEl.addEventListener("change", function () { scheduleJournalDraft(); });
   questionsEl.addEventListener("click", function (e) {
     if (!e.target.closest) return;
     const dp = e.target.closest("[data-daypart]");
@@ -4061,16 +4460,33 @@
     return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
   function updateCount() {
-    const n = loadEntries().length;
-    document.getElementById("historyCount").textContent = n;
-    document.getElementById("historyCountLabel").textContent =
-      n === 0 ? "No entries yet" : (n === 1 ? "1 saved entry" : n + " saved entries");
+    const written = loadEntries().filter(isWrittenEntry).length;
+    const checks = loadEntries().filter(isCheckinEntry).length;
+    const hc = document.getElementById("historyCount");
+    const hl = document.getElementById("historyCountLabel");
+    if (__entriesStatus === "failed") {
+      if (hc) hc.textContent = "–";
+      if (hl) hl.textContent = "History unavailable";
+      return;
+    }
+    if (__entriesStatus === "loading" && loadEntries().length === 0) {
+      if (hc) hc.textContent = "…";
+      if (hl) hl.textContent = "Loading history…";
+      return;
+    }
+    if (hc) hc.textContent = String(written);
+    if (hl) {
+      var label = written === 0 ? "No written entries yet" : (written === 1 ? "1 written entry" : written + " written entries");
+      if (checks) label += " · " + checks + (checks === 1 ? " check-in" : " check-ins");
+      hl.textContent = label;
+    }
   }
   function renderScore() {
-    document.getElementById("scorePoints").textContent = totalPoints();
-    document.getElementById("scoreEntries").textContent = loadEntries().length;
-    document.getElementById("scoreStreak").textContent = currentStreak();
-    document.getElementById("ptsChip").textContent = totalPoints() + " pts";
+    var unknown = statsUnavailable();
+    document.getElementById("scorePoints").textContent = unknown ? "—" : totalPoints();
+    document.getElementById("scoreEntries").textContent = unknown ? "—" : loadEntries().filter(isWrittenEntry).length;
+    document.getElementById("scoreStreak").textContent = unknown ? "—" : currentStreak();
+    document.getElementById("ptsChip").textContent = unknown ? "— pts" : (totalPoints() + " pts");
     const bd = document.getElementById("pbBestDay"); if (bd) bd.textContent = bestDayPoints();
     const ls = document.getElementById("pbLongestStreak"); if (ls) ls.textContent = longestStreak();
     const pe = document.getElementById("profileEmail");
@@ -4213,11 +4629,17 @@
     if (label) label.textContent = (lens.kind === "past" || lens.kind === "future") ? "Reflection for that day" : "Reflection for today";
   }
   function rerenderQuestionsPreserving() {
-    const saved = [...questionsEl.querySelectorAll("textarea")].map(function (t) { return t.value; });
+    const saved = [...questionsEl.querySelectorAll("textarea")].map(function (t) {
+      return { q: t.getAttribute("data-question") || "", a: t.value };
+    });
     const step = currentStep;
     renderQuestions(currentType);
     const tas = questionsEl.querySelectorAll("textarea");
-    saved.forEach(function (v, i) { if (tas[i] && v) tas[i].value = v; });
+    tas.forEach(function (el) {
+      var q = el.getAttribute("data-question") || "";
+      var hit = saved.find(function (s) { return s.q && s.q === q; });
+      if (hit && hit.a) el.value = hit.a;
+    });
     const steps = questionsEl.querySelectorAll(".qstep");
     if (steps.length) {
       currentStep = Math.max(0, Math.min(step, steps.length - 1));
@@ -4425,11 +4847,14 @@
               <input id="bsReference" type="text" placeholder="e.g. John 3:16 · Genesis 1-3 · Psalm 23" autocomplete="off">
             </div>
             <button type="button" id="bsLoadBtn" class="bs-btn">Load passage</button>
-            <div id="bsStatus" class="bs-status"></div>
+            <button type="button" id="bsRetryBtn" class="bs-btn" hidden>Retry</button>
+            <div id="bsStatus" class="bs-status" role="status"></div>
           </div>
           <div class="bs-passage" id="bsPassageWrap" style="display:none">
+            <div class="bs-prev-label" id="bsPrevLabel" hidden></div>
             <div class="bs-passage-ref" id="bsPassageRef"></div>
             <div class="bs-passage-text" id="bsPassageText"></div>
+            <div class="bs-translation-note" id="bsTranslationNote"></div>
             <div class="bs-copyright" id="bsCopyright"></div>
             <button type="button" id="bsGenerateBtn" class="bs-btn">Study this passage</button>
           </div>
@@ -4498,6 +4923,8 @@
       }
     }
     questionsEl.innerHTML = html;
+    if (!__savingJournal) setSaveUi("idle", "");
+    renderDraftBanner();
     if (questionsEl.querySelector(".qstep")) {
       currentStep = 0;
       const _sb = document.querySelector("#journalForm > .submit-btn"); if (_sb) _sb.style.display = "none";
@@ -4650,6 +5077,8 @@
         if (typeof showToast === "function") showToast("Marked as read — next up: " + BIBLE_PLAN[getPlanIdx()].label);
       };
       document.getElementById("bsLoadBtn").addEventListener("click", loadBiblePassage);
+      var _bsRetry = document.getElementById("bsRetryBtn");
+      if (_bsRetry) _bsRetry.addEventListener("click", loadBiblePassage);
       document.getElementById("bsGenerateBtn").addEventListener("click", generateDevotionalQuestions);
       document.getElementById("bsReference").addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); loadBiblePassage(); } });
       fillPickerOptions();
@@ -5045,20 +5474,27 @@
     if (DF.guidance && DF.guidance.insight) answers.push({ q: "Insight", a: DF.guidance.insight });
     if (finalAction) answers.push({ q: "My first step today", a: finalAction });
     if (DF.prayer) answers.push({ q: "Prayer", a: DF.prayer });
+    if (!DF.clientOpId) DF.clientOpId = newOpId();
+    if (!DF.savedAt) DF.savedAt = new Date().toISOString();
     const entry = {
-      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      id: DF.clientOpId,
       type: "drift", typeTitle: "Drift Fix", name: name, date: date,
-      points: pts, capped: cappedToday, savedAt: new Date().toISOString(),
+      points: pts, capped: cappedToday, savedAt: DF.savedAt,
+      clientOpId: DF.clientOpId,
       driftArea: DF.areaId, driftSlider: DF.slider, answers: answers,
     };
     try {
       await insertEntryToCloud(entry);
     } catch (err) {
       __driftSaving = false;
-      if (saveBtn) saveBtn.disabled = false;
-      alert("Couldn't save your entry to the cloud. Check your internet and try again.");
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "Retry save"; }
+      alert((err && err.code === "AMBIGUOUS")
+        ? "We couldn’t confirm the save. Tap Retry save — it uses the same entry, so it won’t be counted twice if it already went through."
+        : "Couldn’t save your entry. Your answers are still here. Check your connection and tap Retry save.");
       return;
     }
+    DF.clientOpId = null;
+    DF.savedAt = null;
     updateCount();
     renderScore();
     syncToGroup(true);
@@ -5255,10 +5691,16 @@
   document.addEventListener("click", function (e) {
     const img = e.target && e.target.closest ? e.target.closest(".pc-att-img, [data-zoom]") : null;
     if (!img) return;
-    const src = img.getAttribute("data-zoom") || img.getAttribute("src");
-    if (!src) return;
+    const raw = img.getAttribute("data-zoom") || img.getAttribute("src");
+    if (!raw) return;
+    // data-zoom is DOM text. Only an http(s) or blob image URL may become the
+    // lightbox address — javascript: and data: URLs are not opened.
+    var parsed;
+    try { parsed = new URL(String(raw).trim(), window.location.href); }
+    catch (err) { return; }
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:" && parsed.protocol !== "blob:") return;
     const lb = document.getElementById("imgLightbox"), li = document.getElementById("imgLightboxImg");
-    if (lb && li) { li.src = src; lb.style.display = "flex"; }
+    if (lb && li) { li.src = parsed.href; lb.style.display = "flex"; }
   });
   (function () {
     const lb = document.getElementById("imgLightbox");
@@ -5450,7 +5892,22 @@
     { svg: '<circle cx="12" cy="12" r="9"/><path d="M8.3 12.2l2.5 2.5 4.9-5.3"/>', title: "Build the rhythm tomorrow", body: "Points and streaks track consistency, while Circles and Journey are ready when you need them. For now, complete one meaningful rep and come back tomorrow.", btn: "Start Today's Mission", skip: false, last: true }
   ];
   let tutIdx = 0;
+  var TUT_VERSION = 1;
   function tutKey() { return APP + ":tutseen:" + (currentEmail() || "").toLowerCase(); }
+  function tutorialSeen() {
+    var local = false;
+    try { local = localStorage.getItem(tutKey()) === String(TUT_VERSION); } catch (e) {}
+    var remote = __currentUser && Number(__currentUser.tut_v) >= TUT_VERSION;
+    return !!(local || remote);
+  }
+  function markTutorialSeen() {
+    try { localStorage.setItem(tutKey(), String(TUT_VERSION)); } catch (e) {}
+    if (!sb || !__currentUser) return;
+    sb.auth.updateUser({ data: { tut_v: TUT_VERSION, tut_seen_at: new Date().toISOString() } }).then(function (res) {
+      if (res && res.error) { console.error(res.error); return; }
+      if (__currentUser) __currentUser.tut_v = TUT_VERSION;
+    }).catch(function (err) { console.error(err); });
+  }
   function renderTutorial() {
     const s = TUTORIAL_SLIDES[tutIdx];
     document.getElementById("tutSlide").innerHTML =
@@ -5462,7 +5919,7 @@
     document.getElementById("tutSkip").style.visibility = s.skip ? "visible" : "hidden";
   }
   function openTutorial() { tutIdx = 0; renderTutorial(); document.getElementById("tutorialOverlay").style.display = "flex"; }
-  function closeTutorial() { document.getElementById("tutorialOverlay").style.display = "none"; try { localStorage.setItem(tutKey(), "1"); } catch (e) {} }
+  function closeTutorial() { document.getElementById("tutorialOverlay").style.display = "none"; markTutorialSeen(); }
   // Final onboarding button: drop straight into today's mission checklist on the Home tab.
   function startTodaysMission() {
     try {
@@ -5473,7 +5930,13 @@
   function maybeShowTutorial() {
     if (!currentEmail()) return;
     if (document.getElementById("tutorialOverlay").style.display === "flex") return;
-    try { if (!localStorage.getItem(tutKey())) openTutorial(); } catch (e) {}
+    if (tutorialSeen()) return;
+    if ((__entriesStatus === "loaded" || __entriesStatus === "stale") && loadEntries().length > 0) {
+      markTutorialSeen();
+      return;
+    }
+    if (__entriesStatus === "failed" || __entriesStatus === "loading" || __entriesStatus === "stale") return;
+    openTutorial();
   }
   document.getElementById("tutNext").addEventListener("click", function () {
     if (TUTORIAL_SLIDES[tutIdx].last) { closeTutorial(); startTodaysMission(); }
@@ -5602,15 +6065,17 @@
     var m = document.getElementById("jtModal"), box = document.getElementById("jtModalInner");
     if (!m || !box) { setActiveType("guided"); showApp(); showWrite(); window.scrollTo(0, 0); return; }
     var today = dayKey(new Date()), d = {};
-    loadEntries().forEach(function (e) { if (entryDay(e) === today) d[e.type] = true; });
+    loadEntries().forEach(function (e) {
+      if (entryDay(e) === today && hasMeaningfulWriting(e)) d[e.type] = true;
+    });
     box.innerHTML = '<h3 style="margin:0 0 4px;">Write one journal entry</h3>' +
-      '<p class="gl-hint" style="margin:0 0 12px;">Pick the kind of entry you want to write.</p>' +
+      '<p class="gl-hint" style="margin:0 0 12px;">Pick the kind of entry you want to write. A check-in does not complete this step.</p>' +
       JT_TYPES.map(function (t) {
         var c = document.querySelector('.pillar-card[data-type="' + t + '"]');
         var name = c && c.querySelector(".pc-title") ? c.querySelector(".pc-title").textContent : t;
         var sub = c && c.querySelector(".pc-desc") ? c.querySelector(".pc-desc").textContent : "";
         return '<button type="button" class="jt-opt" data-jt="' + t + '">' +
-          '<span class="jt-name">' + escapeHtml(name) + (d[t] ? ' <span class="jt-done">✓ done today</span>' : '') + '</span>' +
+          '<span class="jt-name">' + escapeHtml(name) + (d[t] ? ' <span class="jt-done">✓ written today</span>' : '') + '</span>' +
           (sub ? '<span class="jt-sub">' + escapeHtml(sub) + '</span>' : '') + '</button>';
       }).join("") +
       '<div class="gl-actions"><button type="button" id="jtCancel">Cancel</button></div>';
@@ -5628,15 +6093,19 @@
     if (m) m.addEventListener("click", function (e) { if (e.target === m) m.style.display = "none"; });
   })();
   function forgeSteps() {
-    var today = dayKey(new Date()), d = {};
-    loadEntries().forEach(function (e) { if (entryDay(e) === today) d[e.type] = true; });
-    var journaled = d.guided || d.freeflow || d.family || d.gratitude || d.reframe || d.drift;
+    var today = dayKey(new Date()), d = {}, written = {};
+    loadEntries().forEach(function (e) {
+      if (entryDay(e) !== today) return;
+      d[e.type] = true;
+      if (hasMeaningfulWriting(e)) written[e.type] = true;
+    });
+    var journaled = written.guided || written.freeflow || written.family || written.gratitude || written.reframe || written.drift;
     var encouraged = false; try { encouraged = localStorage.getItem("lf_encouraged_" + today) === "1"; } catch (e) {}
     var openType = function (t) { return function () { setActiveType(t); showApp(); showWrite(); window.scrollTo(0, 0); }; };
     return [
       { title: "Read today's Scripture", sub: "Devotional", icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z', done: !!d.devotional, qtype: "devotional", act: openType("devotional") },
       { title: "Pray", sub: "Lift it up", icon: 'M12 3v18 M8 8h8', done: !!d.prayer, qtype: "prayer", act: openType("prayer") },
-      { title: "Write one journal entry", sub: "Pick any journal type", icon: 'M12 20h9 M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z', done: !!journaled, qtype: "freeflow", act: openJournalChooser },
+      { title: "Write one journal entry", sub: "Needs a few written words", icon: 'M12 20h9 M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z', done: !!journaled, qtype: "freeflow", requiresWriting: true, act: openJournalChooser },
       { title: "Steward your body", sub: "Fitness routine", icon: 'M5 7v10 M7 9v6 M17 9v6 M19 7v10 M7 12h10', done: !!d.fitness, qtype: "fitness", act: openType("fitness") },
       { title: "Encourage someone", sub: "In a circle", icon: 'M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z', done: encouraged, qtype: "__encourage", act: function () { showTab("circles"); window.scrollTo(0, 0); } },
     ];
@@ -5943,49 +6412,108 @@
   // this logs a minimal entry (so points, streak, and the Journey rings all
   // count it exactly like a written one — just with no notes); the "Encourage"
   // step sets its local flag. Points still cap once per type per day.
+  var __quickLocks = {};
+  var __quickOps = {};
+  var __stepBusy = {};
+  var __undoCheckin = null;
+  var __undoTimer = null;
   async function logQuickEntry(type) {
     if (!__currentUser || !sb) return false;
     var today = dayKey(new Date());
-    var capped = loadEntries().some(function (en) { return en.type === type && entryDay(en) === today; });
-    var entry = {
-      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
-      type: type, typeTitle: (QUESTIONS[type] && QUESTIONS[type].title) || type,
-      name: (typeof getName === "function" && getName()) || "", date: today,
-      points: capped ? 0 : pointsFor(type), capped: capped, savedAt: new Date().toISOString(),
-      answers: [{ q: "Marked complete", a: "Completed today — no notes added." }]
-    };
-    try { await insertEntryToCloud(entry); }
-    catch (e) { if (typeof showToast === "function") showToast("Couldn't save — check your connection."); return false; }
-    try { updateCount(); } catch (e) {}
-    try { syncToGroup(true); } catch (e) {}
-    try { markChallengeForType(type); } catch (e) {}
-    return true;
+    var key = type + ":" + today;
+    if (__quickLocks[key]) return __quickLocks[key];
+    var opId = __quickOps[key] || newOpId();
+    __quickOps[key] = opId;
+    var job = (async function () {
+      var capped = loadEntries().some(function (en) { return en.type === type && entryDay(en) === today; });
+      var entry = {
+        id: opId,
+        type: type, typeTitle: (QUESTIONS[type] && QUESTIONS[type].title) || type,
+        name: chosenName(), date: today,
+        points: capped ? 0 : pointsFor(type), capped: capped,
+        savedAt: new Date().toISOString(),
+        clientOpId: opId, kind: "checkin",
+        answers: [{ q: "Check-in", a: "Marked done without a written entry." }]
+      };
+      var saved = await insertEntryToCloud(entry);
+      try { updateCount(); } catch (e) {}
+      try { syncToGroup(true); } catch (e) {}
+      try { markChallengeForType(type); } catch (e) {}
+      delete __quickOps[key];
+      return saved || true;
+    })();
+    __quickLocks[key] = job;
+    try { return await job; }
+    catch (e) {
+      if (typeof showToast === "function") showToast("Couldn't save that check-in. Tap the circle to retry the same one.");
+      return false;
+    }
+    finally { delete __quickLocks[key]; }
+  }
+  async function undoLastCheckin() {
+    var u = __undoCheckin;
+    if (!u) return;
+    __undoCheckin = null;
+    if (__undoTimer) { clearTimeout(__undoTimer); __undoTimer = null; }
+    try {
+      await deleteEntryFromCloud(u.id);
+      try { updateCount(); } catch (e) {}
+      try { renderScore(); } catch (e) {}
+      try { syncToGroup(true); } catch (e) {}
+      try { renderForge(); } catch (e) {}
+      try { if (showingHistory) renderHistory(); } catch (e) {}
+      showToast("Check-in removed");
+    } catch (err) {
+      __undoCheckin = u;
+      showToast("Couldn't undo that check-in. Try Delete in History.");
+      try { renderForge(); } catch (e) {}
+    }
   }
   async function quickCompleteStep(i) {
+    if (__stepBusy[i]) return;
     var s = forgeSteps()[i];
     if (!s || s.done) return; // already complete for today
+    if (s.requiresWriting) {
+      showToast("This step needs a written entry. A check-in won’t complete it.");
+      if (s.act) s.act();
+      return;
+    }
+    __stepBusy[i] = true;
     var ok = true;
-    if (s.qtype === "__encourage") { markEncouragedToday(); }
-    else if (s.qtype) { ok = await logQuickEntry(s.qtype); }
+    var saved = null;
+    try {
+      if (s.qtype === "__encourage") { markEncouragedToday(); }
+      else if (s.qtype) { saved = await logQuickEntry(s.qtype); ok = !!saved; }
+    } finally { delete __stepBusy[i]; }
     if (!ok) return;
+    if (saved && saved.id) {
+      __undoCheckin = { id: saved.id, type: s.qtype, until: Date.now() + 15000, title: s.title };
+      if (__undoTimer) clearTimeout(__undoTimer);
+      __undoTimer = setTimeout(function () { __undoCheckin = null; __undoTimer = null; try { renderForge(); } catch (e) {} }, 15000);
+      showToast(s.title + " — check-in, not a journal entry", "Undo", undoLastCheckin);
+    } else if (typeof showToast === "function") showToast(s.title + " — done");
     if (typeof renderForge === "function") renderForge();
     if (typeof renderScore === "function") { try { renderScore(); } catch (e) {} }
-    if (typeof showToast === "function") showToast(s.title + " — done ✓");
   }
   function renderForge() {
     var g = document.getElementById("forgeGreet");
     if (!g) return;
     var hr = new Date().getHours();
     var part = hr < 12 ? "Good morning" : (hr < 18 ? "Good afternoon" : "Good evening");
-    var nm = (typeof getName === "function" && getName()) ? getName() : "";
+    var nm = chosenName();
     g.textContent = part + (nm ? ", " + nm : "");
+    renderEntriesStatus();
+    renderNamePrompt();
     var dt = document.getElementById("forgeDate"); if (dt) dt.textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
     var v = todaysVerse();
     var vt = document.getElementById("forgeVerseText"); if (vt) vt.textContent = '“' + v.t + '”';
     var vr = document.getElementById("forgeVerseRef"); if (vr) vr.textContent = v.r + " · NIV";
-    var pe = document.getElementById("forgePoints"); if (pe) pe.textContent = (totalPoints() || 0).toLocaleString();
-    var en = document.getElementById("forgeEntries"); if (en) en.textContent = loadEntries().length;
-    var st = document.getElementById("forgeStreak"); if (st) st.textContent = currentStreak();
+    var unknownStats = statsUnavailable();
+    var writtenCount = loadEntries().filter(isWrittenEntry).length;
+    var pe = document.getElementById("forgePoints"); if (pe) pe.textContent = unknownStats ? "—" : (totalPoints() || 0).toLocaleString();
+    var en = document.getElementById("forgeEntries"); if (en) en.textContent = unknownStats ? "—" : String(writtenCount);
+    var enLbl = document.getElementById("forgeEntriesLabel"); if (enLbl) enLbl.textContent = "written";
+    var st = document.getElementById("forgeStreak"); if (st) st.textContent = unknownStats ? "—" : currentStreak();
     var steps = forgeSteps();
     var done = steps.filter(function (s) { return s.done; }).length;
     var frac = done / steps.length;
@@ -6015,14 +6543,20 @@
       var num = (i < 9 ? "0" : "") + (i + 1);
       var now = (!s.done && i === nextIx) ? '<span class="snow">Now</span>' : "";
       var check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+      var checkName = s.done
+        ? (s.title + ", completed")
+        : (s.requiresWriting ? s.title : ("Mark " + s.title + " complete"));
+      var undo = (__undoCheckin && __undoCheckin.type === s.qtype && __undoCheckin.until > Date.now())
+        ? '<div class="checkin-undo"><span>Check-in saved. Not a journal entry.</span><button type="button" data-undo-checkin>Undo</button></div>'
+        : "";
       return '<div class="fstep ' + cls + '">' +
         '<button type="button" class="fstep-open" data-fstep="' + i + '">' +
           '<span class="snum">' + num + '</span>' +
           '<span class="sico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="' + s.icon + '"/></svg></span>' +
-          '<span class="scopy"><span class="stitle">' + s.title + now + '</span><span class="ssub">' + (s.done ? "Done" : s.sub) + '</span></span>' +
+          '<span class="scopy"><span class="stitle">' + s.title + now + '</span><span class="ssub">' + (s.done ? (s.requiresWriting ? "Written" : "Done") : s.sub) + '</span></span>' +
         '</button>' +
-        '<button type="button" class="fstep-check" data-fdone="' + i + '" aria-label="' + (s.done ? "Completed" : "Mark done") + '" aria-pressed="' + (s.done ? "true" : "false") + '">' + check + '</button>' +
-      '</div>';
+        '<button type="button" class="fstep-check" data-fdone="' + i + '" aria-label="' + escapeHtml(checkName) + '" aria-pressed="' + (s.done ? "true" : "false") + '">' + check + '</button>' +
+      '</div>' + undo;
     }).join("");
     ["forgeRail", "forgeJourney"].forEach(function (id) {
       var root = document.getElementById(id);
@@ -6039,6 +6573,9 @@
           e.stopPropagation();
           quickCompleteStep(+el.getAttribute("data-fdone"));
         });
+      });
+      root.querySelectorAll("[data-undo-checkin]").forEach(function (el) {
+        el.addEventListener("click", function (e) { e.stopPropagation(); undoLastCheckin(); });
       });
     });
   }
@@ -6149,12 +6686,54 @@
     var frac = next ? (points - cur.min) / (next.min - cur.min) : 1;
     return { num: i + 1, name: cur.name, nextMin: next ? next.min : cur.min, frac: Math.max(0, Math.min(1, frac)), maxed: !next };
   }
+  function renderNamePrompt() {
+    var box = document.getElementById("namePrompt");
+    if (!box) return;
+    var asked = false;
+    try { asked = localStorage.getItem(nameAskedKey()) === "1"; } catch (e) {}
+    if (!__currentUser || chosenName() || asked) { box.hidden = true; return; }
+    box.hidden = false;
+  }
+  async function saveChosenName(raw) {
+    var v = String(raw || "").trim();
+    if (!v) return false;
+    setName(v);
+    try { localStorage.setItem(nameAskedKey(), "1"); } catch (e) {}
+    try {
+      if (sb) {
+        var res = await sb.auth.updateUser({ data: { display_name: v } });
+        if (res && res.error) throw res.error;
+        if (__currentUser) __currentUser.display_name = v;
+      }
+    } catch (e) {
+      showToast("Saved on this device. Couldn’t update your account just now.");
+    }
+    renderNamePrompt();
+    try { renderProfile(); } catch (err) {}
+    try { renderForge(); } catch (err) {}
+    return true;
+  }
+  (function initNamePrompt() {
+    var saveBtn = document.getElementById("namePromptSave");
+    var laterBtn = document.getElementById("namePromptLater");
+    var input = document.getElementById("namePromptInput");
+    if (saveBtn) saveBtn.addEventListener("click", function () { saveChosenName(input && input.value); });
+    if (laterBtn) laterBtn.addEventListener("click", function () {
+      try { localStorage.setItem(nameAskedKey(), "1"); } catch (e) {}
+      renderNamePrompt();
+    });
+  })();
+  document.addEventListener("click", function (e) {
+    var b = e.target && e.target.closest && e.target.closest("[data-entries-retry]");
+    if (!b) return;
+    fetchEntriesFromCloud();
+  });
   function renderProfile() {
     if (!document.getElementById("profileHome")) return;
-    var nm = (typeof getName === "function" && getName()) ? getName() : "";
+    var nm = chosenName();
     var em = currentEmail() || "";
     var av = document.getElementById("profAvatar"); if (av) av.textContent = (nm || em || "?").trim().charAt(0).toUpperCase();
-    var ne = document.getElementById("profName"); if (ne) ne.textContent = nm || (em ? em.split("@")[0] : "Your profile");
+    var ne = document.getElementById("profName"); if (ne) ne.textContent = nm || "Add your name";
     var ee = document.getElementById("profEmail"); if (ee) ee.textContent = em;
     var ni = document.getElementById("nameInput"); if (ni && document.activeElement !== ni) ni.value = nm;
     var pts = totalPoints() || 0, L = levelInfo(pts);
@@ -6166,14 +6745,25 @@
   (function initNameSetting() {
     var inp = document.getElementById("nameInput"), btn = document.getElementById("nameSave"), saved = document.getElementById("nameSaved");
     if (!inp || !btn) return;
-    function save() {
+    async function save() {
       var v = (inp.value || "").trim();
       if (!v) { inp.focus(); return; }
       setName(v);
-      if (saved) { saved.textContent = "Saved"; setTimeout(function () { if (saved) saved.textContent = ""; }, 2000); }
+      var remoteNote = "";
+      try {
+        if (sb) {
+          var res = await sb.auth.updateUser({ data: { display_name: v } });
+          if (res && res.error) throw res.error;
+          if (__currentUser) __currentUser.display_name = v;
+        }
+      } catch (e) {
+        remoteNote = " Saved on this device. Couldn’t update your account just now.";
+      }
+      if (saved) { saved.textContent = remoteNote ? remoteNote.trim() : "Saved"; setTimeout(function () { if (saved && !remoteNote) saved.textContent = ""; }, 2000); }
       try { renderProfile(); } catch (e) {}
-      try { renderForge(); } catch (e) {}            // refresh the greeting
-      try { syncToGroup(true); } catch (e) {}         // push the new name to leaderboards
+      try { renderForge(); } catch (e) {}
+      try { syncToGroup(true); } catch (e) {}
+      renderNamePrompt();
     }
     btn.addEventListener("click", save);
     inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); save(); } });
@@ -6303,6 +6893,8 @@
     document.getElementById("passwordConfirm").setAttribute("placeholder", newPw ? "Confirm new password" : "Confirm password");
     document.getElementById("signInBtn").textContent =
       signup ? "Create account" : reset ? "Send reset link" : newPw ? "Set new password" : "Log in";
+    var trialNote = document.getElementById("authTrialNote");
+    if (trialNote) trialNote.style.display = signup ? "" : "none";
     document.getElementById("authSwitchLabel").textContent =
       signup ? "Already have an account?" : reset ? "Remembered it?" : newPw ? "Cancel?" : "Need an account?";
     document.getElementById("authToggle").textContent = (signup || reset || newPw) ? "Log in" : "Sign up";
@@ -6341,8 +6933,22 @@
 
   function setUserFromSession(session) {
     const meta = (session.user && session.user.user_metadata) || {};
+    var nextId = session.user.id;
+    if (__entriesOwner && __entriesOwner !== nextId) {
+      __entries = [];
+      __entriesOwner = null;
+      __entriesStatus = "loading";
+      __entriesPartial = false;
+      __entriesConfirmed = false;
+      __journalSubmission = null;
+      __undoCheckin = null;
+    }
     BUILD = (meta.build === "women" || meta.build === "men") ? meta.build : "men";
-    __currentUser = { id: session.user.id, email: session.user.email, build: meta.build || null, eula_v: meta.eula_v || 0, created_at: session.user.created_at || null };
+    __currentUser = {
+      id: nextId, email: session.user.email, build: meta.build || null,
+      eula_v: meta.eula_v || 0, created_at: session.user.created_at || null,
+      tut_v: Number(meta.tut_v) || 0, display_name: (meta.display_name || "").trim()
+    };
     // Email only — never the password — so a later login screen can greet them.
     try {
       if (session.user && session.user.email && typeof authStorage !== "undefined") {
@@ -6434,9 +7040,9 @@
     }
   });
   document.getElementById("signOutBtn").addEventListener("click", async () => {
+    forgetSignedInUser();
     if (sb) { try { await sb.auth.signOut(); } catch (e) { /* ignore */ } }
     __currentUser = null;
-    __entries = [];
     document.getElementById("passwordInput").value = "";
     document.getElementById("passwordConfirm").value = "";
     authMode = "login";
@@ -6501,7 +7107,8 @@
         Object.keys(localStorage).forEach(function (k) { if (k.indexOf(APP + ":") === 0) localStorage.removeItem(k); });
       } catch (e) { /* ignore */ }
       try { await authStorage.removeItem(LF_EMAIL_KEY); } catch (e) { /* ignore */ }
-      __currentUser = null; __entries = [];
+      forgetSignedInUser();
+      __currentUser = null;
       cancelBtn.disabled = false;
       closeModal();
       try { updateCount(); } catch (e) {}
@@ -6519,8 +7126,130 @@
   updateCount();
 
   // ----- Save on submit -----
+  function journalDraftBag() {
+    try { return JSON.parse(localStorage.getItem(APP + ":jdrafts") || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function saveJournalDraftBag(bag) {
+    try { localStorage.setItem(APP + ":jdrafts", JSON.stringify(bag)); } catch (e) {}
+  }
+  function promptSig(prompts) { return (prompts || []).join("\u0001"); }
+  function currentFormFields() {
+    var fields = [];
+    document.querySelectorAll("#questions textarea").forEach(function (ta) {
+      fields.push({ q: ta.getAttribute("data-question") || "", a: ta.value || "" });
+    });
+    return fields;
+  }
+  function draftIdentityFromForm() {
+    var fields = currentFormFields();
+    return {
+      userId: __currentUser ? __currentUser.id : "",
+      type: currentType,
+      date: (document.getElementById("entryDate") || {}).value || "",
+      daypart: currentDaypart,
+      daypartPinned: daypartPinned,
+      prompts: fields.map(function (f) { return f.q; }),
+      fields: fields
+    };
+  }
+  function draftSlotId(d) { return [d.type, d.date, promptSig(d.prompts)].join("|"); }
+  function clearJournalDraftsFor(userId) {
+    if (!userId) return;
+    var bag = journalDraftBag();
+    if (bag[userId]) { delete bag[userId]; saveJournalDraftBag(bag); }
+  }
+  function clearJournalDraftForCurrent() {
+    if (!__currentUser) return;
+    var idn = draftIdentityFromForm();
+    var bag = journalDraftBag();
+    var mine = bag[__currentUser.id] || {};
+    delete mine[draftSlotId(idn)];
+    bag[__currentUser.id] = mine;
+    saveJournalDraftBag(bag);
+    renderDraftBanner();
+  }
+  function writeJournalDraftFromForm(force) {
+    if (!__currentUser || (__savingJournal && !force)) return;
+    var idn = draftIdentityFromForm();
+    var any = idn.fields.some(function (f) { return String(f.a || "").trim(); });
+    var bag = journalDraftBag();
+    var mine = bag[__currentUser.id] || {};
+    var slot = draftSlotId(idn);
+    if (!any) delete mine[slot];
+    else mine[slot] = { userId: __currentUser.id, type: idn.type, date: idn.date, daypart: idn.daypart, daypartPinned: idn.daypartPinned, prompts: idn.prompts, fields: idn.fields, savedAt: Date.now(), localOnly: true };
+    var keys = Object.keys(mine);
+    if (keys.length > 8) {
+      keys.sort(function (a, b) { return (mine[a].savedAt || 0) - (mine[b].savedAt || 0); });
+      keys.slice(0, keys.length - 8).forEach(function (k) { delete mine[k]; });
+    }
+    bag[__currentUser.id] = mine;
+    saveJournalDraftBag(bag);
+    renderDraftBanner();
+  }
+  function draftsForCurrentUser() {
+    if (!__currentUser) return [];
+    var mine = journalDraftBag()[__currentUser.id] || {};
+    return Object.keys(mine).map(function (k) { return mine[k]; }).filter(function (d) { return d && d.userId === __currentUser.id; });
+  }
+  function renderDraftBanner() {
+    var box = document.getElementById("draftBanner");
+    if (!box) return;
+    var drafts = draftsForCurrentUser();
+    if (!drafts.length) { box.hidden = true; box.innerHTML = ""; return; }
+    drafts.sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0); });
+    var idn = draftIdentityFromForm();
+    var exact = drafts.find(function (d) { return draftSlotId(d) === draftSlotId(idn); }) || drafts[0];
+    var title = (QUESTIONS[exact.type] && QUESTIONS[exact.type].title) || exact.type;
+    box.hidden = false;
+    box.innerHTML = '<p>Unfinished ' + escapeHtml(title) + ' from ' + escapeHtml(exact.date || "an earlier day") + ' is on this device only — not saved to your account yet.</p>' +
+      '<div class="draft-actions"><button type="button" class="draft-resume" id="draftResume">Resume</button><button type="button" class="draft-discard" id="draftDiscard">Discard</button></div>';
+    var resume = document.getElementById("draftResume");
+    var discard = document.getElementById("draftDiscard");
+    if (resume) resume.onclick = function () { resumeJournalDraft(exact); };
+    if (discard) discard.onclick = function () {
+      var bag = journalDraftBag();
+      var mine = bag[__currentUser.id] || {};
+      delete mine[draftSlotId(exact)];
+      bag[__currentUser.id] = mine;
+      saveJournalDraftBag(bag);
+      renderDraftBanner();
+    };
+  }
+  function resumeJournalDraft(d) {
+    if (!d || !__currentUser || d.userId !== __currentUser.id) return;
+    var dateEl = document.getElementById("entryDate");
+    if (dateEl && d.date) dateEl.value = d.date;
+    currentType = d.type;
+    daypartPinned = !!d.daypartPinned;
+    if (d.daypart) currentDaypart = d.daypart === "evening" ? "evening" : "morning";
+    var selectorEl = document.getElementById("typeSelector");
+    if (selectorEl) selectorEl.querySelectorAll(".type-option").forEach(function (o) { o.classList.toggle("active", o.dataset.type === d.type); });
+    renderQuestions(d.type);
+    var unmatched = 0;
+    (d.fields || []).forEach(function (f) {
+      if (!String(f.a || "").trim()) return;
+      var ta = null;
+      document.querySelectorAll("#questions textarea").forEach(function (el) {
+        if (!ta && el.getAttribute("data-question") === f.q) ta = el;
+      });
+      if (ta) ta.value = f.a;
+      else unmatched++;
+    });
+    if (unmatched) showToast("Some prompts changed, so those answers were not placed on a different question.");
+    renderDraftBanner();
+  }
+  var __draftTimer = null;
+  function scheduleJournalDraft() {
+    if (__draftTimer) clearTimeout(__draftTimer);
+    __draftTimer = setTimeout(function () { __draftTimer = null; writeJournalDraftFromForm(); }, 400);
+  }
+  var __savingJournal = false;
+  var __journalSubmission = null;
   document.getElementById("journalForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (__savingJournal) return;
+    __savingJournal = true;
     const isFirstEntry = loadEntries().length === 0;
     const name = document.getElementById("entryName").value.trim();
     const date = document.getElementById("entryDate").value;
@@ -6617,10 +7346,12 @@
       answers.unshift({ q: "Scripture read", a: __devo.reference });
     }
 
+    if (!__journalSubmission) __journalSubmission = { opId: newOpId(), savedAt: new Date().toISOString() };
     const entry = {
-      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      id: __journalSubmission.opId,
       type: currentType, typeTitle: typeTitle, name: name, date: date,
-      points: pts, capped: cappedToday, savedAt: new Date().toISOString(),
+      points: pts, capped: cappedToday, savedAt: __journalSubmission.savedAt,
+      clientOpId: __journalSubmission.opId,
       answers: answers
     };
     if (currentType === "fitness" && currentFitnessPreset && presetDef(currentFitnessPreset)) {
@@ -6635,7 +7366,31 @@
       entry.durationMs = CKT.totalSec * 1000;
       entry.durationText = cktFmt(CKT.totalSec);
     }
-    // reset preset + timer after capturing the entry
+    writeJournalDraftFromForm(true);
+    setSaveUi("saving", "Saving… your writing stays on this screen until it goes through.");
+
+    var savedRow;
+    try {
+      savedRow = await insertEntryToCloud(entry);
+    } catch (err) {
+      __savingJournal = false;
+      var ambiguous = err && (err.code === "AMBIGUOUS" || err.code === "TIMEOUT");
+      setSaveUi("retry", ambiguous
+        ? "We couldn’t confirm whether that save went through. Retry uses the same entry, so it won’t be counted twice if it already saved."
+        : "Couldn’t save. Your writing, workout details, and time are still here. Check your connection and tap Retry save.");
+      showToast("Couldn’t save");
+      return;
+    }
+    if (savedRow && answerSig(savedRow.answers) && answerSig(savedRow.answers) !== answerSig(entry.answers)) {
+      __savingJournal = false;
+      __journalSubmission = null;
+      setSaveUi("idle", "An earlier attempt already saved. These edits are still here — save again to store them separately. The first one was not duplicated.");
+      showToast("Already saved");
+      return;
+    }
+    __savingJournal = false;
+    __journalSubmission = null;
+    clearJournalDraftForCurrent();
     currentFitnessPreset = null;
     currentStretchProto = null;
     currentFitnessVariation = "As prescribed";
@@ -6643,13 +7398,6 @@
     resetTimerState();
     if (CKT.interval) { clearInterval(CKT.interval); CKT.interval = null; }
     CKT.cfg = null; currentCircuitRounds = 0; currentBarWeight = null;
-
-    try {
-      await insertEntryToCloud(entry);
-    } catch (err) {
-      alert("Couldn't save your entry to the cloud. Check your internet and try again.");
-      return;
-    }
     updateCount();
     renderScore();
     syncToGroup(true);
@@ -6659,6 +7407,7 @@
     document.getElementById("entryDate").value = dayKey(new Date()); // local date, not UTC (fixes evening date drift)
     daypartPinned = false;
     renderQuestions(currentType);
+    setSaveUi("saved", "Saved to your account.");
 
     showToast(isFirstEntry
       ? "First rep complete. Come back tomorrow and keep forging."
@@ -6676,13 +7425,38 @@
     const toast = document.getElementById("toast");
     if (toast) toast.classList.remove("show");
   }
-  function showToast(msg) {
+  function showToast(msg, actionLabel, actionFn) {
     const toast = document.getElementById("toast");
+    const msgEl = document.getElementById("toastMsg");
+    const act = document.getElementById("toastAction");
     if (!toast) return;
     if (__toastTimer) clearTimeout(__toastTimer);
-    toast.textContent = msg;
+    if (msgEl) msgEl.textContent = msg;
+    else toast.textContent = msg;
+    if (act) {
+      if (actionLabel && actionFn) {
+        act.hidden = false;
+        act.textContent = actionLabel;
+        act.onclick = function () { dismissToast(); try { actionFn(); } catch (e) {} };
+      } else {
+        act.hidden = true;
+        act.onclick = null;
+      }
+    }
     toast.classList.add("show");
-    __toastTimer = setTimeout(function () { __toastTimer = null; toast.classList.remove("show"); }, 2600);
+    __toastTimer = setTimeout(function () { __toastTimer = null; toast.classList.remove("show"); }, actionLabel ? 12000 : 2600);
+  }
+  function setSaveUi(state, msg) {
+    var btn = document.querySelector("#journalForm > .submit-btn");
+    var st = document.getElementById("saveStatus");
+    if (btn && state !== "hidden") {
+      btn.disabled = state === "saving" || state === "saved";
+      btn.textContent = state === "saving" ? "Saving…" : state === "saved" ? "Saved" : state === "retry" ? "Retry save" : "Save entry";
+    }
+    if (st) {
+      st.textContent = msg || "";
+      st.className = "save-status" + (state === "retry" ? " err" : state === "saved" ? " ok" : "");
+    }
   }
 
   // ----- History rendering -----
@@ -6694,18 +7468,29 @@
     } catch (e) { return ""; }
   }
   function renderHistory() {
+    renderEntriesStatus();
     const list = loadEntries().slice().sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
+    if (__entriesStatus === "failed") {
+      historyList.innerHTML = '<div class="history-empty">History unavailable.<br>Retry above. Saved entries are still on your account.</div>';
+      return;
+    }
+    if (__entriesStatus === "loading" && list.length === 0) {
+      historyList.innerHTML = '<div class="history-empty">Loading your history…</div>';
+      return;
+    }
     if (list.length === 0) {
       historyList.innerHTML = '<div class="history-empty">Nothing here yet.<br>Entries you save will appear here so you can look back on them.</div>';
       return;
     }
     historyList.innerHTML = list.map(entry => {
-      const preview = (entry.answers.find(x => x.a) || {}).a || "(left blank)";
+      const checkin = isCheckinEntry(entry);
+      const vis = visibleAnswers(entry.answers);
+      const preview = checkin ? "Checked in — no written entry" : ((vis.find(x => x.a) || {}).a || "(left blank)");
       const pts = (typeof entry.points === "number" ? entry.points : pointsFor(entry.type));
       const ptsText = entry.capped ? "logged · points already earned today" : ("+" + pts + " pts");
-      const sub = (entry.name ? escapeHtml(entry.name) + " · " : "") +
+      const sub = (checkin ? "Check-in · " : "Journal · ") + (entry.name ? escapeHtml(entry.name) + " · " : "") +
         (entryDay(entry) ? escapeHtml(entryDay(entry)) + " · " : "") + ptsText + " · saved " + fmtSaved(entry.savedAt);
-      const qa = entry.answers.map(x => `
+      const qa = vis.map(x => `
         <div class="qa">
           <div class="q">${escapeHtml(x.q)}</div>
           <div class="a">${escapeHtml(x.a || "(left blank)")}</div>
@@ -6713,6 +7498,7 @@
       return `
       <div class="entry-card" data-id="${entry.id}">
         <div class="entry-head js-toggle">
+          <span class="entry-badge entry-kind ${checkin ? "" : "entry-kind-written"}">${checkin ? "Check-in" : "Journal"}</span>
           <span class="entry-badge">${escapeHtml(entry.typeTitle)}</span>
           <div class="entry-meta">
             <div class="entry-title">${escapeHtml(preview).slice(0, 80)}${preview.length > 80 ? "…" : ""}</div>
@@ -7016,8 +7802,15 @@
   function saveGroups(arr) { localStorage.setItem(groupsKey(), JSON.stringify(arr)); }
   function addGroup(c) { const a = getGroups(); if (!a.includes(c)) { a.push(c); saveGroups(a); } }
   function removeGroup(c) { saveGroups(getGroups().filter(x => x !== c)); }
-  function getName() { return localStorage.getItem(gKey("name")) || (currentEmail() || "").split("@")[0]; }
+  function chosenName() {
+    var local = "";
+    try { local = (localStorage.getItem(gKey("name")) || "").trim(); } catch (e) {}
+    if (local) return local;
+    return String((__currentUser && __currentUser.display_name) || "").trim();
+  }
+  function getName() { return chosenName() || (currentEmail() || "").split("@")[0]; }
   function setName(n) { localStorage.setItem(gKey("name"), n); }
+  function nameAskedKey() { return APP + ":nameasked:" + ((__currentUser && __currentUser.id) || ""); }
 
   function renderGroup() {
     if (!groupPanel) return;
@@ -7049,10 +7842,15 @@
   async function syncToGroup(silent) {
     const groups = getGroups();
     if (!groups.length || !sb) return;
+    if (!entriesWritable()) {
+      if (!silent) alert("History isn’t fully loaded, so your totals were not sent to the leaderboard.");
+      return;
+    }
     const base = { email: currentEmail(), name: getName(), points: totalPoints(), entries: loadEntries().length, streak: currentStreak(), updated_at: new Date().toISOString() };
     try {
       const rows = groups.map(code => Object.assign({ group_code: code }, base));
-      const { error } = await sb.from("scores").upsert(rows, { onConflict: "group_code,email" });
+      const upsert = window.__lfScoreUpsert ? window.__lfScoreUpsert(rows) : sb.from("scores").upsert(rows, { onConflict: "group_code,email" });
+      const { error } = await upsert;
       if (error) throw error;
       if (!silent) loadLeaderboard();
     } catch (e) { if (!silent) alert("Couldn't sync to your groups right now. Check your connection and try again."); }
@@ -8404,7 +9202,7 @@
   // ----- AI weekly review (Supabase Edge Function -> Claude) -----
   function entriesTextForOffset(off) {
     var st = weekStats(off);
-    return st.list.map(function (e) {
+    return st.list.filter(isWrittenEntry).map(function (e) {
       var head = (e.typeTitle || e.type) + " — " + entryDay(e) +
         (e.presetName ? (" [" + e.presetName + (e.durationText ? " " + e.durationText : "") + "]") : "");
       var qa = (e.answers || []).map(function (a) { return "Q: " + (a.q || "") + "\nA: " + (a.a || "(blank)"); }).join("\n");
@@ -8413,7 +9211,7 @@
   }
   // Bump when the weekly-ai-summary edge function (model/prompt/output) changes, so existing
   // cached reviews regenerate against the new code instead of showing the previously-cached text.
-  var AI_SUMMARY_VER = "v5";
+  var AI_SUMMARY_VER = "v6";
   function aiCacheKey(off) { var st = weekStats(off); return APP + ":aisum:" + AI_SUMMARY_VER + ":" + (currentEmail() || "").toLowerCase() + ":" + dayKey(st.start); }
   let __aiGenerating = false;
   function isWeekReviewable(off) {
@@ -8457,7 +9255,7 @@
     var st = weekStats(sumOffset);
     var entriesText = entriesTextForOffset(sumOffset);
     if (!entriesText.trim()) {
-      box.innerHTML = '<div class="ai-box">No entries this week to summarize yet.</div>';
+      box.innerHTML = '<div class="ai-box">No written entries this week to review. Check-ins are left out of the AI review.</div>';
       __aiGenerating = false; return;
     }
     if (!sb) { box.innerHTML = '<div class="ai-box ai-error">Can\'t reach the server right now.</div>'; __aiGenerating = false; return; }
@@ -8914,7 +9712,7 @@
       const iconSrc = customImg || t.img;
       const zoomSrc = customImg || t.hero || t.img;
       const photo = iconSrc
-        ? '<img src="' + iconSrc + '" data-zoom="' + zoomSrc + '" alt="' + escapeHtml(t.name) + '">'
+        ? '<img src="' + escapeHtml(iconSrc) + '" data-zoom="' + escapeHtml(zoomSrc) + '" alt="' + escapeHtml(t.name) + '">'
         : '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><path d="M20 12v9H4v-9 M2 7h20v5H2z M12 21V7 M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>';
       const photoCtl = isOwner
         ? '<button class="rw-photo-btn" data-rwphoto="' + t.key + '" type="button" title="Update photo"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3.5"/></svg></button>' +
@@ -9505,15 +10303,89 @@
   // coming back keeps your text (and the dare check). Local per marriage+day;
   // cleared when the day is sealed.
   function mfDraftKey(day) { return APP + ":mfdraft:" + ((__mf && __mf.id) || "") + ":" + day; }
-  function mfLoadDraft(day) { try { return JSON.parse(localStorage.getItem(mfDraftKey(day)) || "{}") || {}; } catch (e) { return {}; } }
+  function mfBytesToB64(bytes) {
+    var bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  function mfB64ToBytes(b64) {
+    var bin = atob(b64);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  var __mfDraftKeyPromise = null;
+  function mfDraftCryptoKey() {
+    if (__mfDraftKeyPromise) return __mfDraftKeyPromise;
+    __mfDraftKeyPromise = new Promise(function (resolve, reject) {
+      if (!window.indexedDB || !window.crypto || !crypto.subtle) { reject(new Error("no crypto")); return; }
+      var req = indexedDB.open("lf-draft-keys", 1);
+      req.onupgradeneeded = function () { req.result.createObjectStore("keys"); };
+      req.onerror = function () { reject(req.error || new Error("key store")); };
+      req.onsuccess = function () {
+        var db = req.result;
+        var read = db.transaction("keys", "readonly").objectStore("keys").get("marriage");
+        read.onsuccess = function () {
+          if (read.result) { resolve(read.result); return; }
+          crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]).then(function (key) {
+            var put = db.transaction("keys", "readwrite").objectStore("keys").put(key, "marriage");
+            put.onsuccess = function () { resolve(key); };
+            put.onerror = function () { reject(put.error || new Error("key store")); };
+          }).catch(reject);
+        };
+        read.onerror = function () { reject(read.error || new Error("key store")); };
+      };
+    }).catch(function (err) { __mfDraftKeyPromise = null; throw err; });
+    return __mfDraftKeyPromise;
+  }
+  // AES-GCM. The key stays non-extractable in IndexedDB, so a localStorage
+  // dump does not contain the private note or the key that opens it.
+  async function encryptDraftText(plain) {
+    var key = await mfDraftCryptoKey();
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, new TextEncoder().encode(String(plain))));
+    return JSON.stringify({ v: 1, iv: mfBytesToB64(iv), ct: mfBytesToB64(ct) });
+  }
+  async function decryptDraftText(packed) {
+    var key = await mfDraftCryptoKey();
+    var plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: mfB64ToBytes(packed.iv) }, key, mfB64ToBytes(packed.ct));
+    return new TextDecoder().decode(plain);
+  }
+  async function mfLoadDraft(day) {
+    var key = mfDraftKey(day);
+    var raw = "";
+    try { raw = localStorage.getItem(key) || ""; } catch (e) { return {}; }
+    if (!raw) return {};
+    try {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.v === 1 && parsed.iv && parsed.ct) {
+        return JSON.parse(await decryptDraftText(parsed)) || {};
+      }
+      // Older builds stored the note in clear text. Restore it once, then
+      // replace that copy with ciphertext.
+      if (parsed && (typeof parsed.priv === "string" || typeof parsed.note === "string" || parsed.dare)) {
+        var legacy = { priv: parsed.priv || "", note: parsed.note || "", dare: !!parsed.dare };
+        try { localStorage.setItem(key, await encryptDraftText(JSON.stringify(legacy))); } catch (e2) {}
+        return legacy;
+      }
+    } catch (e) {}
+    return {};
+  }
+  var __mfDraftWrite = 0;
   function mfSaveDraft(day) {
     try {
       var priv = (document.getElementById("mfPrivate") || {}).value || "";
       var note = (document.getElementById("mfToSpouse") || {}).value || "";
       var box = document.getElementById("mfDareBox");
       var dare = !!(box && box.classList.contains("mf-on"));
-      if (!priv && !note && !dare) { localStorage.removeItem(mfDraftKey(day)); return; }
-      localStorage.setItem(mfDraftKey(day), JSON.stringify({ priv: priv, note: note, dare: dare }));
+      var key = mfDraftKey(day);
+      if (!priv && !note && !dare) { localStorage.removeItem(key); __mfDraftWrite++; return; }
+      var seq = ++__mfDraftWrite;
+      var payload = JSON.stringify({ priv: priv, note: note, dare: dare });
+      encryptDraftText(payload).then(function (packed) {
+        if (seq !== __mfDraftWrite) return;
+        try { localStorage.setItem(key, packed); } catch (e) {}
+      }).catch(function () {});
     } catch (e) {}
   }
   function mfClearDraft(day) { try { localStorage.removeItem(mfDraftKey(day)); } catch (e) {} }
@@ -9591,10 +10463,12 @@
     // Restore any in-progress draft (text + dare check) and keep it saved as you type.
     var privEl = document.getElementById("mfPrivate"), noteEl = document.getElementById("mfToSpouse");
     if (privEl || noteEl) {
-      var draft = mfLoadDraft(day);
-      if (privEl && draft.priv) privEl.value = draft.priv;
-      if (noteEl && draft.note) noteEl.value = draft.note;
-      if (draft.dare) mfMarkDareBox(true);
+      mfLoadDraft(day).then(function (draft) {
+        if (!draft) return;
+        if (privEl && draft.priv && privEl.value === "") privEl.value = draft.priv;
+        if (noteEl && draft.note && noteEl.value === "") noteEl.value = draft.note;
+        if (draft.dare) mfMarkDareBox(true);
+      }).catch(function () {});
       if (privEl) privEl.addEventListener("input", function () { mfSaveDraft(day); });
       if (noteEl) noteEl.addEventListener("input", function () { mfSaveDraft(day); });
     }
@@ -10057,7 +10931,219 @@
     showSignIn();
   }
 
+  async function runSelfTests() {
+    var logs = [];
+    function check(name, cond) { logs.push((cond ? "PASS " : "FAIL ") + name); return !!cond; }
+    __currentUser = { id: "user-a", email: "a@example.com", tut_v: 0, display_name: "" };
+    __entries = [{ id: "e1", type: "prayer", typeTitle: "Prayer", date: "2026-10-16", savedAt: "2026-10-16T12:00:00.000Z", points: 5, answers: [{ q: "Prayer", a: "For my family tonight" }] }];
+    __entriesOwner = "user-a";
+    __entriesStatus = "loaded";
+    __entriesConfirmed = true;
+    __entriesPartial = false;
+    window.__lfEntriesQuery = function () { return Promise.resolve({ data: null, error: { message: "offline" } }); };
+    await fetchEntriesFromCloud();
+    check("failed refresh keeps entries", __entries.length === 1 && __entries[0].id === "e1");
+    check("failed refresh is stale", __entriesStatus === "stale");
+    renderEntriesStatus();
+    check("stale banner visible", /last copy/i.test(document.getElementById("entriesStatusToday").textContent));
+    var scoreCalls = 0;
+    window.__lfScoreUpsert = function () { scoreCalls++; return Promise.resolve({ error: null }); };
+    try { localStorage.setItem(groupsKey(), JSON.stringify(["TEST"])); } catch (e) {}
+    await syncToGroup(true);
+    check("stale refresh does not write leaderboard", scoreCalls === 0);
+    __entries = [];
+    __entriesConfirmed = false;
+    __entriesStatus = "loading";
+    try { localStorage.removeItem(entryCacheKey("user-a")); } catch (e) {}
+    await fetchEntriesFromCloud();
+    check("initial failure is failed", __entriesStatus === "failed" && __entries.length === 0);
+    renderHistory();
+    check("initial failure is not an empty account", /unavailable/i.test(document.getElementById("historyList").textContent) && !/Nothing here yet/i.test(document.getElementById("historyList").textContent));
+    __entries = [{ id: "secret", type: "prayer", typeTitle: "Secret", savedAt: "2026-10-01T00:00:00.000Z", points: 9, answers: [{ q: "Q", a: "private words" }] }];
+    __entriesOwner = "user-a";
+    __entriesStatus = "loaded";
+    __currentUser = { id: "user-b", email: "b@example.com" };
+    await fetchEntriesFromCloud();
+    check("other account does not see prior entries", __entries.length === 0 && !/private words/i.test(document.getElementById("historyList").innerHTML));
+    var oldCheckin = { type: "freeflow", savedAt: new Date().toISOString(), answers: [{ q: "Marked complete", a: CHECKIN_NOTE }] };
+    var written = { type: "guided", savedAt: new Date().toISOString(), answers: [{ q: "Journal", a: "I told the truth today." }] };
+    check("historical check-in stays a check-in", isCheckinEntry(oldCheckin) && !hasMeaningfulWriting(oldCheckin));
+    __entriesStatus = "loaded";
+    __entriesOwner = "user-b";
+    __entries = [oldCheckin];
+    check("check-in does not complete journal step", !forgeSteps().filter(function (s) { return s.requiresWriting; })[0].done);
+    __entries = [written];
+    check("real writing completes journal step", !!forgeSteps().filter(function (s) { return s.requiresWriting; })[0].done);
+    check("bible timeout", classifyBibleFailure({ code: "TIMEOUT" }).code === "timeout");
+    check("bible offline", classifyBibleFailure({ code: "OFFLINE" }).code === "offline");
+    check("bible auth", classifyBibleFailure({ status: 401, message: "unauthorized" }).code === "auth");
+    check("bible rate", classifyBibleFailure({ status: 429, message: "rate limit" }).code === "rate");
+    check("bible reference", classifyBibleFailure({ status: 404, message: "not found" }).code === "reference");
+    check("bible provider", classifyBibleFailure({ status: 503, message: "The passage provider could not complete this request." }).code === "provider");
+    check("bible translation", classifyBibleFailure({ status: 400, message: "Invalid Bible or passage identifier." }).code === "translation");
+    var inserts = 0;
+    window.__lfFindOp = function () { return Promise.resolve(inserts ? { id: "row-1", type: "prayer", type_title: "Prayer", points: 1, saved_at: "2026-10-16T00:00:00.000Z", answers: [{ q: "Check-in", a: "Marked done without a written entry." }, { q: "_clientOp", a: "op-1" }] } : null); };
+    window.__lfInsertQuery = function () {
+      inserts++;
+      return new Promise(function () {});
+    };
+    window.__lfSaveTimeoutMs = 40;
+    __currentUser = { id: "user-b", email: "b@example.com" };
+    __entries = [];
+    __entriesOwner = "user-b";
+    __entriesStatus = "loaded";
+    __entriesConfirmed = true;
+    var first = insertEntryToCloud({ type: "prayer", typeTitle: "Prayer", points: 1, clientOpId: "op-1", savedAt: "2026-10-16T00:00:00.000Z", kind: "checkin", answers: [{ q: "Check-in", a: "Marked done without a written entry." }] });
+    var second = insertEntryToCloud({ type: "prayer", typeTitle: "Prayer", points: 1, clientOpId: "op-1", savedAt: "2026-10-16T00:00:00.000Z", kind: "checkin", answers: [{ q: "Check-in", a: "Marked done without a written entry." }] });
+    var saved = await first;
+    var saved2 = await second;
+    check("one logical insert for duplicate taps", inserts === 1 && saved && saved2 && saved.id === saved2.id);
+    var presetBefore = "pushups";
+    currentFitnessPreset = presetBefore;
+    window.__lfInsertQuery = function () { return Promise.reject(new Error("offline")); };
+    window.__lfFindOp = function () { return Promise.resolve(null); };
+    var failed = false;
+    try { await insertEntryToCloud({ type: "fitness", typeTitle: "Fitness", points: 1, clientOpId: "op-2", savedAt: "2026-10-16T00:00:00.000Z", answers: [{ q: "Workout", a: "Push-ups" }] }); }
+    catch (e) { failed = true; }
+    check("failed save does not clear workout preset", failed && currentFitnessPreset === presetBefore);
+    var q0 = document.getElementById("q0");
+    if (q0) q0.value = "Keep this sentence until the save is confirmed.";
+    currentFitnessPreset = "pushups";
+    currentFitnessCategory = "strength";
+    window.__lfInsertQuery = function () { return Promise.reject(Object.assign(new Error("offline"), { code: "NETWORK" })); };
+    var form = document.getElementById("journalForm");
+    if (form && form.requestSubmit) form.requestSubmit();
+    await new Promise(function (r) { setTimeout(r, 80); });
+    check("submit failure keeps the typed text", q0 && q0.value.indexOf("Keep this sentence") === 0);
+    check("submit failure keeps fitness category", currentFitnessCategory === "strength");
+    check("submit failure offers retry", /Retry save/.test((document.querySelector("#journalForm > .submit-btn") || {}).textContent || ""));
+    __currentUser = { id: "user-a", email: "a@example.com" };
+    var seeded = { userId: "user-a", type: "guided", date: "2026-10-16", daypart: "evening", daypartPinned: true, prompts: ["Only this prompt"], fields: [{ q: "Only this prompt", a: "Secret draft" }], savedAt: Date.now(), localOnly: true };
+    var bag = journalDraftBag();
+    bag["user-a"] = {};
+    bag["user-a"][draftSlotId(seeded)] = seeded;
+    saveJournalDraftBag(bag);
+    __currentUser = { id: "user-b", email: "b@example.com" };
+    check("draft is not visible to another account", draftsForCurrentUser().every(function (d) {
+      return d.userId === "user-b" && !(d.fields || []).some(function (f) { return f.a === "Secret draft"; });
+    }));
+    clearJournalDraftsFor("user-a");
+    check("logout clears that account's drafts", !journalDraftBag()["user-a"]);
+    var zoomLb = document.getElementById("imgLightbox");
+    var zoomLi = document.getElementById("imgLightboxImg");
+    function zoomBlocked(url) {
+      var img = document.createElement("img");
+      img.className = "pc-att-img";
+      img.setAttribute("data-zoom", url);
+      document.body.appendChild(img);
+      zoomLb.style.display = "none";
+      zoomLi.removeAttribute("src");
+      img.click();
+      var blocked = zoomLb.style.display !== "flex" && !zoomLi.getAttribute("src");
+      zoomLb.style.display = "none";
+      zoomLi.removeAttribute("src");
+      img.remove();
+      return blocked;
+    }
+    check("scriptable zoom urls are not opened", zoomBlocked("javascript:alert(1)") && zoomBlocked("data:text/html,x") && zoomBlocked("vbscript:msgbox(1)"));
+    var zoomGood = document.createElement("img");
+    zoomGood.className = "pc-att-img";
+    zoomGood.setAttribute("data-zoom", "https://example.com/hat.png");
+    document.body.appendChild(zoomGood);
+    zoomGood.click();
+    check("https zoom url opens", zoomLi.src === "https://example.com/hat.png" && zoomLb.style.display === "flex");
+    zoomLb.style.display = "none";
+    zoomLi.src = "";
+    zoomGood.remove();
+    var mfHold = document.createElement("div");
+    mfHold.innerHTML = '<textarea id="mfPrivate"></textarea><textarea id="mfToSpouse"></textarea><span id="mfDareBox"></span>';
+    document.body.appendChild(mfHold);
+    __mf = { id: "mf-selftest" };
+    document.getElementById("mfPrivate").value = "private reflection SECRET";
+    document.getElementById("mfToSpouse").value = "note for spouse";
+    mfSaveDraft(3);
+    var mfStored = "";
+    for (var mfWait = 0; mfWait < 40 && (!mfStored || mfStored.indexOf("SECRET") !== -1); mfWait++) {
+      await new Promise(function (r) { setTimeout(r, 25); });
+      mfStored = localStorage.getItem(mfDraftKey(3)) || "";
+    }
+    check("marriage draft is not stored in clear text", !!mfStored && mfStored.indexOf("SECRET") === -1 && mfStored.indexOf("private reflection") === -1);
+    document.getElementById("mfPrivate").value = "";
+    document.getElementById("mfToSpouse").value = "";
+    var mfBack = await mfLoadDraft(3);
+    check("encrypted marriage draft restores", mfBack.priv === "private reflection SECRET" && mfBack.note === "note for spouse");
+    localStorage.setItem(mfDraftKey(4), JSON.stringify({ priv: "old private", note: "old note", dare: true }));
+    var mfLegacy = await mfLoadDraft(4);
+    var mfLegacyStored = localStorage.getItem(mfDraftKey(4)) || "";
+    check("legacy marriage draft still restores", mfLegacy.priv === "old private" && mfLegacy.dare === true && mfLegacyStored.indexOf("old private") === -1);
+    mfClearDraft(3);
+    mfClearDraft(4);
+    __mf = null;
+    mfHold.remove();
+    var pass = logs.filter(function (l) { return l.indexOf("PASS") === 0; }).length;
+    var fail = logs.length - pass;
+    var pre = document.createElement("pre");
+    pre.id = "lfselftest";
+    pre.textContent = (fail ? "FAIL " : "PASS ") + pass + "/" + logs.length + "\n" + logs.join("\n");
+    document.body.appendChild(pre);
+    document.title = fail ? "FAIL" : "PASS";
+    return fail === 0;
+  }
+  async function renderPreview(mode) {
+    var women = /women=1/.test(location.search);
+    __currentUser = { id: "preview-user", email: "preview@example.com", display_name: "Alex", tut_v: TUT_VERSION };
+    try { localStorage.setItem(tutKey(), String(TUT_VERSION)); } catch (e) {}
+    BUILD = women ? "women" : "men";
+    try { applyBuild(); } catch (e) {}
+    document.body.setAttribute("data-build", BUILD);
+    var today = dayKey(new Date());
+    __entriesOwner = __currentUser.id;
+    __entriesConfirmed = true;
+    __entriesPartial = false;
+    __entriesStatus = mode === "failed" ? "failed" : mode === "stale" ? "stale" : "loaded";
+    __entries = mode === "failed" ? [] : [
+      { id: "p1", type: "prayer", typeTitle: "Prayer Requests", date: today, savedAt: new Date().toISOString(), points: 5, kind: "checkin", answers: [{ q: "_kind", a: "checkin" }, { q: "Check-in", a: "Marked done without a written entry." }] },
+      { id: "p2", type: "guided", typeTitle: "Guided Journal", date: today, savedAt: new Date().toISOString(), points: 8, answers: [{ q: "Journal", a: "I told the truth and stayed." }] }
+    ];
+    if (mode === "checkin") {
+      __undoCheckin = { id: "p1", type: "prayer", until: Date.now() + 600000, title: "Pray" };
+    }
+    showLanding();
+    try { renderForge(); } catch (e) { console.error(e); }
+    renderEntriesStatus();
+    if (mode === "checkin") showToast("Pray — check-in, not a journal entry", "Undo", function () {});
+    if (mode === "bible") {
+      showApp();
+      setActiveType("devotional");
+      var wrap = document.getElementById("bsPassageWrap");
+      if (wrap) wrap.style.display = "block";
+      var ref = document.getElementById("bsPassageRef"); if (ref) ref.textContent = "John 3:16";
+      var tx = document.getElementById("bsPassageText"); if (tx) tx.textContent = "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.";
+      var note = document.getElementById("bsTranslationNote"); if (note) note.textContent = "Translation: NIV — New International Version";
+      markPreviousPassage(true);
+      setBibleStatus(classifyBibleFailure({ status: 503, message: "The passage provider could not complete this request." }).message, true);
+    }
+    if (mode === "history") { showApp(); showHistory(); }
+    document.body.setAttribute("data-preview", mode);
+  }
   (async function boot() {
+    if (/[?&]lfselftest=1/.test(location.search)) {
+      try { await runSelfTests(); } catch (err) {
+        var pre = document.createElement("pre");
+        pre.id = "lfselftest";
+        pre.textContent = "FAIL exception " + (err && err.stack || err);
+        document.body.appendChild(pre);
+        document.title = "FAIL";
+      }
+      finishBoot();
+      return;
+    }
+    var preview = (location.search.match(/[?&]lfpreview=([^&]+)/) || [])[1];
+    if (preview) {
+      try { await renderPreview(decodeURIComponent(preview)); } catch (err) { console.error(err); }
+      finishBoot();
+      return;
+    }
     if (!sb) { showSignIn(); finishBoot(); return; }
     // Detect password-reset redirect (Supabase puts type=recovery in the URL hash)
     const hash = window.location.hash || "";

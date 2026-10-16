@@ -36,14 +36,12 @@
   .lead { color:var(--muted); font-size:clamp(18px,2vw,22px); max-width:660px; }
   .hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
   .trial-note { margin-top:14px; color:#8f8981; font-size:13px; }
-  .app-preview { position:relative; max-width:420px; margin:0 auto; padding:22px; border:1px solid var(--line); border-radius:30px; background:linear-gradient(160deg,#191c23,#0e1014); box-shadow:0 30px 80px rgba(0,0,0,.45); }
-  .app-preview img { display:block; width:100%; max-height:285px; object-fit:contain; }
-  .mission { padding:18px; background:var(--panel2); border:1px solid var(--line); border-radius:16px; }
-  .mission small { color:var(--gold2); font-weight:900; letter-spacing:1.4px; text-transform:uppercase; }
-  .mission h2 { margin:8px 0 4px; font-size:24px; }
-  .steps { margin-top:14px; display:grid; gap:9px; }
-  .step { display:flex; align-items:center; gap:10px; color:#d4cfc8; font-size:14px; }
-  .check { width:22px; height:22px; display:grid; place-items:center; border:1px solid rgba(214,154,84,.55); border-radius:50%; color:var(--gold2); font-weight:900; }
+  .app-preview { position:relative; max-width:390px; margin:0 auto; padding:14px; border:1px solid var(--line); border-radius:30px; background:linear-gradient(160deg,#191c23,#0e1014); box-shadow:0 30px 80px rgba(0,0,0,.45); }
+  .app-preview img { display:block; width:100%; border-radius:16px; }
+  .app-preview .shot-main { max-height:560px; object-fit:cover; object-position:top center; }
+  .shot-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  .shot-row img { height:168px; object-fit:cover; object-position:top center; }
+  .shot-cap { margin:10px 4px 0; color:#9f9990; font-size:14px; }
   section { padding:76px 0; }
   .section-head { max-width:720px; margin-bottom:34px; }
   .section-head h2 { font-size:clamp(32px,4vw,48px); line-height:1.12; margin:8px 0 12px; }
@@ -106,9 +104,13 @@
           <div class="hero-actions"><a class="btn btn-primary" href="index.html?start=1">Start your 7-day free trial</a><a class="btn btn-secondary" href="https://apps.apple.com/app/id6776882761">View on the App Store</a></div>
           <div class="trial-note">Try every feature for seven days. No card required to begin on the web.</div>
         </div>
-        <div class="app-preview" aria-label="Example LIVN FORGE daily mission">
-          <img src="LIVNFORGE%20Logo.png" alt="LIVN FORGE — Forged in Faith. Refined in Purpose.">
-          <div class="mission"><small>Today’s mission</small><h2>Forge your day</h2><div class="steps"><div class="step"><span class="check">✓</span>Anchor yourself in Scripture</div><div class="step"><span class="check">✓</span>Reflect and write it down</div><div class="step"><span class="check">✓</span>Show up for family and fitness</div></div></div>
+        <div class="app-preview" aria-label="Screens from the LIVN FORGE app">
+          <img class="shot-main" src="assets/welcome/today.jpg" alt="Today screen with the next action, daily progress, and steps for Scripture, prayer, journal, fitness, and encouragement.">
+          <div class="shot-row">
+            <img src="assets/welcome/history.jpg" alt="Journal history showing a written entry beside a check-in that is labeled separately.">
+            <img src="assets/welcome/today-women.jpg" alt="The same Today screen in the Daughters of the King theme.">
+          </div>
+          <p class="shot-cap">Screens from the app. Sample entries, not a member’s journal.</p>
         </div>
       </div>
     </header>
