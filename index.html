@@ -11029,14 +11029,23 @@
     }));
     clearJournalDraftsFor("user-a");
     check("logout clears that account's drafts", !journalDraftBag()["user-a"]);
-    var zoomBad = document.createElement("img");
-    zoomBad.className = "pc-att-img";
-    zoomBad.setAttribute("data-zoom", "javascript:alert(1)");
-    document.body.appendChild(zoomBad);
-    zoomBad.click();
     var zoomLb = document.getElementById("imgLightbox");
     var zoomLi = document.getElementById("imgLightboxImg");
-    check("javascript zoom url is not opened", zoomLb.style.display !== "flex" && (zoomLi.getAttribute("src") || "").indexOf("javascript:") !== 0);
+    function zoomBlocked(url) {
+      var img = document.createElement("img");
+      img.className = "pc-att-img";
+      img.setAttribute("data-zoom", url);
+      document.body.appendChild(img);
+      zoomLb.style.display = "none";
+      zoomLi.removeAttribute("src");
+      img.click();
+      var blocked = zoomLb.style.display !== "flex" && !zoomLi.getAttribute("src");
+      zoomLb.style.display = "none";
+      zoomLi.removeAttribute("src");
+      img.remove();
+      return blocked;
+    }
+    check("scriptable zoom urls are not opened", zoomBlocked("javascript:alert(1)") && zoomBlocked("data:text/html,x") && zoomBlocked("vbscript:msgbox(1)"));
     var zoomGood = document.createElement("img");
     zoomGood.className = "pc-att-img";
     zoomGood.setAttribute("data-zoom", "https://example.com/hat.png");
@@ -11045,7 +11054,6 @@
     check("https zoom url opens", zoomLi.src === "https://example.com/hat.png" && zoomLb.style.display === "flex");
     zoomLb.style.display = "none";
     zoomLi.src = "";
-    zoomBad.remove();
     zoomGood.remove();
     var mfHold = document.createElement("div");
     mfHold.innerHTML = '<textarea id="mfPrivate"></textarea><textarea id="mfToSpouse"></textarea><span id="mfDareBox"></span>';
