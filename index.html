@@ -7016,6 +7016,7 @@
     fetchGoalsFromCloud();
     fetchMarriageFromCloud();
     fetchDevoReadsFromCloud();
+    try { rootedLoad(); } catch (e) {}
     hydrateCirclesFromCloud();
     checkCircleInvites();
     renderQuestions(currentType);
@@ -10991,6 +10992,9 @@
   var __rootedWeek = 1;
   var __rootedLevel = 1;
   var __rootedCloud = null;
+  var __rootedPulling = null;
+  var __rootedPullingUid = "";
+  var __rootedBeginning = false;
   var __rootedReflectionStatus = "";
   var __rootedKeyPromise = null;
 
@@ -11041,6 +11045,9 @@
   function rootedOnSignOut() {
     __rooted = null;
     __rootedUser = "";
+    __rootedPulling = null;
+    __rootedPullingUid = "";
+    __rootedBeginning = false;
     __rootedReflectionStatus = "";
     __rootedOpen = false;
     var m = document.getElementById("rootedModal");
@@ -11099,19 +11106,38 @@
       return new TextDecoder().decode(plain);
     } catch (e) { return ""; }
   }
-  async function rootedPullCloud() {
+  function rootedPullCloud() {
+    var uid = rootedUid();
+    if (__rootedPulling && __rootedPullingUid === uid) return __rootedPulling;
+    __rootedPullingUid = uid;
+    var run = rootedPullCloudNow();
+    var current = run.then(function (ok) {
+      if (__rootedPulling === current) __rootedPulling = null;
+      return ok;
+    }, function (err) {
+      if (__rootedPulling === current) __rootedPulling = null;
+      throw err;
+    });
+    __rootedPulling = current;
+    return current;
+  }
+  async function rootedPullCloudNow() {
     var RP = rootedProgram();
-    if (!RP || !sb || !rootedUid() || __rootedCloud === false) return;
+    var uid = rootedUid();
+    if (!RP || !sb || !uid || __rootedCloud === false) return false;
     var res;
-    try { res = await sb.from("discipleship_progress").select("user_id,opted_in,steps,reflections,updated_at").eq("user_id", rootedUid()).maybeSingle(); }
-    catch (e) { return; }
+    try { res = await sb.from("discipleship_progress").select("user_id,opted_in,steps,reflections,updated_at").eq("user_id", uid).maybeSingle(); }
+    catch (e) { return false; }
+    if (rootedUid() !== uid) return false;
     if (!res || res.error) {
       if (res && rootedTableMissing(res.error)) __rootedCloud = false;
-      return;
+      return false;
     }
     __rootedCloud = true;
-    if (!res.data || res.data.user_id !== rootedUid()) return;
+    if (!res.data) return true;
+    if (res.data.user_id !== uid) return false;
     rootedEnsure();
+    if (!__rooted || rootedUid() !== uid) return false;
     var local = RP.normalize(rootedReadLocal());
     var remoteStamp = String(res.data.updated_at || "");
     if (!local.updatedAt || remoteStamp > local.updatedAt) {
@@ -11127,10 +11153,12 @@
       var n = parseInt(k, 10);
       if (n >= 1 && n <= 12 && typeof refs[k] === "string") __rooted.reflections[n] = refs[k].slice(0, 4000);
     });
+    return true;
   }
   async function rootedPushSteps() {
     var RP = rootedProgram();
-    if (__rootedCloud === false || !RP || !sb || !rootedUid() || !__rooted || !__rooted.optedIn) return;
+    // Leave sets optedIn false and still has to update the account row.
+    if (__rootedCloud === false || !RP || !sb || !rootedUid() || !__rooted) return;
     var clean = RP.normalize(__rooted);
     try {
       var res = await sb.from("discipleship_progress").upsert({
@@ -11149,20 +11177,38 @@
     var RP = rootedProgram();
     rootedEnsure();
     if (!RP || !__rooted || !__rooted.optedIn) return { ok: false, where: "none" };
+    var uid = rootedUid();
     var trimmed = String(text || "").trim().slice(0, 4000);
+    // The column is the whole map. Pull and the on-device copies have to be in
+    // memory before the upsert, or weeks that are not loaded get deleted.
+    var pulled = await rootedPullCloud();
+    if (rootedUid() !== uid || !__rooted || !__rooted.optedIn) return { ok: false, where: "none" };
     __rooted.reflections = __rooted.reflections || {};
+    for (var n = 1; n <= 12; n++) {
+      if (__rooted.reflections[n]) continue;
+      var prior = await rootedOpenLocal(n);
+      if (prior && __rootedUser === uid && rootedUid() === uid && !__rooted.reflections[n]) __rooted.reflections[n] = prior;
+    }
+    if (rootedUid() !== uid || !__rooted || !__rooted.optedIn) return { ok: false, where: "none" };
     if (trimmed) __rooted.reflections[week] = trimmed; else delete __rooted.reflections[week];
     var sealed = await rootedSealLocal(week, trimmed);
+    if (rootedUid() !== uid || !__rooted) return { ok: false, where: "none" };
     var account = false;
-    if (sb && rootedUid() && __rootedCloud !== false) {
+    var refsOut = {};
+    Object.keys(__rooted.reflections).forEach(function (k) {
+      var wk = parseInt(k, 10);
+      var val = __rooted.reflections[k];
+      if (wk >= 1 && wk <= 12 && typeof val === "string" && val) refsOut[wk] = val.slice(0, 4000);
+    });
+    if (sb && uid && __rootedCloud !== false && pulled) {
       try {
         var res = await sb.from("discipleship_progress").upsert({
-          user_id: rootedUid(),
+          user_id: uid,
           email: String(__currentUser.email || "").toLowerCase(),
           program_id: "rooted-l1",
           opted_in: true,
           steps: RP.normalize(__rooted).steps,
-          reflections: __rooted.reflections,
+          reflections: refsOut,
           updated_at: new Date().toISOString()
         }, { onConflict: "user_id" });
         if (res.error) { if (rootedTableMissing(res.error)) __rootedCloud = false; }
@@ -11388,18 +11434,38 @@
     if (note) note.textContent = rootedProgressSentence();
     renderRootedCta();
   }
-  function rootedBegin() {
-    rootedEnsure();
-    if (!__rooted) return;
-    __rooted.optedIn = true;
-    __rooted.updatedAt = new Date().toISOString();
-    rootedWriteLocal();
-    rootedPushSteps();
-    __rootedView = "week";
-    __rootedWeek = 1;
-    renderRooted();
-    renderRootedCta();
-    if (typeof showToast === "function") showToast("Level 1 is yours to walk. Week 1 is open.");
+  async function rootedBegin() {
+    if (__rootedBeginning) return;
+    __rootedBeginning = true;
+    try {
+      rootedEnsure();
+      if (!__rooted) return;
+      var uid = rootedUid();
+      // The path paints from this phone before the account row arrives. Stamp a
+      // new updatedAt only after that read, or an empty map wins and erases
+      // check-ins already stored for this man.
+      var sawCloud = await rootedPullCloud();
+      if (rootedUid() !== uid) return;
+      rootedEnsure();
+      if (!__rooted) return;
+      if (!__rooted.optedIn) {
+        if (sb && __rootedCloud !== false && !sawCloud) {
+          if (typeof showToast === "function") showToast("Couldn't load Level 1 yet. Check your connection and try again.");
+          return;
+        }
+        __rooted.optedIn = true;
+        __rooted.updatedAt = new Date().toISOString();
+        rootedWriteLocal();
+        rootedPushSteps();
+      }
+      __rootedView = "week";
+      __rootedWeek = 1;
+      renderRooted();
+      renderRootedCta();
+      if (typeof showToast === "function") showToast("Level 1 is yours to walk. Week 1 is open.");
+    } finally {
+      __rootedBeginning = false;
+    }
   }
   function rootedLeave() {
     if (typeof confirm === "function" && !confirm("Leave Level 1? Your check-ins stay on this device if you begin again. The rest of your journal is unchanged.")) return;
@@ -11415,10 +11481,13 @@
   }
   async function rootedCommitReflection(week) {
     var ta = document.getElementById("rootedReflection");
-    var status = document.getElementById("rootedReflectionStatus");
-    var result = await rootedSaveReflection(week, ta ? ta.value : "");
+    var typed = ta ? ta.value : "";
+    var result = await rootedSaveReflection(week, typed);
     __rootedReflectionStatus = rootedReflectionMessage(result.where);
+    var status = document.getElementById("rootedReflectionStatus");
     if (status) status.textContent = __rootedReflectionStatus;
+    var again = document.getElementById("rootedReflection");
+    if (again && result && result.ok) again.value = String(typed || "").trim().slice(0, 4000);
   }
   async function rootedHydrateWeek(week) {
     rootedEnsure();
