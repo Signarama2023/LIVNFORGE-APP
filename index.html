@@ -11044,13 +11044,22 @@
       }));
     } catch (e) {}
   }
-  var __rootedMeetingsColumn = null;
   function rootedMeetingsColumnMissing(error) {
     var msg = String((error && (error.message || error.details || error.hint || error.code)) || "");
     return /meetings/i.test(msg) && /column|schema cache/i.test(msg);
   }
-  function rootedStepsPayload(clean) {
-    if (__rootedMeetingsColumn !== false) return clean.steps;
+  function rootedMeetingAt(clean) {
+    return (clean && clean.updatedAt) || (__rooted && __rooted.updatedAt) || new Date().toISOString();
+  }
+  function rootedStampedMeetings(clean, at) {
+    var meetings = {};
+    for (var n = 1; n <= 12; n++) {
+      meetings[n] = { mode: clean.meetings[n].mode, met: clean.meetings[n].met === true, at: at };
+    }
+    return meetings;
+  }
+  function rootedStepsPayload(clean, nestMeeting, at) {
+    if (!nestMeeting) return clean.steps;
     var steps = {};
     for (var n = 1; n <= 12; n++) {
       steps[String(n)] = {
@@ -11058,21 +11067,22 @@
         reflect: clean.steps[n].reflect === true,
         pray: clean.steps[n].pray === true,
         practice: clean.steps[n].practice === true,
-        meeting: { mode: clean.meetings[n].mode, met: clean.meetings[n].met === true }
+        meeting: { mode: clean.meetings[n].mode, met: clean.meetings[n].met === true, at: at }
       };
     }
     return steps;
   }
-  function rootedProgressPayload(clean) {
+  function rootedProgressPayload(clean, nestMeeting) {
+    var at = rootedMeetingAt(clean);
     var row = {
       user_id: rootedUid(),
       email: String((__currentUser && __currentUser.email) || "").toLowerCase(),
       program_id: "rooted-l1",
       opted_in: !!clean.optedIn,
-      steps: rootedStepsPayload(clean),
-      updated_at: clean.updatedAt || (__rooted && __rooted.updatedAt) || new Date().toISOString()
+      steps: rootedStepsPayload(clean, nestMeeting, at),
+      updated_at: at
     };
-    if (__rootedMeetingsColumn !== false) row.meetings = clean.meetings;
+    if (!nestMeeting) row.meetings = rootedStampedMeetings(clean, at);
     return row;
   }
   function rootedTableMissing(error) {
@@ -11144,12 +11154,9 @@
     var RP = rootedProgram();
     if (!RP || !sb || !rootedUid() || __rootedCloud === false) return;
     var res;
-    var columns = "user_id,opted_in,steps,reflections,updated_at";
-    if (__rootedMeetingsColumn !== false) columns += ",meetings";
-    try { res = await sb.from("discipleship_progress").select(columns).eq("user_id", rootedUid()).maybeSingle(); }
+    try { res = await sb.from("discipleship_progress").select("user_id,opted_in,steps,reflections,updated_at,meetings").eq("user_id", rootedUid()).maybeSingle(); }
     catch (e) { return; }
     if (res && res.error && rootedMeetingsColumnMissing(res.error)) {
-      __rootedMeetingsColumn = false;
       try { res = await sb.from("discipleship_progress").select("user_id,opted_in,steps,reflections,updated_at").eq("user_id", rootedUid()).maybeSingle(); }
       catch (e2) { return; }
     }
@@ -11170,7 +11177,11 @@
       if (res.data.meetings && typeof res.data.meetings === "object") __rooted.meetings = remote.meetings;
       else {
         var nested = false;
-        for (var mn = 1; mn <= 12; mn++) if (remote.meetings[mn].met || remote.meetings[mn].mode) nested = true;
+        var stepSrc = res.data.steps || {};
+        for (var mn = 1; mn <= 12; mn++) {
+          var step = stepSrc[mn] || stepSrc[String(mn)] || {};
+          if ((step.meeting && typeof step.meeting === "object") || remote.meetings[mn].met || remote.meetings[mn].mode) nested = true;
+        }
         __rooted.meetings = nested ? remote.meetings : priorMeetings;
       }
       __rooted.updatedAt = remoteStamp;
@@ -11188,10 +11199,9 @@
     if (__rootedCloud === false || !RP || !sb || !rootedUid() || !__rooted || !__rooted.optedIn) return;
     var clean = RP.normalize(__rooted);
     try {
-      var res = await sb.from("discipleship_progress").upsert(rootedProgressPayload(clean), { onConflict: "user_id" });
+      var res = await sb.from("discipleship_progress").upsert(rootedProgressPayload(clean, false), { onConflict: "user_id" });
       if (res.error && rootedMeetingsColumnMissing(res.error)) {
-        __rootedMeetingsColumn = false;
-        res = await sb.from("discipleship_progress").upsert(rootedProgressPayload(RP.normalize(__rooted)), { onConflict: "user_id" });
+        res = await sb.from("discipleship_progress").upsert(rootedProgressPayload(RP.normalize(__rooted), true), { onConflict: "user_id" });
       }
       if (res.error) { if (rootedTableMissing(res.error) && !rootedMeetingsColumnMissing(res.error)) __rootedCloud = false; return; }
       __rootedCloud = true;
@@ -11208,14 +11218,13 @@
     var account = false;
     if (sb && rootedUid() && __rootedCloud !== false) {
       try {
-        var reflectRow = rootedProgressPayload(RP.normalize(__rooted));
+        var reflectRow = rootedProgressPayload(RP.normalize(__rooted), false);
         reflectRow.opted_in = true;
         reflectRow.reflections = __rooted.reflections;
         reflectRow.updated_at = new Date().toISOString();
         var res = await sb.from("discipleship_progress").upsert(reflectRow, { onConflict: "user_id" });
         if (res.error && rootedMeetingsColumnMissing(res.error)) {
-          __rootedMeetingsColumn = false;
-          reflectRow = rootedProgressPayload(RP.normalize(__rooted));
+          reflectRow = rootedProgressPayload(RP.normalize(__rooted), true);
           reflectRow.opted_in = true;
           reflectRow.reflections = __rooted.reflections;
           reflectRow.updated_at = new Date().toISOString();

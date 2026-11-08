@@ -478,17 +478,25 @@
   }
 
   /* Lesson booleans stay on the step. Meeting mode and the self-reported
-     met flag are kept beside them. Notes, names, links, and other keys are dropped. */
+     met flag are kept beside them. Notes, names, links, and other keys are dropped.
+     The meetings column wins, including an explicit uncheck or a cleared mode.
+     A nested steps[].meeting wins only when it has a later `at`, which is how a
+     write that could not update the column records a newer false. */
   function readMeeting(raw, n) {
     var bag = raw && raw.meetings ? raw.meetings : {};
     var steps = raw && raw.steps ? raw.steps : {};
     var row = steps[n] || steps[String(n)] || {};
-    var nested = row.meeting && typeof row.meeting === "object" ? row.meeting : {};
-    var direct = bag[n] || bag[String(n)] || {};
-    return {
-      mode: meetingMode(direct.mode) || meetingMode(nested.mode) || meetingMode(row.mentorMode),
-      met: direct.met === true || nested.met === true || row.mentorMet === true
-    };
+    var nested = row.meeting && typeof row.meeting === "object" ? row.meeting : null;
+    var direct = bag[n] || bag[String(n)];
+    if (!direct || typeof direct !== "object") direct = null;
+    var chosen = direct;
+    if (nested) {
+      var nestedAt = typeof nested.at === "string" ? nested.at : "";
+      var directAt = direct && typeof direct.at === "string" ? direct.at : "";
+      if (!direct || (nestedAt && nestedAt > directAt)) chosen = nested;
+    }
+    if (chosen) return { mode: meetingMode(chosen.mode), met: chosen.met === true };
+    return { mode: meetingMode(row.mentorMode), met: row.mentorMet === true };
   }
 
   function normalize(raw) {

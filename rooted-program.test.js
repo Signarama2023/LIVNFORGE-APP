@@ -138,6 +138,45 @@ test("a meeting record cannot wipe lesson progress or keep conversation notes", 
   assert.equal(RP.courseCoreComplete(kept), false);
 });
 
+test("an explicit meeting uncheck is not restored by the other copy", () => {
+  const columnUnchecked = RP.normalize({
+    steps: {
+      1: { read: true, mentorMet: true, mentorMode: "zoom", meeting: { mode: "zoom", met: true, at: "2026-11-08T11:00:00.000Z" } }
+    },
+    meetings: { 1: { mode: "", met: false, at: "2026-11-08T12:00:00.000Z" } }
+  });
+  assert.equal(columnUnchecked.meetings[1].met, false);
+  assert.equal(columnUnchecked.meetings[1].mode, "");
+  assert.equal(columnUnchecked.meetings[1].at, undefined);
+  assert.equal(columnUnchecked.steps[1].read, true);
+
+  const nestedUnchecked = RP.normalize({
+    steps: { 2: { read: true, meeting: { mode: "", met: false, at: "2026-11-08T12:00:00.000Z" } } },
+    meetings: { 2: { mode: "in-person", met: true, at: "2026-11-08T11:00:00.000Z" } }
+  });
+  assert.equal(nestedUnchecked.meetings[2].met, false);
+  assert.equal(nestedUnchecked.meetings[2].mode, "");
+  assert.equal(nestedUnchecked.steps[2].read, true);
+
+  const rechecked = RP.normalize({
+    steps: { 3: { meeting: { mode: "zoom", met: false, at: "2026-11-08T11:00:00.000Z" } } },
+    meetings: { 3: { mode: "in-person", met: true, at: "2026-11-08T12:00:00.000Z" } }
+  });
+  assert.equal(rechecked.meetings[3].met, true);
+  assert.equal(rechecked.meetings[3].mode, "in-person");
+
+  const staleColumn = RP.normalize({
+    steps: { 4: { meeting: { mode: "", met: false, at: "2026-11-08T12:00:00.000Z" } } },
+    meetings: { 4: { mode: "zoom", met: true } }
+  });
+  assert.equal(staleColumn.meetings[4].met, false);
+  assert.equal(staleColumn.meetings[4].mode, "");
+
+  const legacy = RP.normalize({ steps: { 5: { mentorMet: true, mentorMode: "zoom" } } });
+  assert.equal(legacy.meetings[5].met, true);
+  assert.equal(legacy.meetings[5].mode, "zoom");
+});
+
 test("lesson completion and mentor attendance stay separate and do not promote", () => {
   const steps = {};
   const meetings = {};
