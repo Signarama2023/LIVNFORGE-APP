@@ -525,6 +525,44 @@
   .jr-card-sub { font-size:12.5px; color:var(--muted); }
   .jr-card-arrow { color:var(--muted); font-size:22px; flex:0 0 auto; line-height:1; }
   .jr-card-badge { flex:0 0 auto; font-size:10px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--on-gold); background:var(--gold); padding:4px 9px; border-radius:999px; }
+  /* Level 1 discipleship course — draft, opt-in, men's build only */
+  #rootedModal .rw-modal-inner { max-width:640px; padding:18px 18px 22px; }
+  .rt-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .rt-kicker { font-size:11px; letter-spacing:1.4px; text-transform:uppercase; font-weight:800; color:var(--gold-light); }
+  .rt-top h3 { margin:2px 0 0; font-size:20px; line-height:1.25; }
+  .rt-x { background:none; border:none; color:var(--muted); font-size:26px; line-height:1; cursor:pointer; font-family:inherit; padding:0 2px; }
+  .rt-note { font-size:13.5px; line-height:1.5; color:var(--muted); margin:8px 0; }
+  .rt-levels { display:flex; flex-direction:column; gap:8px; margin:12px 0; }
+  .rt-level { text-align:left; width:100%; box-sizing:border-box; border:1px solid var(--field-border); background:rgba(255,255,255,.03); color:var(--text); border-radius:12px; padding:10px 12px; font-family:inherit; cursor:pointer; display:flex; flex-direction:column; gap:2px; }
+  .rt-level-name { font-weight:800; font-size:14px; }
+  .rt-level-focus, .rt-level-state { font-size:12.5px; color:var(--muted); }
+  .rt-future { opacity:.78; }
+  .rt-weeks { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 12px; }
+  .rt-week { min-width:36px; height:36px; border-radius:10px; border:1px solid var(--field-border); background:transparent; color:var(--text); font-family:inherit; font-weight:700; cursor:pointer; }
+  .rt-week.on { background:var(--gold); color:var(--on-gold); border-color:var(--gold); }
+  .rt-week.done { box-shadow:inset 0 0 0 2px var(--gold-light); }
+  .rt-week.met { position:relative; }
+  .rt-week.met::after { content:""; position:absolute; width:6px; height:6px; border-radius:50%; background:var(--gold-light); right:4px; bottom:3px; }
+  .rt-week.on.met::after { background:var(--on-gold); }
+  .rt-modes { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px; }
+  .rt-mode { flex:1 1 140px; min-height:48px; border-radius:999px; border:1px solid var(--field-border); background:transparent; color:var(--text); font-family:inherit; font-weight:800; font-size:15px; cursor:pointer; }
+  .rt-mode.on { background:var(--gold); color:var(--on-gold); border-color:var(--gold); }
+  .rt-agenda { margin:6px 0 12px; padding-left:18px; }
+  .rt-agenda li { font-size:14.5px; line-height:1.45; margin:8px 0; }
+  #rootedMentor { margin-top:8px; }
+  .rt-block { border-left:3px solid var(--gold); padding:8px 12px; margin:8px 0 12px; background:rgba(255,255,255,.03); border-radius:0 12px 12px 0; }
+  .rt-label { font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:800; color:var(--gold-light); margin-bottom:4px; }
+  .rt-block p, .rt-prompts li { font-size:14.5px; line-height:1.5; margin:0; }
+  .rt-prompts { margin:6px 0 12px; padding-left:18px; }
+  .rt-prompts li { margin:6px 0; }
+  .rt-check { display:flex; gap:10px; align-items:flex-start; margin:8px 0; font-size:14.5px; line-height:1.4; }
+  .rt-check input { margin-top:3px; width:18px; height:18px; flex:0 0 auto; accent-color: var(--gold); }
+  .rt-ref { width:100%; box-sizing:border-box; min-height:96px; border-radius:12px; border:1px solid var(--field-border); background:rgba(255,255,255,.04); color:var(--text); font-family:inherit; font-size:16px; padding:10px 12px; resize:vertical; }
+  .rt-status { font-size:13px; line-height:1.45; color:var(--muted); min-height:1.2em; margin-top:8px; }
+  .rt-actions { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+  details.rt-safe { margin:12px 0; font-size:13.5px; line-height:1.5; color:var(--muted); }
+  details.rt-safe summary { cursor:pointer; color:var(--text); font-weight:700; }
+  body[data-build="women"] #rootedCardWrap { display:none !important; }
   /* ===== Profile tab ===== */
   #landingView .profile-bar > span:first-child { display:none; }
   .prof-head { display:flex; align-items:center; gap:14px; margin:6px 0 18px; }
@@ -607,6 +645,8 @@
   .rw-field { margin-bottom:10px; }
   .rw-field label { display:block; font-size:12px; color:var(--muted); margin-bottom:4px; }
   .rw-modal input, .rw-modal select { width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1px solid var(--field-border); background:rgba(255,255,255,0.05); color:var(--text); font-family:inherit; font-size:16px; }
+  #rootedModal .rt-check input { width:18px; min-width:18px; max-width:18px; height:18px; flex:0 0 18px; padding:0; border-radius:4px; accent-color:var(--gold); }
+  #rootedModal .rt-check span { flex:1; min-width:0; }
   .rw-row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .rw-modal-actions { display:flex; gap:10px; margin-top:16px; }
   .rw-modal-actions button { flex:1; padding:11px; border-radius:10px; font-weight:700; font-family:inherit; font-size:14px; cursor:pointer; border:1px solid var(--field-border); }
@@ -2153,6 +2193,19 @@
           </div>
         </div>
 
+        <div class="jr-cards" id="rootedCardWrap" data-tab="progress" style="display:none;">
+          <button class="jr-card" id="rootedCta" type="button">
+            <span class="jr-card-ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8h14"/><path d="M7 21c2-3 8-3 10 0"/></svg>
+            </span>
+            <span class="jr-card-text"><span class="jr-card-title">Rooted · Level 1</span><span class="jr-card-sub" id="rootedCtaSub">Draft · opt in when you want to begin</span></span>
+            <span class="jr-card-badge">Draft</span>
+          </button>
+        </div>
+        <div class="rw-modal" id="rootedModal" role="dialog" aria-modal="true" aria-labelledby="rootedTitle">
+          <div class="rw-modal-inner" id="rootedModalInner"></div>
+        </div>
+
         <div class="jr-cards" data-tab="progress">
           <button class="jr-card" id="landingRewardsCta" type="button">
             <span class="jr-card-ico">
@@ -2534,6 +2587,7 @@
     </div>
   </div>
 
+<script src="rooted-program.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const QUESTIONS = {
@@ -3758,6 +3812,7 @@
     }
     __journalSubmission = null;
     __undoCheckin = null;
+    try { if (typeof rootedOnSignOut === "function") rootedOnSignOut(); } catch (e) {}
     clearEntryMemory();
   }
   function renderEntriesStatus() {
@@ -5867,6 +5922,7 @@
     // a stale preset id from the other build would no longer exist
     if (currentFitnessPreset && !presetDef(currentFitnessPreset)) { currentFitnessPreset = null; resetTimerState(); }
     renderQuestions(currentType);
+    try { if (typeof renderRootedCta === "function") renderRootedCta(); } catch (e) {}
   }
   async function saveBuild(b) {
     if (b !== "men" && b !== "women") b = "men";
@@ -6644,6 +6700,7 @@
   function renderJourney() {
     if (!document.getElementById("journeyHome")) return;
     try { renderChallenge(); } catch (e) {}
+    try { if (typeof renderRootedCta === "function") renderRootedCta(); } catch (e) {}
     [["faith", ["devotional", "prayer", "gratitude", "reframe", "drift"]],
      ["family", ["family", "reframe", "drift"]],
      ["fitness", ["fitness"]]].forEach(function (p) {
@@ -10931,6 +10988,632 @@
     showSignIn();
   }
 
+  // ===== Level 1 — Rooted and Ready (opt-in 12-week course) =====
+  // Curriculum lives in rooted-program.js. Check-ins are non-sensitive booleans.
+  // Reflection text is never written into journal entries, scores, circles, or
+  // the AI review. It is encrypted on this device and, once the owner-only
+  // table exists, stored only on the signed-in user's row.
+  var __rooted = null;
+  var __rootedUser = "";
+  var __rootedOpen = false;
+  var __rootedView = "path";
+  var __rootedWeek = 1;
+  var __rootedLevel = 1;
+  var __rootedCloud = null;
+  var __rootedReflectionStatus = "";
+  var __rootedKeyPromise = null;
+
+  function rootedProgram() { return window.RootedProgram || null; }
+  function rootedUid() { return (__currentUser && __currentUser.id) || ""; }
+  function rootedKey() { return APP + ":rooted:" + rootedUid(); }
+  function rootedRefKey(week) { return APP + ":rootedref:" + rootedUid() + ":" + week; }
+  function rootedEnsure() {
+    var RP = rootedProgram();
+    if (!RP) return null;
+    if (!__rooted || __rootedUser !== rootedUid()) {
+      __rootedUser = rootedUid();
+      var saved = rootedReadLocal();
+      __rooted = RP.normalize(saved);
+      __rooted.reflections = {};
+      if (saved && typeof saved.updatedAt === "string") __rooted.updatedAt = saved.updatedAt;
+    }
+    return __rooted;
+  }
+  function rootedReadLocal() {
+    if (!rootedUid()) return null;
+    try {
+      var raw = JSON.parse(localStorage.getItem(rootedKey()) || "null");
+      if (!raw || raw.userId !== rootedUid()) return null;
+      return raw;
+    } catch (e) { return null; }
+  }
+  function rootedWriteLocal() {
+    var RP = rootedProgram();
+    var uid = rootedUid();
+    if (!RP || !uid || !__rooted) return;
+    var clean = RP.normalize(__rooted);
+    var stamp = __rooted.updatedAt || new Date().toISOString();
+    __rooted.optedIn = clean.optedIn;
+    __rooted.steps = clean.steps;
+    __rooted.meetings = clean.meetings;
+    __rooted.updatedAt = stamp;
+    try {
+      localStorage.setItem(rootedKey(), JSON.stringify({
+        v: 1, userId: uid, programId: RP.PROGRAM_ID,
+        optedIn: clean.optedIn, updatedAt: stamp, steps: clean.steps, meetings: clean.meetings
+      }));
+    } catch (e) {}
+  }
+  var __rootedMeetingsColumn = null;
+  function rootedMeetingsColumnMissing(error) {
+    var msg = String((error && (error.message || error.details || error.hint || error.code)) || "");
+    return /meetings/i.test(msg) && /column|schema cache/i.test(msg);
+  }
+  function rootedStepsPayload(clean) {
+    if (__rootedMeetingsColumn !== false) return clean.steps;
+    var steps = {};
+    for (var n = 1; n <= 12; n++) {
+      steps[String(n)] = {
+        read: clean.steps[n].read === true,
+        reflect: clean.steps[n].reflect === true,
+        pray: clean.steps[n].pray === true,
+        practice: clean.steps[n].practice === true,
+        meeting: { mode: clean.meetings[n].mode, met: clean.meetings[n].met === true }
+      };
+    }
+    return steps;
+  }
+  function rootedProgressPayload(clean) {
+    var row = {
+      user_id: rootedUid(),
+      email: String((__currentUser && __currentUser.email) || "").toLowerCase(),
+      program_id: "rooted-l1",
+      opted_in: !!clean.optedIn,
+      steps: rootedStepsPayload(clean),
+      updated_at: clean.updatedAt || (__rooted && __rooted.updatedAt) || new Date().toISOString()
+    };
+    if (__rootedMeetingsColumn !== false) row.meetings = clean.meetings;
+    return row;
+  }
+  function rootedTableMissing(error) {
+    var msg = String((error && (error.message || error.details || error.code)) || "");
+    return /discipleship_progress|schema cache|PGRST205|42P01|does not exist|Could not find the table/i.test(msg);
+  }
+  function rootedOnSignOut() {
+    __rooted = null;
+    __rootedUser = "";
+    __rootedReflectionStatus = "";
+    __rootedOpen = false;
+    var m = document.getElementById("rootedModal");
+    if (m) m.style.display = "none";
+  }
+  function rootedCryptoKey() {
+    if (__rootedKeyPromise) return __rootedKeyPromise;
+    __rootedKeyPromise = new Promise(function (resolve, reject) {
+      if (!window.indexedDB || !window.crypto || !crypto.subtle) { reject(new Error("no crypto")); return; }
+      var req = indexedDB.open("lf-draft-keys", 1);
+      req.onupgradeneeded = function () {
+        if (!req.result.objectStoreNames.contains("keys")) req.result.createObjectStore("keys");
+      };
+      req.onerror = function () { reject(req.error || new Error("key store")); };
+      req.onsuccess = function () {
+        var db = req.result;
+        var read = db.transaction("keys", "readonly").objectStore("keys").get("rooted");
+        read.onsuccess = function () {
+          if (read.result) { resolve(read.result); return; }
+          crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]).then(function (key) {
+            var put = db.transaction("keys", "readwrite").objectStore("keys").put(key, "rooted");
+            put.onsuccess = function () { resolve(key); };
+            put.onerror = function () { reject(put.error || new Error("key store")); };
+          }).catch(reject);
+        };
+        read.onerror = function () { reject(read.error || new Error("key store")); };
+      };
+    }).catch(function (err) { __rootedKeyPromise = null; throw err; });
+    return __rootedKeyPromise;
+  }
+  async function rootedSealLocal(week, text) {
+    var slot = rootedRefKey(week);
+    if (!text) { try { localStorage.removeItem(slot); } catch (e) {} return true; }
+    try {
+      var key = await rootedCryptoKey();
+      var iv = crypto.getRandomValues(new Uint8Array(12));
+      var ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, new TextEncoder().encode(String(text))));
+      var packed = JSON.stringify({ v: 1, iv: mfBytesToB64(iv), ct: mfBytesToB64(ct) });
+      if (packed.indexOf(text) !== -1) return false;
+      localStorage.setItem(slot, packed);
+      return true;
+    } catch (e) {
+      try { localStorage.removeItem(slot); } catch (e2) {}
+      return false;
+    }
+  }
+  async function rootedOpenLocal(week) {
+    var raw = "";
+    try { raw = localStorage.getItem(rootedRefKey(week)) || ""; } catch (e) { return ""; }
+    if (!raw) return "";
+    try {
+      var packed = JSON.parse(raw);
+      if (!packed || packed.v !== 1 || !packed.iv || !packed.ct) return "";
+      var key = await rootedCryptoKey();
+      var plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: mfB64ToBytes(packed.iv) }, key, mfB64ToBytes(packed.ct));
+      return new TextDecoder().decode(plain);
+    } catch (e) { return ""; }
+  }
+  async function rootedPullCloud() {
+    var RP = rootedProgram();
+    if (!RP || !sb || !rootedUid() || __rootedCloud === false) return;
+    var res;
+    var columns = "user_id,opted_in,steps,reflections,updated_at";
+    if (__rootedMeetingsColumn !== false) columns += ",meetings";
+    try { res = await sb.from("discipleship_progress").select(columns).eq("user_id", rootedUid()).maybeSingle(); }
+    catch (e) { return; }
+    if (res && res.error && rootedMeetingsColumnMissing(res.error)) {
+      __rootedMeetingsColumn = false;
+      try { res = await sb.from("discipleship_progress").select("user_id,opted_in,steps,reflections,updated_at").eq("user_id", rootedUid()).maybeSingle(); }
+      catch (e2) { return; }
+    }
+    if (!res || res.error) {
+      if (res && rootedTableMissing(res.error) && !rootedMeetingsColumnMissing(res.error)) __rootedCloud = false;
+      return;
+    }
+    __rootedCloud = true;
+    if (!res.data || res.data.user_id !== rootedUid()) return;
+    rootedEnsure();
+    var local = RP.normalize(rootedReadLocal());
+    var remoteStamp = String(res.data.updated_at || "");
+    if (!local.updatedAt || remoteStamp > local.updatedAt) {
+      var remote = RP.normalize({ optedIn: !!res.data.opted_in, steps: res.data.steps, meetings: res.data.meetings, updatedAt: remoteStamp });
+      var priorMeetings = __rooted.meetings;
+      __rooted.optedIn = remote.optedIn;
+      __rooted.steps = remote.steps;
+      if (res.data.meetings && typeof res.data.meetings === "object") __rooted.meetings = remote.meetings;
+      else {
+        var nested = false;
+        for (var mn = 1; mn <= 12; mn++) if (remote.meetings[mn].met || remote.meetings[mn].mode) nested = true;
+        __rooted.meetings = nested ? remote.meetings : priorMeetings;
+      }
+      __rooted.updatedAt = remoteStamp;
+      rootedWriteLocal();
+    }
+    var refs = res.data.reflections || {};
+    __rooted.reflections = __rooted.reflections || {};
+    Object.keys(refs).forEach(function (k) {
+      var n = parseInt(k, 10);
+      if (n >= 1 && n <= 12 && typeof refs[k] === "string") __rooted.reflections[n] = refs[k].slice(0, 4000);
+    });
+  }
+  async function rootedPushSteps() {
+    var RP = rootedProgram();
+    if (__rootedCloud === false || !RP || !sb || !rootedUid() || !__rooted || !__rooted.optedIn) return;
+    var clean = RP.normalize(__rooted);
+    try {
+      var res = await sb.from("discipleship_progress").upsert(rootedProgressPayload(clean), { onConflict: "user_id" });
+      if (res.error && rootedMeetingsColumnMissing(res.error)) {
+        __rootedMeetingsColumn = false;
+        res = await sb.from("discipleship_progress").upsert(rootedProgressPayload(RP.normalize(__rooted)), { onConflict: "user_id" });
+      }
+      if (res.error) { if (rootedTableMissing(res.error) && !rootedMeetingsColumnMissing(res.error)) __rootedCloud = false; return; }
+      __rootedCloud = true;
+    } catch (e) {}
+  }
+  async function rootedSaveReflection(week, text) {
+    var RP = rootedProgram();
+    rootedEnsure();
+    if (!RP || !__rooted || !__rooted.optedIn) return { ok: false, where: "none" };
+    var trimmed = String(text || "").trim().slice(0, 4000);
+    __rooted.reflections = __rooted.reflections || {};
+    if (trimmed) __rooted.reflections[week] = trimmed; else delete __rooted.reflections[week];
+    var sealed = await rootedSealLocal(week, trimmed);
+    var account = false;
+    if (sb && rootedUid() && __rootedCloud !== false) {
+      try {
+        var reflectRow = rootedProgressPayload(RP.normalize(__rooted));
+        reflectRow.opted_in = true;
+        reflectRow.reflections = __rooted.reflections;
+        reflectRow.updated_at = new Date().toISOString();
+        var res = await sb.from("discipleship_progress").upsert(reflectRow, { onConflict: "user_id" });
+        if (res.error && rootedMeetingsColumnMissing(res.error)) {
+          __rootedMeetingsColumn = false;
+          reflectRow = rootedProgressPayload(RP.normalize(__rooted));
+          reflectRow.opted_in = true;
+          reflectRow.reflections = __rooted.reflections;
+          reflectRow.updated_at = new Date().toISOString();
+          res = await sb.from("discipleship_progress").upsert(reflectRow, { onConflict: "user_id" });
+        }
+        if (res.error) { if (rootedTableMissing(res.error) && !rootedMeetingsColumnMissing(res.error)) __rootedCloud = false; }
+        else if (!res.error) { __rootedCloud = true; account = true; }
+      } catch (e) {}
+    }
+    if (!trimmed) return { ok: true, where: account ? "account" : "cleared" };
+    if (account) return { ok: true, where: "account" };
+    if (sealed) return { ok: true, where: "device" };
+    delete __rooted.reflections[week];
+    return { ok: false, where: "none" };
+  }
+  async function rootedLoad() {
+    if (!rootedProgram() || !rootedUid()) return;
+    rootedEnsure();
+    await rootedPullCloud();
+    if (__rooted && __rooted.optedIn) {
+      for (var n = 1; n <= 12; n++) {
+        if (!__rooted.reflections[n]) {
+          var local = await rootedOpenLocal(n);
+          if (local && __rootedUser === rootedUid()) __rooted.reflections[n] = local;
+        }
+      }
+    }
+    try { renderRootedCta(); } catch (e) {}
+    if (__rootedOpen) renderRooted();
+  }
+  function rootedSuggestedWeek() {
+    var RP = rootedProgram();
+    if (!RP || !__rooted) return 1;
+    for (var n = 1; n <= 12; n++) {
+      if (!RP.weekCoreComplete(__rooted, n) || !RP.weekMeetingComplete(__rooted, n)) return n;
+    }
+    return 12;
+  }
+  function rootedProgressSentence() {
+    var RP = rootedProgram();
+    if (!RP || !__rooted || !__rooted.optedIn) return "Begin Level 1 when you want a private check-in. Nothing is recorded until you do.";
+    var lessons = RP.weeksCheckedCount(__rooted);
+    var meetings = RP.meetingsMarkedCount(__rooted);
+    var line = "Lesson steps: " + lessons + " of 12 weeks. Mentor meetings you reported: " + meetings + " of 12. A meeting mark is your report only. The app does not verify it.";
+    if (lessons === 12 && meetings === 12) return line + " Both are marked. That still does not finish Level 1, open Level 2, or certify you to lead.";
+    if (lessons === 12) return line + " Your lesson check-ins stay in place. Meetings are separate, and neither one promotes you.";
+    return line + " Leaving a lesson box blank is allowed.";
+  }
+  function rootedReflectionMessage(where) {
+    if (where === "account") return "Saved to your account. Only you can read it. It is not added to your score, a circle, or the AI review.";
+    if (where === "device") return "Saved encrypted on this device only. Private account storage is not set up yet, so this note stays on this phone. It was not written into your journal.";
+    if (where === "cleared") return "Cleared from this device.";
+    return "This reflection was not saved. Account storage is unavailable, and this browser could not encrypt a copy. Nothing was stored.";
+  }
+  function renderRootedCta() {
+    var wrap = document.getElementById("rootedCardWrap");
+    var sub = document.getElementById("rootedCtaSub");
+    var RP = rootedProgram();
+    if (!wrap) return;
+    if (!RP || BUILD === "women") {
+      wrap.style.display = "none";
+      if (__rootedOpen) closeRooted();
+      return;
+    }
+    wrap.style.display = "";
+    rootedEnsure();
+    if (!sub) return;
+    if (!__rooted.optedIn) sub.textContent = "Draft · opt in when you want to begin";
+    else if (RP.weeksWithBothCount(__rooted) === 12) sub.textContent = "Lessons and meetings marked · Level 2 is not open";
+    else sub.textContent = "Lessons " + RP.weeksCheckedCount(__rooted) + "/12 · mentor meetings " + RP.meetingsMarkedCount(__rooted) + "/12";
+  }
+  function closeRooted() {
+    __rootedOpen = false;
+    var m = document.getElementById("rootedModal");
+    if (m) { m.style.display = "none"; m.setAttribute("aria-hidden", "true"); }
+  }
+  function openRooted() {
+    if (!rootedProgram() || BUILD === "women") return;
+    __rootedOpen = true;
+    __rootedView = "path";
+    rootedEnsure();
+    renderRooted();
+    rootedLoad();
+  }
+  function rootedShell(title, body) {
+    return '<div class="rt-top"><div><div class="rt-kicker">Rooted and Ready · Draft</div><h3 id="rootedTitle">' + title + '</h3></div>' +
+      '<button type="button" class="rt-x" id="rootedClose" aria-label="Close">×</button></div>' + body;
+  }
+  function rootedWeekChips() {
+    var RP = rootedProgram();
+    var html = '<div class="rt-weeks">';
+    RP.WEEKS.forEach(function (week) {
+      var lessonDone = RP.weekCoreComplete(__rooted, week.n);
+      var met = RP.weekMeetingComplete(__rooted, week.n);
+      var cls = "rt-week" + (__rootedView === "week" && __rootedWeek === week.n ? " on" : "") + (lessonDone ? " done" : "") + (met ? " met" : "");
+      var label = "Week " + week.n + (lessonDone ? ", lesson steps marked" : ", lesson steps open") + (met ? ", mentor meeting reported" : ", mentor meeting not reported");
+      html += '<button type="button" class="' + cls + '" data-rtweek="' + week.n + '" aria-label="' + label + '">' + week.n + '</button>';
+    });
+    return html + "</div>";
+  }
+  function renderRooted() {
+    var box = document.getElementById("rootedModalInner");
+    var modal = document.getElementById("rootedModal");
+    var RP = rootedProgram();
+    if (!box || !modal || !RP) return;
+    if (!__rootedOpen || BUILD === "women") { modal.style.display = "none"; return; }
+    rootedEnsure();
+    var html = "";
+    if (__rootedView === "level") {
+      var level = RP.LEVELS.filter(function (l) { return l.id === __rootedLevel; })[0] || RP.LEVELS[0];
+      html = rootedShell("Level " + level.id + " · " + escapeHtml(level.name),
+        '<p class="rt-note">' + escapeHtml(level.focus) + "</p>" +
+        (level.available
+          ? '<p class="rt-note">Level 1’s published core is the 12 weeks. More of Level 1 is not written. About six months in a level is only a proposed pace, not a timer and not a rank.</p><div class="rt-actions"><button type="button" class="ch-btn" data-rtview="week">Open the 12 weeks</button></div>'
+          : '<p><b>Not available yet.</b> ' + escapeHtml(level.summary) + " Checking weeks in Level 1 cannot open this level, and there is no way to mark it complete.</p>") +
+        '<div class="rt-actions"><button type="button" class="ch-btn ghost" data-rtview="path">Back to the path</button></div>');
+    } else if (__rootedView === "week") {
+      var week = RP.weekByNumber(__rootedWeek) || RP.WEEKS[0];
+      var step = __rooted.steps[week.n] || { read: false, reflect: false, pray: false, practice: false };
+      var locked = !__rooted.optedIn;
+      html = rootedShell("Week " + week.n + " · " + escapeHtml(week.title),
+        '<p class="rt-note">' + escapeHtml(week.section) + " · read it in your own Bible (" + escapeHtml(week.translation) + ").</p>" +
+        rootedWeekChips() +
+        '<p class="rt-note">Your small group still meets in person. Agree on that time and place together. Separately, meet your mentor this week for 30–45 minutes, in person or on Zoom. Arrange both outside the app. This app does not schedule either one or contact anyone.</p>' +
+        '<div class="rt-label">Scripture</div>' +
+        '<div class="rt-block"><p><b>Primary passage:</b> ' + escapeHtml(week.passage) + "</p><p>" + escapeHtml(week.passageNote) + "</p>" +
+        "<p><b>Key verse to look up:</b> " + escapeHtml(week.keyVerse) + " (" + escapeHtml(week.translation) + ").</p>" +
+        "<p><b>In our words, not a quotation:</b> " + escapeHtml(week.plainSense) + "</p></div>" +
+        '<button type="button" class="ch-btn ghost" id="rootedOpenPassage">Open ' + escapeHtml(week.passageLoad) + " in the Devotional</button>" +
+        (week.passageAlso ? '<p class="rt-note">Also read ' + escapeHtml(week.passageAlso) + " in your Bible. The button opens the first section.</p>" : "") +
+        '<div class="rt-label">Reading guide</div>' +
+        '<div class="rt-block"><div class="rt-label">The text says</div><p>' + escapeHtml(week.text) + "</p></div>" +
+        '<div class="rt-block"><div class="rt-label">Our reading — not the text itself</div><p>' + escapeHtml(week.interpretation) + "</p></div>" +
+        '<div class="rt-block"><div class="rt-label">One possible practice — not a command of this passage</div><p>' + escapeHtml(week.practiceNote) + "</p></div>" +
+        '<div class="rt-label">Discussion — choose one or two. Passing is welcome.</div><ol class="rt-prompts">' +
+        week.prompts.map(function (p) { return "<li>" + escapeHtml(p) + "</li>"; }).join("") + "</ol>" +
+        '<div class="rt-label">Prayer — praying aloud is optional</div><div class="rt-block"><p>' + escapeHtml(week.prayer) + "</p></div>" +
+        '<div class="rt-label">This week’s practice</div><div class="rt-block"><p>' + escapeHtml(week.action) + "</p></div>" +
+        (week.caution ? '<p class="rt-note"><b>A limit to keep:</b> ' + escapeHtml(week.caution) + "</p>" : "") +
+        rootedMentorBlock(week, locked) +
+        '<div class="rt-label">Lesson steps — separate from the mentor meeting</div><p class="rt-note" id="rootedProgressNote">' + escapeHtml(rootedProgressSentence()) + "</p>" +
+        (locked ? '<p class="rt-note">Begin Level 1 on the path screen before a check-in or a reflection is saved.</p>' : "") +
+        rootedCheck("read", "I read the passage in a Bible.", step.read, locked, week.n) +
+        rootedCheck("reflect", "I sat with a question or brought one to the group.", step.reflect, locked, week.n) +
+        rootedCheck("pray", "I prayed, silently or aloud.", step.pray, locked, week.n) +
+        rootedCheck("practice", "I took a step that fits my life, or I can say why this one does not.", step.practice, locked, week.n) +
+        '<div class="rt-label">Private reflection — optional</div>' +
+        '<p class="rt-note">Only you can read this. It is not posted to a circle, scored, or sent to the weekly AI review. Do not write someone else’s story, dollar amounts, or medical details. This is not a promise that a live conversation stays secret.</p>' +
+        '<textarea class="rt-ref" id="rootedReflection" maxlength="4000" ' + (locked ? "disabled" : "") + ' placeholder="What stood out, and what will you carry?"></textarea>' +
+        '<div class="rt-actions"><button type="button" class="ch-btn" id="rootedSaveReflection"' + (locked ? " disabled" : "") + ">Save reflection</button></div>" +
+        '<div class="rt-status" id="rootedReflectionStatus">' + escapeHtml(__rootedReflectionStatus) + "</div>" +
+        '<details class="rt-safe"><summary>If you are guiding the group</summary><p>Keep the three blocks separate: what the text says, our reading, and one possible practice. Invite quieter men without putting them on the spot. Doubt and silence are welcome. Ask before you pray another man’s need aloud. You cannot promise absolute confidentiality. Do not record the group or the mentor conversation, and do not ask him to hand you his reflection.</p></details>' +
+        '<div class="rt-actions"><button type="button" class="ch-btn ghost" data-rtview="path">Back to the path</button></div>');
+    } else {
+      var chips = __rooted.optedIn ? rootedWeekChips() + '<p class="rt-note" id="rootedProgressNote">' + escapeHtml(rootedProgressSentence()) + "</p>" : "";
+      html = rootedShell("A 12-week core for Level 1",
+        '<p class="rt-note">For a small circle of men who want to receive Christ’s grace, grow roots in Scripture, and take a faithful step toward the purpose God gives. Strength here means humility, courage, love, perseverance, and service. Men exploring faith are welcome. Questions are welcome.</p>' +
+        '<p class="rt-note">This is an independent draft inside LIVN FORGE. It is not an official church curriculum and does not speak for North Coast Church or any congregation. The wider path imagines about six months in each level. These 12 weeks are only Level 1’s published core. Finishing them does not complete the level, open the next one, or certify a leader.</p>' +
+        '<p class="rt-note">Keep the small-group gathering once a week — a home or a church room used with permission is enough. No one has to buy a space. Each man also has a weekly mentor conversation, about 30–45 minutes, in person or on Zoom. You choose your mentor and arrange the details with him outside the app. This app does not assign mentors, create meetings, or invite anyone.</p>' +
+        '<div class="rt-actions">' +
+        (__rooted.optedIn
+          ? '<button type="button" class="ch-btn" data-rtweek="' + rootedSuggestedWeek() + '">Continue · Week ' + rootedSuggestedWeek() + '</button>'
+          : '<button type="button" class="ch-btn" id="rootedBegin">Begin Level 1</button><button type="button" class="ch-btn ghost" data-rtweek="1">Preview Week 1</button>') +
+        '</div>' +
+        '<div class="rt-label">The proposed path</div><div class="rt-levels">' +
+        RP.LEVELS.map(function (level) {
+          return '<button type="button" class="rt-level' + (level.available ? "" : " rt-future") + '" data-rtlevel="' + level.id + '">' +
+            '<span class="rt-level-name">Level ' + level.id + " · " + escapeHtml(level.name) + "</span>" +
+            '<span class="rt-level-focus">' + escapeHtml(level.focus) + "</span>" +
+            '<span class="rt-level-state">' + (level.available ? "Open · draft core" : "Not available yet") + "</span></button>";
+        }).join("") + "</div>" + chips +
+        '<details class="rt-safe"><summary>Privacy, prayer, and safety</summary>' +
+        "<p>Personal stories in the room deserve care, and they should not be repeated casually. No one can promise absolute confidentiality. If someone may be unsafe, or the law requires a report, involve the right help and share only what is necessary. Ask before praying a man’s need out loud. Do not record meetings or pass around a prayer list.</p>" +
+        "<p>This course does not replace a pastor, a clinician, or emergency help. In immediate danger in the U.S., call 911. For a suicide or mental-health crisis, call or text 988. Never advise someone to stop prescribed care.</p></details>" +
+        (__rooted.optedIn ? '<button type="button" class="ch-manage" id="rootedLeave">Leave Level 1</button>' : "") +
+        "");
+    }
+    box.innerHTML = html;
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    var ta = document.getElementById("rootedReflection");
+    if (ta && __rooted.reflections && __rooted.reflections[__rootedWeek]) ta.value = __rooted.reflections[__rootedWeek];
+    var close = document.getElementById("rootedClose");
+    if (close) close.addEventListener("click", closeRooted);
+    box.querySelectorAll("[data-rtview]").forEach(function (b) {
+      b.addEventListener("click", function () { __rootedView = b.getAttribute("data-rtview"); renderRooted(); });
+    });
+    box.querySelectorAll("[data-rtlevel]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = parseInt(b.getAttribute("data-rtlevel"), 10);
+        if (RP.levelAvailable(id)) { __rootedView = "week"; __rootedWeek = rootedSuggestedWeek(); }
+        else { __rootedView = "level"; __rootedLevel = id; }
+        renderRooted();
+      });
+    });
+    box.querySelectorAll("[data-rtweek]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        __rootedWeek = parseInt(b.getAttribute("data-rtweek"), 10) || 1;
+        __rootedView = "week";
+        __rootedReflectionStatus = "";
+        renderRooted();
+        rootedHydrateWeek(__rootedWeek);
+      });
+    });
+    box.querySelectorAll("[data-rtstep]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        rootedToggle(parseInt(input.getAttribute("data-rtweek"), 10), input.getAttribute("data-rtstep"), input.checked);
+      });
+    });
+    box.querySelectorAll("[data-rtmode]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var weekNo = parseInt(b.getAttribute("data-rtweek"), 10);
+        var mode = b.getAttribute("data-rtmode");
+        var current = __rooted.meetings && __rooted.meetings[weekNo];
+        var next = current && current.mode === mode ? "" : mode;
+        rootedSetMeeting(weekNo, { mode: next });
+        box.querySelectorAll("[data-rtmode]").forEach(function (other) {
+          var on = other.getAttribute("data-rtmode") === next;
+          other.classList.toggle("on", on);
+          other.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      });
+    });
+    box.querySelectorAll("[data-rtmet]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        rootedSetMeeting(parseInt(input.getAttribute("data-rtweek"), 10), { met: input.checked });
+      });
+    });
+    var begin = document.getElementById("rootedBegin");
+    if (begin) begin.addEventListener("click", rootedBegin);
+    var leave = document.getElementById("rootedLeave");
+    if (leave) leave.addEventListener("click", rootedLeave);
+    var save = document.getElementById("rootedSaveReflection");
+    if (save) save.addEventListener("click", function () { rootedCommitReflection(__rootedWeek); });
+    var passage = document.getElementById("rootedOpenPassage");
+    if (passage) passage.addEventListener("click", function () {
+      var current = RP.weekByNumber(__rootedWeek);
+      if (current) rootedOpenPassage(current.passageLoad);
+    });
+    if (__rootedView === "week") rootedHydrateWeek(__rootedWeek);
+  }
+  function rootedMentorBlock(week, locked) {
+    var RP = rootedProgram();
+    var meeting = (__rooted.meetings && __rooted.meetings[week.n]) || { mode: "", met: false };
+    var agenda = RP.MENTOR_AGENDA.map(function (item) {
+      return "<li><b>" + escapeHtml(item.label) + ".</b> " + escapeHtml(item.hint) + " " + escapeHtml(week.mentor[item.key]) + "</li>";
+    }).join("");
+    var modes = RP.MEETING_MODES.map(function (mode) {
+      var on = meeting.mode === mode;
+      var label = mode === "zoom" ? "Zoom" : "In person";
+      return '<button type="button" class="rt-mode' + (on ? " on" : "") + '" data-rtmode="' + mode + '" data-rtweek="' + week.n + '" aria-pressed="' + (on ? "true" : "false") + '"' + (locked ? " disabled" : "") + ">" + label + "</button>";
+    }).join("");
+    return '<section id="rootedMentor"><div class="rt-label">Mentor conversation · 30–45 minutes</div>' +
+      '<p class="rt-note">Discuss this week’s Scripture, how it applies, what is hard, and prayer, then agree on one next step. Set the time — and the Zoom link, if you use one — with your mentor outside the app. There is no mentor list here, and nothing you say in the conversation is saved, recorded, or sent to the AI review.</p>' +
+      '<ol class="rt-agenda">' + agenda + "</ol>" +
+      (week.mentor.limit ? '<p class="rt-note"><b>For the mentor:</b> ' + escapeHtml(week.mentor.limit) + "</p>" : "") +
+      '<div class="rt-label">How you met — your choice</div>' +
+      '<div class="rt-modes" role="group" aria-label="How you met with your mentor">' + modes + "</div>" +
+      '<p class="rt-note">Choosing in person or Zoom does not by itself mark the meeting done.</p>' +
+      '<label class="rt-check"><input type="checkbox" data-rtmet="1" data-rtweek="' + week.n + '"' + (meeting.met ? " checked" : "") + (locked ? " disabled" : "") + '> <span>I met with my mentor this week. This is my report only. The app does not ask my mentor to confirm it.</span></label></section>';
+  }
+  function rootedSetMeeting(week, patch) {
+    var RP = rootedProgram();
+    rootedEnsure();
+    if (!RP || !__rooted || !__rooted.optedIn || !__rooted.meetings || !__rooted.meetings[week]) return;
+    if (Object.prototype.hasOwnProperty.call(patch, "mode")) {
+      __rooted.meetings[week].mode = RP.MEETING_MODES.indexOf(patch.mode) >= 0 ? patch.mode : "";
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "met")) __rooted.meetings[week].met = patch.met === true;
+    __rooted.updatedAt = new Date().toISOString();
+    rootedWriteLocal();
+    rootedPushSteps();
+    var note = document.getElementById("rootedProgressNote");
+    if (note) note.textContent = rootedProgressSentence();
+    renderRootedCta();
+  }
+  function rootedCheck(key, label, on, locked, week) {
+    return '<label class="rt-check"><input type="checkbox" data-rtstep="' + key + '" data-rtweek="' + week + '"' +
+      (on ? " checked" : "") + (locked ? " disabled" : "") + "> <span>" + escapeHtml(label) + "</span></label>";
+  }
+  function rootedToggle(week, key, on) {
+    var RP = rootedProgram();
+    rootedEnsure();
+    if (!RP || !__rooted || !__rooted.optedIn || RP.STEP_KEYS.indexOf(key) < 0 || !__rooted.steps[week]) return;
+    __rooted.steps[week][key] = !!on;
+    __rooted.updatedAt = new Date().toISOString();
+    rootedWriteLocal();
+    rootedPushSteps();
+    var note = document.getElementById("rootedProgressNote");
+    if (note) note.textContent = rootedProgressSentence();
+    renderRootedCta();
+  }
+  function rootedBegin() {
+    rootedEnsure();
+    if (!__rooted) return;
+    __rooted.optedIn = true;
+    __rooted.updatedAt = new Date().toISOString();
+    rootedWriteLocal();
+    rootedPushSteps();
+    __rootedView = "week";
+    __rootedWeek = 1;
+    renderRooted();
+    renderRootedCta();
+    if (typeof showToast === "function") showToast("Level 1 is yours to walk. Week 1 is open.");
+  }
+  function rootedLeave() {
+    if (typeof confirm === "function" && !confirm("Leave Level 1? Your check-ins stay on this device if you begin again. The rest of your journal is unchanged.")) return;
+    rootedEnsure();
+    if (!__rooted) return;
+    __rooted.optedIn = false;
+    __rooted.updatedAt = new Date().toISOString();
+    rootedWriteLocal();
+    rootedPushSteps();
+    __rootedView = "path";
+    renderRooted();
+    renderRootedCta();
+  }
+  async function rootedCommitReflection(week) {
+    var ta = document.getElementById("rootedReflection");
+    var status = document.getElementById("rootedReflectionStatus");
+    var result = await rootedSaveReflection(week, ta ? ta.value : "");
+    __rootedReflectionStatus = rootedReflectionMessage(result.where);
+    if (status) status.textContent = __rootedReflectionStatus;
+  }
+  async function rootedHydrateWeek(week) {
+    rootedEnsure();
+    if (!__rooted || __rooted.reflections[week]) return;
+    var local = await rootedOpenLocal(week);
+    if (!local || __rootedUser !== rootedUid()) return;
+    __rooted.reflections[week] = local;
+    var ta = document.getElementById("rootedReflection");
+    if (ta && !ta.value) ta.value = local;
+  }
+  function rootedOpenPassage(ref) {
+    closeRooted();
+    try { setActiveType("devotional"); showApp(); showWrite(); window.scrollTo(0, 0); } catch (e) { return; }
+    setTimeout(function () {
+      try {
+        var refEl = document.getElementById("bsReference");
+        if (refEl && ref) {
+          refEl.value = String(ref).replace(/[–—]/g, "-");
+          refEl.dataset.manual = "1";
+          if (typeof loadBiblePassage === "function") loadBiblePassage();
+        }
+      } catch (e) {}
+    }, 80);
+  }
+  function rootedPreview(mode) {
+    var RP = rootedProgram();
+    if (!RP) return;
+    BUILD = "men";
+    document.body.setAttribute("data-build", "men");
+    __rootedCloud = false;
+    __rooted = null;
+    __rootedUser = "";
+    rootedEnsure();
+    __rooted.optedIn = mode !== "rooted-path" && mode !== "rooted-card";
+    __rooted.steps = RP.emptySteps();
+    __rooted.meetings = RP.emptyMeetings();
+    __rooted.reflections = {};
+    __rootedReflectionStatus = "";
+    if (mode === "rooted" || mode === "rooted-week") {
+      __rooted.steps[1].read = true;
+      __rooted.steps[1].pray = true;
+      __rootedView = "week";
+      __rootedWeek = 1;
+      __rootedOpen = true;
+    } else if (mode === "rooted-done") {
+      for (var n = 1; n <= 12; n++) __rooted.steps[n] = { read: true, reflect: true, pray: true, practice: true };
+      __rootedView = "week";
+      __rootedWeek = 12;
+      __rootedOpen = true;
+    } else if (mode === "rooted-future") {
+      __rootedView = "level";
+      __rootedLevel = 6;
+      __rootedOpen = true;
+    } else if (mode === "rooted-card") {
+      __rooted.optedIn = false;
+      __rootedOpen = false;
+    } else {
+      __rooted.optedIn = false;
+      __rootedView = "path";
+      __rootedOpen = true;
+    }
+    renderRootedCta();
+    if (__rootedOpen) renderRooted(); else closeRooted();
+  }
+  (function initRooted() {
+    var b = document.getElementById("rootedCta");
+    if (b) b.addEventListener("click", openRooted);
+    var m = document.getElementById("rootedModal");
+    if (m) m.addEventListener("click", function (e) { if (e.target === m) closeRooted(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && __rootedOpen) closeRooted();
+    });
+  })();
+
+
   async function runSelfTests() {
     var logs = [];
     function check(name, cond) { logs.push((cond ? "PASS " : "FAIL ") + name); return !!cond; }
@@ -11080,6 +11763,110 @@
     mfClearDraft(4);
     __mf = null;
     mfHold.remove();
+    if (window.RootedProgram) {
+      var RP = window.RootedProgram;
+      var buildBefore = BUILD;
+      check("twelve rooted weeks", RP.WEEKS.length === 12 && RP.LEVELS.filter(function (l) { return l.available; }).length === 1);
+      var planted = RP.normalize({ optedIn: true, rank: "Multiplying", certifiedLeader: true, reflections: { 1: "SECRET_REFLECTION" }, steps: { 12: { read: true, reflect: true, pray: true, practice: true } } });
+      check("normalize strips rank and reflection", !planted.rank && !planted.reflections && planted.steps[12].read === true && planted.steps[12].practice === true);
+      var allSteps = {};
+      for (var ri = 1; ri <= 12; ri++) allSteps[ri] = { read: true, reflect: true, pray: true, practice: true };
+      check("completion does not promote", RP.courseCoreComplete({ optedIn: true, steps: allSteps }) && RP.promotion().promoted === false && RP.levelAvailable(2) === false && RP.levelAvailable(6) === false);
+      __rootedCloud = false;
+      __currentUser = { id: "user-rooted-a", email: "rooted-a@example.com" };
+      __rooted = null; __rootedUser = "";
+      rootedEnsure();
+      __rooted.optedIn = true;
+      __rooted.steps[3].read = true;
+      __rooted.updatedAt = new Date().toISOString();
+      rootedWriteLocal();
+      var rootedBlob = localStorage.getItem(rootedKey()) || "";
+      check("check-in record has no reflection", rootedBlob.indexOf("reflection") === -1 && rootedBlob.indexOf("SECRET") === -1);
+      __currentUser = { id: "user-rooted-b", email: "rooted-b@example.com" };
+      __rooted = null; __rootedUser = "";
+      var otherRooted = rootedEnsure();
+      check("another account does not receive the check-in", !!otherRooted && !otherRooted.optedIn && !otherRooted.steps[3].read);
+      __currentUser = { id: "user-rooted-a", email: "rooted-a@example.com" };
+      __rooted = null; __rootedUser = "";
+      rootedEnsure();
+      __rooted.optedIn = true;
+      var entriesBefore = __entries.length;
+      var sealedRooted = await rootedSaveReflection(4, "private prayer SECRET_REFLECTION");
+      var rootedCipher = localStorage.getItem(rootedRefKey(4)) || "";
+      check("reflection is not stored in clear text", !!sealedRooted.ok && rootedCipher.indexOf("SECRET_REFLECTION") === -1 && rootedCipher.indexOf("private prayer") === -1);
+      check("reflection does not become a journal entry", __entries.length === entriesBefore);
+      var progressStill = localStorage.getItem(APP + ":rooted:user-rooted-a") || "";
+      check("reflection is not copied into check-in storage", progressStill.indexOf("SECRET_REFLECTION") === -1);
+      __currentUser = { id: "user-rooted-b", email: "rooted-b@example.com" };
+      __rooted = null; __rootedUser = "";
+      var foreignReflection = await rootedOpenLocal(4);
+      check("another account cannot open the reflection", !foreignReflection);
+      __currentUser = { id: "user-rooted-a", email: "rooted-a@example.com" };
+      __rooted = null; __rootedUser = "";
+      var ownReflection = await rootedOpenLocal(4);
+      check("the author can open his reflection", ownReflection === "private prayer SECRET_REFLECTION");
+      __rootedCloud = false;
+      rootedEnsure();
+      __rooted.optedIn = true;
+      __rootedView = "week";
+      __rootedWeek = 1;
+      __rootedOpen = true;
+      BUILD = "men";
+      renderRooted();
+      var readBox = document.querySelector('#rootedModal [data-rtstep="read"]');
+      check("week 1 check-in is present", !!readBox && !readBox.checked);
+      readBox.checked = true;
+      readBox.dispatchEvent(new Event("change", { bubbles: true }));
+      check("check-in stays on this account", rootedEnsure().steps[1].read === true);
+      var savedSteps = {};
+      try { savedSteps = JSON.parse(localStorage.getItem(rootedKey()) || "{}"); } catch (e) { savedSteps = {}; }
+      check("saved check-in has no prose", !!(savedSteps.steps && (savedSteps.steps[1] || savedSteps.steps["1"] || {}).read) && !savedSteps.reflections);
+      var lessonBeforeMeet = { read: __rooted.steps[1].read, reflect: __rooted.steps[1].reflect, pray: __rooted.steps[1].pray, practice: __rooted.steps[1].practice };
+      var mentorBlock = document.getElementById("rootedMentor");
+      var zoomBtn = document.querySelector('#rootedMentor [data-rtmode="zoom"]');
+      check("mentor conversation is on the week", !!mentorBlock && !!zoomBtn && /30–45 minutes/.test(mentorBlock.textContent) && !mentorBlock.querySelector("textarea"));
+      zoomBtn.click();
+      var metBox = document.querySelector('#rootedMentor [data-rtmet]');
+      check("mentor attendance starts unchecked", !!metBox && !metBox.checked);
+      metBox.checked = true;
+      metBox.dispatchEvent(new Event("change", { bubbles: true }));
+      check("mentor meeting is self-reported", __rooted.meetings[1].mode === "zoom" && __rooted.meetings[1].met === true);
+      check("mentor meeting does not clear lesson steps", __rooted.steps[1].read === lessonBeforeMeet.read && __rooted.steps[1].reflect === lessonBeforeMeet.reflect && __rooted.steps[1].pray === lessonBeforeMeet.pray && __rooted.steps[1].practice === lessonBeforeMeet.practice);
+      var meetSaved = {};
+      try { meetSaved = JSON.parse(localStorage.getItem(rootedKey()) || "{}"); } catch (e) { meetSaved = {}; }
+      var meetRow = (meetSaved.meetings && (meetSaved.meetings[1] || meetSaved.meetings["1"])) || {};
+      check("saved meeting stores only mode and attendance", meetRow.mode === "zoom" && meetRow.met === true && Object.keys(meetRow).sort().join(",") === "met,mode");
+      check("lesson progress remains after the meeting is saved", !!((meetSaved.steps[1] || meetSaved.steps["1"] || {}).read));
+      __currentUser = { id: "user-rooted-b", email: "rooted-b@example.com" };
+      __rooted = null; __rootedUser = "";
+      var foreignMeet = rootedEnsure();
+      check("another account does not receive the meeting", !!foreignMeet && !foreignMeet.meetings[1].met && foreignMeet.meetings[1].mode === "" && !foreignMeet.steps[1].read);
+      __currentUser = { id: "user-rooted-a", email: "rooted-a@example.com" };
+      __rooted = null; __rootedUser = "";
+      rootedEnsure();
+      __rootedOpen = true;
+      __rootedView = "level";
+      __rootedLevel = 2;
+      renderRooted();
+      var levelHtml = (document.getElementById("rootedModalInner") || {}).innerHTML || "";
+      check("level 2 cannot be completed", /Not available yet/.test(levelHtml) && /No lessons/.test(levelHtml) && !/Mark Level 2/.test(levelHtml));
+      BUILD = "women";
+      renderRootedCta();
+      check("women's build hides the course", document.getElementById("rootedCardWrap").style.display === "none");
+      BUILD = "men";
+      renderRootedCta();
+      check("men's build offers the course", document.getElementById("rootedCardWrap").style.display !== "none");
+      closeRooted();
+      ["user-rooted-a", "user-rooted-b"].forEach(function (id) {
+        try {
+          localStorage.removeItem(APP + ":rooted:" + id);
+          for (var rw = 1; rw <= 12; rw++) localStorage.removeItem(APP + ":rootedref:" + id + ":" + rw);
+        } catch (e) {}
+      });
+      __rooted = null; __rootedUser = "";
+      __rootedCloud = null;
+      BUILD = buildBefore;
+    } else check("rooted program loaded", false);
     var pass = logs.filter(function (l) { return l.indexOf("PASS") === 0; }).length;
     var fail = logs.length - pass;
     var pre = document.createElement("pre");
@@ -11091,6 +11878,7 @@
   }
   async function renderPreview(mode) {
     var women = /women=1/.test(location.search);
+    if (/^rooted/.test(mode || "")) __activeTab = "progress";
     __currentUser = { id: "preview-user", email: "preview@example.com", display_name: "Alex", tut_v: TUT_VERSION };
     try { localStorage.setItem(tutKey(), String(TUT_VERSION)); } catch (e) {}
     BUILD = women ? "women" : "men";
@@ -11124,6 +11912,7 @@
       setBibleStatus(classifyBibleFailure({ status: 503, message: "The passage provider could not complete this request." }).message, true);
     }
     if (mode === "history") { showApp(); showHistory(); }
+    if (/^rooted/.test(mode || "")) { try { rootedPreview(mode); } catch (e) { console.error(e); } }
     document.body.setAttribute("data-preview", mode);
   }
   (async function boot() {
@@ -11172,6 +11961,7 @@
         fetchGoalsFromCloud();
         fetchMarriageFromCloud();
         fetchDevoReadsFromCloud();
+        try { rootedLoad(); } catch (e) {}
         hydrateCirclesFromCloud();
         checkCircleInvites();
         updateCount();
