@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
 
     // Tables keyed by user_id (deleted explicitly in case they lack a cascade FK).
     await del("entries", "user_id", uid);
+    await del("discipleship_progress", "user_id", uid);
     await del("redemptions", "user_id", uid);
     await del("subscriptions", "user_id", uid);
     await del("device_tokens", "user_id", uid);
