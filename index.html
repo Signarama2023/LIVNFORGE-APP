@@ -541,6 +541,15 @@
   .rt-week { min-width:36px; height:36px; border-radius:10px; border:1px solid var(--field-border); background:transparent; color:var(--text); font-family:inherit; font-weight:700; cursor:pointer; }
   .rt-week.on { background:var(--gold); color:var(--on-gold); border-color:var(--gold); }
   .rt-week.done { box-shadow:inset 0 0 0 2px var(--gold-light); }
+  .rt-week.met { position:relative; }
+  .rt-week.met::after { content:""; position:absolute; width:6px; height:6px; border-radius:50%; background:var(--gold-light); right:4px; bottom:3px; }
+  .rt-week.on.met::after { background:var(--on-gold); }
+  .rt-modes { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px; }
+  .rt-mode { flex:1 1 140px; min-height:48px; border-radius:999px; border:1px solid var(--field-border); background:transparent; color:var(--text); font-family:inherit; font-weight:800; font-size:15px; cursor:pointer; }
+  .rt-mode.on { background:var(--gold); color:var(--on-gold); border-color:var(--gold); }
+  .rt-agenda { margin:6px 0 12px; padding-left:18px; }
+  .rt-agenda li { font-size:14.5px; line-height:1.45; margin:8px 0; }
+  #rootedMentor { margin-top:8px; }
   .rt-block { border-left:3px solid var(--gold); padding:8px 12px; margin:8px 0 12px; background:rgba(255,255,255,.03); border-radius:0 12px 12px 0; }
   .rt-label { font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:800; color:var(--gold-light); margin-bottom:4px; }
   .rt-block p, .rt-prompts li { font-size:14.5px; line-height:1.5; margin:0; }
@@ -11026,13 +11035,45 @@
     var stamp = __rooted.updatedAt || new Date().toISOString();
     __rooted.optedIn = clean.optedIn;
     __rooted.steps = clean.steps;
+    __rooted.meetings = clean.meetings;
     __rooted.updatedAt = stamp;
     try {
       localStorage.setItem(rootedKey(), JSON.stringify({
         v: 1, userId: uid, programId: RP.PROGRAM_ID,
-        optedIn: clean.optedIn, updatedAt: stamp, steps: clean.steps
+        optedIn: clean.optedIn, updatedAt: stamp, steps: clean.steps, meetings: clean.meetings
       }));
     } catch (e) {}
+  }
+  var __rootedMeetingsColumn = null;
+  function rootedMeetingsColumnMissing(error) {
+    var msg = String((error && (error.message || error.details || error.hint || error.code)) || "");
+    return /meetings/i.test(msg) && /column|schema cache/i.test(msg);
+  }
+  function rootedStepsPayload(clean) {
+    if (__rootedMeetingsColumn !== false) return clean.steps;
+    var steps = {};
+    for (var n = 1; n <= 12; n++) {
+      steps[String(n)] = {
+        read: clean.steps[n].read === true,
+        reflect: clean.steps[n].reflect === true,
+        pray: clean.steps[n].pray === true,
+        practice: clean.steps[n].practice === true,
+        meeting: { mode: clean.meetings[n].mode, met: clean.meetings[n].met === true }
+      };
+    }
+    return steps;
+  }
+  function rootedProgressPayload(clean) {
+    var row = {
+      user_id: rootedUid(),
+      email: String((__currentUser && __currentUser.email) || "").toLowerCase(),
+      program_id: "rooted-l1",
+      opted_in: !!clean.optedIn,
+      steps: rootedStepsPayload(clean),
+      updated_at: clean.updatedAt || (__rooted && __rooted.updatedAt) || new Date().toISOString()
+    };
+    if (__rootedMeetingsColumn !== false) row.meetings = clean.meetings;
+    return row;
   }
   function rootedTableMissing(error) {
     var msg = String((error && (error.message || error.details || error.code)) || "");
@@ -11103,10 +11144,17 @@
     var RP = rootedProgram();
     if (!RP || !sb || !rootedUid() || __rootedCloud === false) return;
     var res;
-    try { res = await sb.from("discipleship_progress").select("user_id,opted_in,steps,reflections,updated_at").eq("user_id", rootedUid()).maybeSingle(); }
+    var columns = "user_id,opted_in,steps,reflections,updated_at";
+    if (__rootedMeetingsColumn !== false) columns += ",meetings";
+    try { res = await sb.from("discipleship_progress").select(columns).eq("user_id", rootedUid()).maybeSingle(); }
     catch (e) { return; }
+    if (res && res.error && rootedMeetingsColumnMissing(res.error)) {
+      __rootedMeetingsColumn = false;
+      try { res = await sb.from("discipleship_progress").select("user_id,opted_in,steps,reflections,updated_at").eq("user_id", rootedUid()).maybeSingle(); }
+      catch (e2) { return; }
+    }
     if (!res || res.error) {
-      if (res && rootedTableMissing(res.error)) __rootedCloud = false;
+      if (res && rootedTableMissing(res.error) && !rootedMeetingsColumnMissing(res.error)) __rootedCloud = false;
       return;
     }
     __rootedCloud = true;
@@ -11115,9 +11163,16 @@
     var local = RP.normalize(rootedReadLocal());
     var remoteStamp = String(res.data.updated_at || "");
     if (!local.updatedAt || remoteStamp > local.updatedAt) {
-      var remote = RP.normalize({ optedIn: !!res.data.opted_in, steps: res.data.steps, updatedAt: remoteStamp });
+      var remote = RP.normalize({ optedIn: !!res.data.opted_in, steps: res.data.steps, meetings: res.data.meetings, updatedAt: remoteStamp });
+      var priorMeetings = __rooted.meetings;
       __rooted.optedIn = remote.optedIn;
       __rooted.steps = remote.steps;
+      if (res.data.meetings && typeof res.data.meetings === "object") __rooted.meetings = remote.meetings;
+      else {
+        var nested = false;
+        for (var mn = 1; mn <= 12; mn++) if (remote.meetings[mn].met || remote.meetings[mn].mode) nested = true;
+        __rooted.meetings = nested ? remote.meetings : priorMeetings;
+      }
       __rooted.updatedAt = remoteStamp;
       rootedWriteLocal();
     }
@@ -11133,15 +11188,12 @@
     if (__rootedCloud === false || !RP || !sb || !rootedUid() || !__rooted || !__rooted.optedIn) return;
     var clean = RP.normalize(__rooted);
     try {
-      var res = await sb.from("discipleship_progress").upsert({
-        user_id: rootedUid(),
-        email: String(__currentUser.email || "").toLowerCase(),
-        program_id: "rooted-l1",
-        opted_in: !!clean.optedIn,
-        steps: clean.steps,
-        updated_at: __rooted.updatedAt || new Date().toISOString()
-      }, { onConflict: "user_id" });
-      if (res.error) { if (rootedTableMissing(res.error)) __rootedCloud = false; return; }
+      var res = await sb.from("discipleship_progress").upsert(rootedProgressPayload(clean), { onConflict: "user_id" });
+      if (res.error && rootedMeetingsColumnMissing(res.error)) {
+        __rootedMeetingsColumn = false;
+        res = await sb.from("discipleship_progress").upsert(rootedProgressPayload(RP.normalize(__rooted)), { onConflict: "user_id" });
+      }
+      if (res.error) { if (rootedTableMissing(res.error) && !rootedMeetingsColumnMissing(res.error)) __rootedCloud = false; return; }
       __rootedCloud = true;
     } catch (e) {}
   }
@@ -11156,17 +11208,21 @@
     var account = false;
     if (sb && rootedUid() && __rootedCloud !== false) {
       try {
-        var res = await sb.from("discipleship_progress").upsert({
-          user_id: rootedUid(),
-          email: String(__currentUser.email || "").toLowerCase(),
-          program_id: "rooted-l1",
-          opted_in: true,
-          steps: RP.normalize(__rooted).steps,
-          reflections: __rooted.reflections,
-          updated_at: new Date().toISOString()
-        }, { onConflict: "user_id" });
-        if (res.error) { if (rootedTableMissing(res.error)) __rootedCloud = false; }
-        else { __rootedCloud = true; account = true; }
+        var reflectRow = rootedProgressPayload(RP.normalize(__rooted));
+        reflectRow.opted_in = true;
+        reflectRow.reflections = __rooted.reflections;
+        reflectRow.updated_at = new Date().toISOString();
+        var res = await sb.from("discipleship_progress").upsert(reflectRow, { onConflict: "user_id" });
+        if (res.error && rootedMeetingsColumnMissing(res.error)) {
+          __rootedMeetingsColumn = false;
+          reflectRow = rootedProgressPayload(RP.normalize(__rooted));
+          reflectRow.opted_in = true;
+          reflectRow.reflections = __rooted.reflections;
+          reflectRow.updated_at = new Date().toISOString();
+          res = await sb.from("discipleship_progress").upsert(reflectRow, { onConflict: "user_id" });
+        }
+        if (res.error) { if (rootedTableMissing(res.error) && !rootedMeetingsColumnMissing(res.error)) __rootedCloud = false; }
+        else if (!res.error) { __rootedCloud = true; account = true; }
       } catch (e) {}
     }
     if (!trimmed) return { ok: true, where: account ? "account" : "cleared" };
@@ -11193,14 +11249,20 @@
   function rootedSuggestedWeek() {
     var RP = rootedProgram();
     if (!RP || !__rooted) return 1;
-    for (var n = 1; n <= 12; n++) if (!RP.weekCoreComplete(__rooted, n)) return n;
+    for (var n = 1; n <= 12; n++) {
+      if (!RP.weekCoreComplete(__rooted, n) || !RP.weekMeetingComplete(__rooted, n)) return n;
+    }
     return 12;
   }
   function rootedProgressSentence() {
     var RP = rootedProgram();
     if (!RP || !__rooted || !__rooted.optedIn) return "Begin Level 1 when you want a private check-in. Nothing is recorded until you do.";
-    if (RP.courseCoreComplete(__rooted)) return "Every week's check-in is marked. That finishes this 12-week core. It does not finish Level 1, open Level 2, or certify you to lead.";
-    return RP.weeksCheckedCount(__rooted) + " of 12 weeks fully checked in. Leaving a box blank is allowed.";
+    var lessons = RP.weeksCheckedCount(__rooted);
+    var meetings = RP.meetingsMarkedCount(__rooted);
+    var line = "Lesson steps: " + lessons + " of 12 weeks. Mentor meetings you reported: " + meetings + " of 12. A meeting mark is your report only. The app does not verify it.";
+    if (lessons === 12 && meetings === 12) return line + " Both are marked. That still does not finish Level 1, open Level 2, or certify you to lead.";
+    if (lessons === 12) return line + " Your lesson check-ins stay in place. Meetings are separate, and neither one promotes you.";
+    return line + " Leaving a lesson box blank is allowed.";
   }
   function rootedReflectionMessage(where) {
     if (where === "account") return "Saved to your account. Only you can read it. It is not added to your score, a circle, or the AI review.";
@@ -11222,8 +11284,8 @@
     rootedEnsure();
     if (!sub) return;
     if (!__rooted.optedIn) sub.textContent = "Draft · opt in when you want to begin";
-    else if (RP.courseCoreComplete(__rooted)) sub.textContent = "12-week core checked in · Level 2 is not open";
-    else sub.textContent = "Suggested week " + rootedSuggestedWeek() + " · " + RP.weeksCheckedCount(__rooted) + " of 12 checked in";
+    else if (RP.weeksWithBothCount(__rooted) === 12) sub.textContent = "Lessons and meetings marked · Level 2 is not open";
+    else sub.textContent = "Lessons " + RP.weeksCheckedCount(__rooted) + "/12 · mentor meetings " + RP.meetingsMarkedCount(__rooted) + "/12";
   }
   function closeRooted() {
     __rootedOpen = false;
@@ -11246,8 +11308,11 @@
     var RP = rootedProgram();
     var html = '<div class="rt-weeks">';
     RP.WEEKS.forEach(function (week) {
-      var cls = "rt-week" + (__rootedView === "week" && __rootedWeek === week.n ? " on" : "") + (RP.weekCoreComplete(__rooted, week.n) ? " done" : "");
-      html += '<button type="button" class="' + cls + '" data-rtweek="' + week.n + '" aria-label="Week ' + week.n + '">' + week.n + '</button>';
+      var lessonDone = RP.weekCoreComplete(__rooted, week.n);
+      var met = RP.weekMeetingComplete(__rooted, week.n);
+      var cls = "rt-week" + (__rootedView === "week" && __rootedWeek === week.n ? " on" : "") + (lessonDone ? " done" : "") + (met ? " met" : "");
+      var label = "Week " + week.n + (lessonDone ? ", lesson steps marked" : ", lesson steps open") + (met ? ", mentor meeting reported" : ", mentor meeting not reported");
+      html += '<button type="button" class="' + cls + '" data-rtweek="' + week.n + '" aria-label="' + label + '">' + week.n + '</button>';
     });
     return html + "</div>";
   }
@@ -11274,7 +11339,7 @@
       html = rootedShell("Week " + week.n + " · " + escapeHtml(week.title),
         '<p class="rt-note">' + escapeHtml(week.section) + " · read it in your own Bible (" + escapeHtml(week.translation) + ").</p>" +
         rootedWeekChips() +
-        '<p class="rt-note">Your group still meets in person. Agree on the time and place together. This app does not schedule the gathering or contact anyone.</p>' +
+        '<p class="rt-note">Your small group still meets in person. Agree on that time and place together. Separately, meet your mentor this week for 30–45 minutes, in person or on Zoom. Arrange both outside the app. This app does not schedule either one or contact anyone.</p>' +
         '<div class="rt-label">Scripture</div>' +
         '<div class="rt-block"><p><b>Primary passage:</b> ' + escapeHtml(week.passage) + "</p><p>" + escapeHtml(week.passageNote) + "</p>" +
         "<p><b>Key verse to look up:</b> " + escapeHtml(week.keyVerse) + " (" + escapeHtml(week.translation) + ").</p>" +
@@ -11290,7 +11355,8 @@
         '<div class="rt-label">Prayer — praying aloud is optional</div><div class="rt-block"><p>' + escapeHtml(week.prayer) + "</p></div>" +
         '<div class="rt-label">This week’s practice</div><div class="rt-block"><p>' + escapeHtml(week.action) + "</p></div>" +
         (week.caution ? '<p class="rt-note"><b>A limit to keep:</b> ' + escapeHtml(week.caution) + "</p>" : "") +
-        '<div class="rt-label">Private check-in</div><p class="rt-note" id="rootedProgressNote">' + escapeHtml(rootedProgressSentence()) + "</p>" +
+        rootedMentorBlock(week, locked) +
+        '<div class="rt-label">Lesson steps — separate from the mentor meeting</div><p class="rt-note" id="rootedProgressNote">' + escapeHtml(rootedProgressSentence()) + "</p>" +
         (locked ? '<p class="rt-note">Begin Level 1 on the path screen before a check-in or a reflection is saved.</p>' : "") +
         rootedCheck("read", "I read the passage in a Bible.", step.read, locked, week.n) +
         rootedCheck("reflect", "I sat with a question or brought one to the group.", step.reflect, locked, week.n) +
@@ -11301,14 +11367,14 @@
         '<textarea class="rt-ref" id="rootedReflection" maxlength="4000" ' + (locked ? "disabled" : "") + ' placeholder="What stood out, and what will you carry?"></textarea>' +
         '<div class="rt-actions"><button type="button" class="ch-btn" id="rootedSaveReflection"' + (locked ? " disabled" : "") + ">Save reflection</button></div>" +
         '<div class="rt-status" id="rootedReflectionStatus">' + escapeHtml(__rootedReflectionStatus) + "</div>" +
-        '<details class="rt-safe"><summary>If you are guiding the group</summary><p>Keep the three blocks separate: what the text says, our reading, and one possible practice. Invite quieter men without putting them on the spot. Doubt and silence are welcome. Ask before you pray another man’s need aloud. You cannot promise absolute confidentiality. Do not record the meeting.</p></details>' +
+        '<details class="rt-safe"><summary>If you are guiding the group</summary><p>Keep the three blocks separate: what the text says, our reading, and one possible practice. Invite quieter men without putting them on the spot. Doubt and silence are welcome. Ask before you pray another man’s need aloud. You cannot promise absolute confidentiality. Do not record the group or the mentor conversation, and do not ask him to hand you his reflection.</p></details>' +
         '<div class="rt-actions"><button type="button" class="ch-btn ghost" data-rtview="path">Back to the path</button></div>');
     } else {
       var chips = __rooted.optedIn ? rootedWeekChips() + '<p class="rt-note" id="rootedProgressNote">' + escapeHtml(rootedProgressSentence()) + "</p>" : "";
       html = rootedShell("A 12-week core for Level 1",
         '<p class="rt-note">For a small circle of men who want to receive Christ’s grace, grow roots in Scripture, and take a faithful step toward the purpose God gives. Strength here means humility, courage, love, perseverance, and service. Men exploring faith are welcome. Questions are welcome.</p>' +
         '<p class="rt-note">This is an independent draft inside LIVN FORGE. It is not an official church curriculum and does not speak for North Coast Church or any congregation. The wider path imagines about six months in each level. These 12 weeks are only Level 1’s published core. Finishing them does not complete the level, open the next one, or certify a leader.</p>' +
-        '<p class="rt-note">Keep meeting in person once a week — a home or a church room used with permission is enough. No one has to buy a space. This app will not schedule that meeting or invite anyone.</p>' +
+        '<p class="rt-note">Keep the small-group gathering once a week — a home or a church room used with permission is enough. No one has to buy a space. Each man also has a weekly mentor conversation, about 30–45 minutes, in person or on Zoom. You choose your mentor and arrange the details with him outside the app. This app does not assign mentors, create meetings, or invite anyone.</p>' +
         '<div class="rt-actions">' +
         (__rooted.optedIn
           ? '<button type="button" class="ch-btn" data-rtweek="' + rootedSuggestedWeek() + '">Continue · Week ' + rootedSuggestedWeek() + '</button>'
@@ -11359,6 +11425,25 @@
         rootedToggle(parseInt(input.getAttribute("data-rtweek"), 10), input.getAttribute("data-rtstep"), input.checked);
       });
     });
+    box.querySelectorAll("[data-rtmode]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var weekNo = parseInt(b.getAttribute("data-rtweek"), 10);
+        var mode = b.getAttribute("data-rtmode");
+        var current = __rooted.meetings && __rooted.meetings[weekNo];
+        var next = current && current.mode === mode ? "" : mode;
+        rootedSetMeeting(weekNo, { mode: next });
+        box.querySelectorAll("[data-rtmode]").forEach(function (other) {
+          var on = other.getAttribute("data-rtmode") === next;
+          other.classList.toggle("on", on);
+          other.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      });
+    });
+    box.querySelectorAll("[data-rtmet]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        rootedSetMeeting(parseInt(input.getAttribute("data-rtweek"), 10), { met: input.checked });
+      });
+    });
     var begin = document.getElementById("rootedBegin");
     if (begin) begin.addEventListener("click", rootedBegin);
     var leave = document.getElementById("rootedLeave");
@@ -11371,6 +11456,41 @@
       if (current) rootedOpenPassage(current.passageLoad);
     });
     if (__rootedView === "week") rootedHydrateWeek(__rootedWeek);
+  }
+  function rootedMentorBlock(week, locked) {
+    var RP = rootedProgram();
+    var meeting = (__rooted.meetings && __rooted.meetings[week.n]) || { mode: "", met: false };
+    var agenda = RP.MENTOR_AGENDA.map(function (item) {
+      return "<li><b>" + escapeHtml(item.label) + ".</b> " + escapeHtml(item.hint) + " " + escapeHtml(week.mentor[item.key]) + "</li>";
+    }).join("");
+    var modes = RP.MEETING_MODES.map(function (mode) {
+      var on = meeting.mode === mode;
+      var label = mode === "zoom" ? "Zoom" : "In person";
+      return '<button type="button" class="rt-mode' + (on ? " on" : "") + '" data-rtmode="' + mode + '" data-rtweek="' + week.n + '" aria-pressed="' + (on ? "true" : "false") + '"' + (locked ? " disabled" : "") + ">" + label + "</button>";
+    }).join("");
+    return '<section id="rootedMentor"><div class="rt-label">Mentor conversation · 30–45 minutes</div>' +
+      '<p class="rt-note">Discuss this week’s Scripture, how it applies, what is hard, and prayer, then agree on one next step. Set the time — and the Zoom link, if you use one — with your mentor outside the app. There is no mentor list here, and nothing you say in the conversation is saved, recorded, or sent to the AI review.</p>' +
+      '<ol class="rt-agenda">' + agenda + "</ol>" +
+      (week.mentor.limit ? '<p class="rt-note"><b>For the mentor:</b> ' + escapeHtml(week.mentor.limit) + "</p>" : "") +
+      '<div class="rt-label">How you met — your choice</div>' +
+      '<div class="rt-modes" role="group" aria-label="How you met with your mentor">' + modes + "</div>" +
+      '<p class="rt-note">Choosing in person or Zoom does not by itself mark the meeting done.</p>' +
+      '<label class="rt-check"><input type="checkbox" data-rtmet="1" data-rtweek="' + week.n + '"' + (meeting.met ? " checked" : "") + (locked ? " disabled" : "") + '> <span>I met with my mentor this week. This is my report only. The app does not ask my mentor to confirm it.</span></label></section>';
+  }
+  function rootedSetMeeting(week, patch) {
+    var RP = rootedProgram();
+    rootedEnsure();
+    if (!RP || !__rooted || !__rooted.optedIn || !__rooted.meetings || !__rooted.meetings[week]) return;
+    if (Object.prototype.hasOwnProperty.call(patch, "mode")) {
+      __rooted.meetings[week].mode = RP.MEETING_MODES.indexOf(patch.mode) >= 0 ? patch.mode : "";
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "met")) __rooted.meetings[week].met = patch.met === true;
+    __rooted.updatedAt = new Date().toISOString();
+    rootedWriteLocal();
+    rootedPushSteps();
+    var note = document.getElementById("rootedProgressNote");
+    if (note) note.textContent = rootedProgressSentence();
+    renderRootedCta();
   }
   function rootedCheck(key, label, on, locked, week) {
     return '<label class="rt-check"><input type="checkbox" data-rtstep="' + key + '" data-rtweek="' + week + '"' +
@@ -11452,8 +11572,9 @@
     __rooted = null;
     __rootedUser = "";
     rootedEnsure();
-    __rooted.optedIn = mode !== "rooted-path";
+    __rooted.optedIn = mode !== "rooted-path" && mode !== "rooted-card";
     __rooted.steps = RP.emptySteps();
+    __rooted.meetings = RP.emptyMeetings();
     __rooted.reflections = {};
     __rootedReflectionStatus = "";
     if (mode === "rooted" || mode === "rooted-week") {
@@ -11700,6 +11821,30 @@
       var savedSteps = {};
       try { savedSteps = JSON.parse(localStorage.getItem(rootedKey()) || "{}"); } catch (e) { savedSteps = {}; }
       check("saved check-in has no prose", !!(savedSteps.steps && (savedSteps.steps[1] || savedSteps.steps["1"] || {}).read) && !savedSteps.reflections);
+      var lessonBeforeMeet = { read: __rooted.steps[1].read, reflect: __rooted.steps[1].reflect, pray: __rooted.steps[1].pray, practice: __rooted.steps[1].practice };
+      var mentorBlock = document.getElementById("rootedMentor");
+      var zoomBtn = document.querySelector('#rootedMentor [data-rtmode="zoom"]');
+      check("mentor conversation is on the week", !!mentorBlock && !!zoomBtn && /30–45 minutes/.test(mentorBlock.textContent) && !mentorBlock.querySelector("textarea"));
+      zoomBtn.click();
+      var metBox = document.querySelector('#rootedMentor [data-rtmet]');
+      check("mentor attendance starts unchecked", !!metBox && !metBox.checked);
+      metBox.checked = true;
+      metBox.dispatchEvent(new Event("change", { bubbles: true }));
+      check("mentor meeting is self-reported", __rooted.meetings[1].mode === "zoom" && __rooted.meetings[1].met === true);
+      check("mentor meeting does not clear lesson steps", __rooted.steps[1].read === lessonBeforeMeet.read && __rooted.steps[1].reflect === lessonBeforeMeet.reflect && __rooted.steps[1].pray === lessonBeforeMeet.pray && __rooted.steps[1].practice === lessonBeforeMeet.practice);
+      var meetSaved = {};
+      try { meetSaved = JSON.parse(localStorage.getItem(rootedKey()) || "{}"); } catch (e) { meetSaved = {}; }
+      var meetRow = (meetSaved.meetings && (meetSaved.meetings[1] || meetSaved.meetings["1"])) || {};
+      check("saved meeting stores only mode and attendance", meetRow.mode === "zoom" && meetRow.met === true && Object.keys(meetRow).sort().join(",") === "met,mode");
+      check("lesson progress remains after the meeting is saved", !!((meetSaved.steps[1] || meetSaved.steps["1"] || {}).read));
+      __currentUser = { id: "user-rooted-b", email: "rooted-b@example.com" };
+      __rooted = null; __rootedUser = "";
+      var foreignMeet = rootedEnsure();
+      check("another account does not receive the meeting", !!foreignMeet && !foreignMeet.meetings[1].met && foreignMeet.meetings[1].mode === "" && !foreignMeet.steps[1].read);
+      __currentUser = { id: "user-rooted-a", email: "rooted-a@example.com" };
+      __rooted = null; __rootedUser = "";
+      rootedEnsure();
+      __rootedOpen = true;
       __rootedView = "level";
       __rootedLevel = 2;
       renderRooted();

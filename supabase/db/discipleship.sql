@@ -5,8 +5,11 @@
 -- not enroll existing members.
 --
 -- What it stores, per signed-in user, only after that person opts in:
---   steps        non-sensitive check-ins (read / reflect / pray / practice)
---   reflections  optional private notes. There is no group, leader, or
+--   steps        non-sensitive lesson check-ins (read / reflect / pray / practice)
+--   meetings     self-reported mentor attendance only: mode in-person or zoom,
+--                and whether the participant says the conversation happened.
+--                Do not add mentor names, links, notes, recordings, or transcripts.
+--   reflections  optional private lesson notes. There is no group, leader, or
 --                leaderboard policy on this table. Do not add one.
 --
 -- TRUST MODEL: owner-only, auth.uid() = user_id, same shape as goals/entries.
@@ -24,12 +27,19 @@ create table if not exists public.discipleship_progress (
   program_id   text not null default 'rooted-l1',
   opted_in     boolean not null default false,
   steps        jsonb not null default '{}'::jsonb,
+  meetings     jsonb not null default '{}'::jsonb,
   reflections  jsonb not null default '{}'::jsonb,
   updated_at   timestamptz not null default now(),
   constraint discipleship_progress_program_check check (program_id = 'rooted-l1'),
   constraint discipleship_steps_object check (jsonb_typeof(steps) = 'object'),
+  constraint discipleship_meetings_object check (jsonb_typeof(meetings) = 'object'),
   constraint discipleship_reflections_object check (jsonb_typeof(reflections) = 'object')
 );
+
+-- Safe if an earlier draft of this file was already applied: adds attendance
+-- only, and does not rewrite steps or reflections.
+alter table public.discipleship_progress
+  add column if not exists meetings jsonb not null default '{}'::jsonb;
 
 alter table public.discipleship_progress enable row level security;
 alter table public.discipleship_progress force row level security;

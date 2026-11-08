@@ -93,6 +93,83 @@ test("a planted rank, certification, and reflection cannot survive normalization
   assert.equal(RP.courseCoreComplete(planted), false);
 });
 
+test("every week has mentor guidance separate from the lesson", () => {
+  assert.deepEqual(RP.MENTOR_AGENDA.map((item) => item.key), ["scripture", "application", "challenges", "prayer", "nextStep"]);
+  RP.WEEKS.forEach((week) => {
+    RP.MENTOR_AGENDA.forEach((item) => {
+      assert.equal(typeof week.mentor[item.key], "string");
+      assert.ok(week.mentor[item.key].trim().length > 40, week.title + " mentor " + item.key);
+    });
+    assert.ok(week.mentor.limit.trim().length > 20);
+    const packed = JSON.stringify(week.mentor);
+    assert.equal(/transcript|recording|zoom\.us|mentor directory|type what he said/i.test(packed), false);
+  });
+  const byN = Object.fromEntries(RP.WEEKS.map((w) => [w.n, w]));
+  assert.match(byN[5].mentor.limit, /harm/i);
+  assert.match(byN[6].mentor.limit, /911/);
+  assert.match(byN[7].mentor.limit, /coercion/i);
+  assert.match(byN[9].mentor.limit, /medical advice/i);
+  assert.match(byN[10].mentor.limit, /dollar amounts/i);
+  assert.match(byN[11].mentor.limit, /life assignment/i);
+  assert.match(byN[12].mentor.limit, /Level 2/);
+});
+
+test("a meeting record cannot wipe lesson progress or keep conversation notes", () => {
+  const kept = RP.normalize({
+    optedIn: true,
+    steps: {
+      1: { read: true, reflect: true, pray: false, practice: false, note: "SECRET_REFLECTION", mentorMet: true, mentorMode: "zoom", meeting: { mode: "https://zoom.us/j/secret", met: true, notes: "SECRET_REFLECTION" } },
+      4: { read: true, reflect: true, pray: true, practice: true }
+    },
+    meetings: { 1: { mode: "in-person", met: true, notes: "SECRET_REFLECTION", mentorName: "Pat", url: "https://zoom.us/j/1" } }
+  });
+  assert.equal(kept.steps[1].read, true);
+  assert.equal(kept.steps[1].reflect, true);
+  assert.equal(kept.steps[1].pray, false);
+  assert.equal(kept.steps[1].practice, false);
+  assert.equal(kept.meetings[1].mode, "in-person");
+  assert.equal(kept.meetings[1].met, true);
+  assert.equal(kept.meetings[1].notes, undefined);
+  assert.equal(JSON.stringify(kept).includes("SECRET_REFLECTION"), false);
+  assert.equal(JSON.stringify(kept).includes("zoom.us"), false);
+  assert.equal(JSON.stringify(kept).includes("Pat"), false);
+  assert.equal(RP.weekCoreComplete(kept, 4), true);
+  assert.equal(RP.weekMeetingComplete(kept, 4), false);
+  assert.equal(RP.courseCoreComplete(kept), false);
+});
+
+test("lesson completion and mentor attendance stay separate and do not promote", () => {
+  const steps = {};
+  const meetings = {};
+  for (let n = 1; n <= 12; n++) {
+    steps[n] = { read: true, reflect: true, pray: true, practice: true };
+    meetings[n] = { mode: "", met: false };
+  }
+  const lessonsOnly = RP.normalize({ optedIn: true, steps, meetings });
+  assert.equal(RP.courseCoreComplete(lessonsOnly), true);
+  assert.equal(RP.meetingsMarkedCount(lessonsOnly), 0);
+  assert.equal(RP.promotion(lessonsOnly).promoted, false);
+  const meetingsOnly = RP.normalize({
+    optedIn: true,
+    meetings: Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { mode: "zoom", met: true }]))
+  });
+  assert.equal(RP.courseCoreComplete(meetingsOnly), false);
+  assert.equal(RP.meetingsMarkedCount(meetingsOnly), 12);
+  assert.equal(meetingsOnly.steps[3].read, false);
+  const both = RP.normalize({
+    optedIn: true,
+    steps,
+    meetings: Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, { mode: "in-person", met: true, notes: "SECRET_REFLECTION" }]))
+  });
+  assert.equal(RP.weeksWithBothCount(both), 12);
+  assert.equal(RP.promotion(both).promoted, false);
+  assert.equal(RP.promotion(both).certifiedLeader, false);
+  assert.equal(JSON.stringify(RP.publicSnapshot(both)).includes("SECRET_REFLECTION"), false);
+  assert.match(RP.shareLine(both), /self-reported mentor meetings/);
+  assert.match(RP.shareLine(both), /No rank or leadership status/);
+  assert.equal(RP.shareLine(both).includes("SECRET_REFLECTION"), false);
+});
+
 test("finishing every check-in does not promote or certify", () => {
   const steps = {};
   for (let n = 1; n <= 12; n++) steps[n] = { read: true, reflect: true, pray: true, practice: true };
@@ -134,6 +211,10 @@ test("the SQL file is owner-only and does not enroll anyone", () => {
   assert.equal(/insert into public\.discipleship_progress/i.test(sql), false);
   assert.match(sql, /on delete cascade/i);
   assert.match(sql, /reflections/i);
+  assert.match(sql, /meetings\s+jsonb/i);
+  assert.match(sql, /add column if not exists meetings/i);
+  assert.match(sql, /Do not add mentor names, links, notes, recordings, or transcripts/i);
+  assert.equal(/mentor_name|recording_url|conversation_notes/i.test(sql), false);
   ["select", "insert", "update", "delete"].forEach((action) => {
     assert.match(sql, new RegExp("for " + action, "i"));
   });

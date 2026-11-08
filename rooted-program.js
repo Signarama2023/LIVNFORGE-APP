@@ -348,6 +348,117 @@
     }
   ];
 
+  /* Same five movements every week. The words under each one change with the passage.
+     Nothing here is a note to store, a score, or a claim that the mentor confirmed attendance. */
+  var MENTOR_AGENDA = [
+    { key: "scripture", label: "Scripture", hint: "Read the week's passage. Keep what it says separate from what you think it means." },
+    { key: "application", label: "Real-life application", hint: "Ask how this touches his actual week. Do not invent an outcome the passage does not promise." },
+    { key: "challenges", label: "Challenges", hint: "Ask what is hard. He may pass. Do not require a confession or a private detail." },
+    { key: "prayer", label: "Prayer", hint: "Pray only for what he wants included. Silent prayer counts. Do not record the prayer." },
+    { key: "nextStep", label: "One next step", hint: "Agree on one step he can actually take. Leave the wording between you. Do not type it here." }
+  ];
+  var MENTOR_BY_WEEK = {
+    1: {
+      scripture: "Read 2 Timothy 3:14–17. Ask what Paul says Scripture does, and where faith in Christ fits. Look up Psalm 119:105 if you want the key verse in a Bible.",
+      application: "Ask what reading rhythm would be small enough to keep. A rhythm you suggest is not a rule this passage commands.",
+      challenges: "Leave room for a question or a doubt about the Bible. Not knowing is allowed. Do not invent an answer you do not have.",
+      prayer: "Ask God for a teachable heart. Praying aloud is optional.",
+      nextStep: "Let him name one step, such as reading the passage on three days and keeping one observation, one question, and one response.",
+      limit: "Do not grade his Bible knowledge or treat a question as resistance."
+    },
+    2: {
+      scripture: "Read Ephesians 2:1–10, including the mercy before the good works. Ask how grace, faith, and works are ordered.",
+      application: "Ask where he feels he must earn his worth. Good work follows the gift in this passage. It does not reveal a hidden career.",
+      challenges: "If he is unsure what he believes, let him say so. Do not ask him to pretend he has already trusted Christ.",
+      prayer: "Thank God for mercy, and ask for help receiving grace instead of performing for it.",
+      nextStep: "One moment this week when he notices performance-based worth, then a rereading of Ephesians 2:8–10.",
+      limit: "Do not announce a calling, a rank, or a life plan from this conversation."
+    },
+    3: {
+      scripture: "Read John 15:1–12. Stay with what Jesus says it means to remain, and what he says fruit depends on.",
+      application: "Ask where busyness stands in for attention to Jesus. Fruit here is not money, status, or a visible ministry score.",
+      challenges: "Ask what makes an ordinary day feel disconnected from him. Do not prescribe a long devotional system.",
+      prayer: "Ask for dependence in the place where self-reliance has taken over.",
+      nextStep: "If he wants it, a few unrushed minutes with a few lines of John 15. Stopping while he is still attentive is enough.",
+      limit: "Do not measure his faithfulness by how much he produces."
+    },
+    4: {
+      scripture: "Read James 1:19–27 so listening, speech, anger, and care for people in distress stay together.",
+      application: "Help him choose one response he can actually practice. One response does not earn salvation.",
+      challenges: "Ask where talking about obedience is easier than doing it. Do not expand one step into fixing his whole life.",
+      prayer: "Ask for courage to act and for humility to listen before speaking.",
+      nextStep: "One of these, chosen by him: listen well, restrain speech, or one practical act of care.",
+      limit: "Your preferred habits are not the same thing as the text's instructions."
+    },
+    5: {
+      scripture: "Read Colossians 3:12–17. Notice the identity Paul names before the list of qualities.",
+      application: "Ask who the people closest to him actually are. Do not assume a wife or children. A single, widowed, divorced, or childless man can practice this.",
+      challenges: "Ask which quality is hard. Patience is not the same as avoiding a needed conversation. Forgiveness is not a return to harm.",
+      prayer: "Ask for compassion and for wisdom about healthy boundaries.",
+      nextStep: "One act of care that does not demand thanks. If a relationship is unsafe, the step is a different person or a wise boundary, not contact.",
+      limit: "Do not urge him to reconcile with someone who has harmed him, or to control the people in his home."
+    },
+    6: {
+      scripture: "Read Romans 12:9–21, including the limits in verse 18. Peace includes doing his part and admitting what he does not control.",
+      application: "Ask what he can own, and what is outside his control. An apology may help. A reconciled outcome cannot be demanded.",
+      challenges: "Do not treat abuse as a mutual communication problem, and do not send him to confront someone alone.",
+      prayer: "Ask for humility about his own part, and for wisdom about safety.",
+      nextStep: "One safe step: listen, a specific apology for something he did, or qualified guidance before any contact.",
+      limit: "If someone may be in danger, the step is appropriate help, not a private confrontation. In the U.S., call 911 for immediate danger and 988 for a mental-health crisis."
+    },
+    7: {
+      scripture: "Read Colossians 3:22–4:1. Name who is addressed, including the justice Paul requires of masters.",
+      application: "Ask where integrity fits his paid work, caregiving, study, search for work, or volunteering. This is not an endorsement of slavery and not a command to endure unsafe work.",
+      challenges: "Ask where approval, overwork, or unfairness shows up. A person's dignity does not depend on having a job.",
+      prayer: "Ask for integrity in ordinary tasks and for justice where he has influence.",
+      nextStep: "One overlooked responsibility finished well, or one realistic step toward needed work. If the workplace is unsafe, the step may be to seek help.",
+      limit: "Do not use this passage to excuse coercion, exploitation, or unsafe conditions."
+    },
+    8: {
+      scripture: "Read 1 Peter 4:7–11 so prayer, love, hospitality, and gifts stay together.",
+      application: "Ask what ordinary ability he overlooks. You may notice a pattern. You cannot assign a divine calling.",
+      challenges: "Ask where service would help without becoming self-promotion. Limits are part of faithful stewardship.",
+      prayer: "Thank God for gifts he sees in others, and ask about one real need.",
+      nextStep: "He asks one trusted person where they already see him helping, then offers one modest act of service. Their answer is counsel, not a prophecy.",
+      limit: "This conversation is not Level 4 and not a life assignment."
+    },
+    9: {
+      scripture: "Read 1 Timothy 4:7–10. Paul is pressing training in godliness. Bodily training has a real but limited value.",
+      application: "Ask what care fits the body he actually has: rest, gentle movement, nourishment, or arranging care. Do not compare bodies or hold a weigh-in.",
+      challenges: "Shame, neglect, illness, or a limitation can all be named. None of them is a measure of faithfulness. You are not his clinician.",
+      prayer: "Thank God for embodied life, and ask for freedom from shame and from neglect.",
+      nextStep: "One accessible practice he chooses. Pain is a reason to stop, not a test of commitment.",
+      limit: "Give no medical advice, no training plan, and no promised health result. Do not tell him to stop prescribed care."
+    },
+    10: {
+      scripture: "Read 1 Timothy 6:6–10 and 6:17–19. Keep the warning about craving wealth together with the call to generosity.",
+      application: "Ask what honesty or peace about money could look like without any numbers. Do not prescribe a budget or promise that giving will make him wealthy.",
+      challenges: "Comparison, fear, and pressure can be named in general. Poverty is not moral failure. Do not ask for a loan, an investment, or a gift.",
+      prayer: "Ask for daily provision, contentment, and generous wisdom rather than fear.",
+      nextStep: "A private review in records he already keeps, and one realistic step he does not have to describe with amounts.",
+      limit: "Do not ask for dollar amounts, account details, or a financial disclosure. This is not financial advice."
+    },
+    11: {
+      scripture: "Read Romans 12:1–8. Mercy comes before the appeal. Then a renewed mind, humility, and different gifts.",
+      application: "Looking across these weeks, ask where one obedient step is becoming clearer. A sentence for this season is a hypothesis to test, not a prophecy.",
+      challenges: "The pressure to declare a permanent mission. Test impressions against Scripture, wise counsel, and the responsibilities he already carries.",
+      prayer: "Offer ordinary life to God, and ask for humility, discernment, and courage.",
+      nextStep: "He may say, out loud, who he can serve and how. You do not record the sentence, and you do not confirm it as God's hidden plan.",
+      limit: "You cannot tell him his divine life assignment."
+    },
+    12: {
+      scripture: "Read Matthew 28:16–20, including the doubt in verse 17 and the promise of Jesus' presence.",
+      application: "Ask what has changed in how he reads Scripture or responds to Jesus. A plan for the next month supports discipleship. It is not the commission and not a license to lead.",
+      challenges: "He may want to feel finished, or he may fear that doubt disqualifies him. Interest in faith or baptism belongs with a local pastor. This meeting does not speak for a church.",
+      prayer: "Thank God for the men in the group, and ask for continued courage, love, and dependence on Jesus.",
+      nextStep: "One Scripture rhythm, one relationship to keep, and one person to serve or invite without pressure.",
+      limit: "Do not tell him he is ready to lead a group. Marking this meeting does not open Level 2 or certify anyone."
+    }
+  };
+  WEEKS.forEach(function (week) { week.mentor = MENTOR_BY_WEEK[week.n]; });
+
+  var MEETING_MODES = ["in-person", "zoom"];
+
   function emptySteps() {
     var steps = {};
     for (var n = 1; n <= WEEKS.length; n++) {
@@ -356,20 +467,48 @@
     return steps;
   }
 
+  function emptyMeetings() {
+    var meetings = {};
+    for (var n = 1; n <= WEEKS.length; n++) meetings[n] = { mode: "", met: false };
+    return meetings;
+  }
+
+  function meetingMode(value) {
+    return value === "in-person" || value === "zoom" ? value : "";
+  }
+
+  /* Lesson booleans stay on the step. Meeting mode and the self-reported
+     met flag are kept beside them. Notes, names, links, and other keys are dropped. */
+  function readMeeting(raw, n) {
+    var bag = raw && raw.meetings ? raw.meetings : {};
+    var steps = raw && raw.steps ? raw.steps : {};
+    var row = steps[n] || steps[String(n)] || {};
+    var nested = row.meeting && typeof row.meeting === "object" ? row.meeting : {};
+    var direct = bag[n] || bag[String(n)] || {};
+    return {
+      mode: meetingMode(direct.mode) || meetingMode(nested.mode) || meetingMode(row.mentorMode),
+      met: direct.met === true || nested.met === true || row.mentorMet === true
+    };
+  }
+
   function normalize(raw) {
     var steps = emptySteps();
-    var src = raw && typeof raw === "object" ? (raw.steps || {}) : {};
+    var meetings = emptyMeetings();
+    var src = raw && typeof raw === "object" ? raw : {};
+    var stepSrc = src.steps || {};
     for (var n = 1; n <= WEEKS.length; n++) {
-      var row = src[n] || src[String(n)] || {};
+      var row = stepSrc[n] || stepSrc[String(n)] || {};
       STEP_KEYS.forEach(function (key) {
         steps[n][key] = row[key] === true;
       });
+      meetings[n] = readMeeting(src, n);
     }
     return {
       programId: PROGRAM_ID,
-      optedIn: !!(raw && raw.optedIn === true),
-      updatedAt: raw && typeof raw.updatedAt === "string" ? raw.updatedAt : "",
-      steps: steps
+      optedIn: src.optedIn === true,
+      updatedAt: typeof src.updatedAt === "string" ? src.updatedAt : "",
+      steps: steps,
+      meetings: meetings
     };
   }
 
@@ -393,6 +532,25 @@
     return weeksCheckedCount(state) === WEEKS.length;
   }
 
+  function weekMeetingComplete(state, n) {
+    var meeting = normalize(state).meetings[n];
+    return !!(meeting && meeting.met === true);
+  }
+
+  function meetingsMarkedCount(state) {
+    var count = 0;
+    for (var n = 1; n <= WEEKS.length; n++) if (weekMeetingComplete(state, n)) count++;
+    return count;
+  }
+
+  function weeksWithBothCount(state) {
+    var count = 0;
+    for (var n = 1; n <= WEEKS.length; n++) {
+      if (weekCoreComplete(state, n) && weekMeetingComplete(state, n)) count++;
+    }
+    return count;
+  }
+
   function levelById(id) {
     return LEVELS.filter(function (l) { return l.id === id; })[0] || null;
   }
@@ -410,12 +568,19 @@
   function publicSnapshot(raw) {
     var state = normalize(raw);
     var weeks = {};
-    for (var n = 1; n <= WEEKS.length; n++) weeks[n] = state.steps[n];
+    var meetings = {};
+    for (var n = 1; n <= WEEKS.length; n++) {
+      weeks[n] = state.steps[n];
+      meetings[n] = { mode: state.meetings[n].mode, met: state.meetings[n].met };
+    }
     return {
       programId: PROGRAM_ID,
       optedIn: state.optedIn,
       weeksChecked: weeks,
+      meetings: meetings,
       weeksComplete: weeksCheckedCount(state),
+      meetingsMarked: meetingsMarkedCount(state),
+      weeksWithBoth: weeksWithBothCount(state),
       coreComplete: courseCoreComplete(state),
       promoted: false,
       certifiedLeader: false,
@@ -427,20 +592,26 @@
   function shareLine(raw) {
     var snap = publicSnapshot(raw);
     if (!snap.optedIn) return "Level 1 is available to begin. No check-in is recorded.";
-    return "Level 1 core: " + snap.weeksComplete + " of " + WEEKS.length + " weeks checked in. No rank or leadership status is attached.";
+    return "Level 1: " + snap.weeksComplete + " of " + WEEKS.length + " lesson weeks and " + snap.meetingsMarked + " of " + WEEKS.length + " self-reported mentor meetings. No rank or leadership status is attached.";
   }
 
   return {
     PROGRAM_ID: PROGRAM_ID,
     STEP_KEYS: STEP_KEYS,
+    MEETING_MODES: MEETING_MODES,
+    MENTOR_AGENDA: MENTOR_AGENDA,
     LEVELS: LEVELS,
     WEEKS: WEEKS,
     title: "Rooted and Ready",
     emptySteps: emptySteps,
+    emptyMeetings: emptyMeetings,
     normalize: normalize,
     weekByNumber: weekByNumber,
     weekCoreComplete: weekCoreComplete,
+    weekMeetingComplete: weekMeetingComplete,
     weeksCheckedCount: weeksCheckedCount,
+    meetingsMarkedCount: meetingsMarkedCount,
+    weeksWithBothCount: weeksWithBothCount,
     courseCoreComplete: courseCoreComplete,
     levelAvailable: levelAvailable,
     promotion: promotion,
